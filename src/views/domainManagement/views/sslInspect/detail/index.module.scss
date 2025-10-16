@@ -1,0 +1,10 @@
+.container {
+  width: 100%;
+  height: 100%;
+  background-color: #fff;
+  padding: 0 16px;
+  box-sizing: border-box;
+  :global(.el-tab-pane) {
+    height: 100%;
+  }
+}

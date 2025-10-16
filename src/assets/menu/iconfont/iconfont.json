@@ -1,0 +1,86 @@
+{
+  "id": "5006799",
+  "name": "可观测平台",
+  "font_family": "iconfont",
+  "css_prefix_text": "icon-",
+  "description": "",
+  "glyphs": [
+    {
+      "icon_id": "45355689",
+      "name": "control_panel",
+      "font_class": "control_panel",
+      "unicode": "e605",
+      "unicode_decimal": 58885
+    },
+    {
+      "icon_id": "45355688",
+      "name": "asset_management",
+      "font_class": "asset_management",
+      "unicode": "e606",
+      "unicode_decimal": 58886
+    },
+    {
+      "icon_id": "45355686",
+      "name": "home",
+      "font_class": "home",
+      "unicode": "e607",
+      "unicode_decimal": 58887
+    },
+    {
+      "icon_id": "45355685",
+      "name": "track_panel",
+      "font_class": "track_panel",
+      "unicode": "e608",
+      "unicode_decimal": 58888
+    },
+    {
+      "icon_id": "45355683",
+      "name": "monitors_panel",
+      "font_class": "monitors_panel",
+      "unicode": "e609",
+      "unicode_decimal": 58889
+    },
+    {
+      "icon_id": "45355682",
+      "name": "logs_panel",
+      "font_class": "logs_panel",
+      "unicode": "e60a",
+      "unicode_decimal": 58890
+    },
+    {
+      "icon_id": "45355681",
+      "name": "availability_monitoring",
+      "font_class": "availability_monitoring",
+      "unicode": "e60b",
+      "unicode_decimal": 58891
+    },
+    {
+      "icon_id": "45355677",
+      "name": "collapse",
+      "font_class": "collapse",
+      "unicode": "e601",
+      "unicode_decimal": 58881
+    },
+    {
+      "icon_id": "45355678",
+      "name": "message",
+      "font_class": "message",
+      "unicode": "e602",
+      "unicode_decimal": 58882
+    },
+    {
+      "icon_id": "45355679",
+      "name": "event_panel",
+      "font_class": "event_panel",
+      "unicode": "e603",
+      "unicode_decimal": 58883
+    },
+    {
+      "icon_id": "45355680",
+      "name": "target_panel",
+      "font_class": "target_panel",
+      "unicode": "e604",
+      "unicode_decimal": 58884
+    }
+  ]
+}

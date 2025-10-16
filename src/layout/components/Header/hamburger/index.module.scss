@@ -1,0 +1,9 @@
+.container {
+  height: 55px;
+  line-height: 55px!important;
+  padding-left: 24px;
+  box-sizing: border-box;
+  :global(.el-breadcrumb__inner) {
+    font-size: 16px;
+  }
+}

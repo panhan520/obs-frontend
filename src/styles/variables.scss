@@ -1,0 +1,48 @@
+// base color
+$blue: #324157;
+$light-blue: #3a71a8;
+$red: #c03639;
+$pink: #e65d6e;
+$green: #30b08f;
+$tiffany: #4ab7bd;
+$yellow: #fec171;
+$panGreen: #30b08f;
+
+/* 全局 css 变量 */
+$primaryColor: #1763ff;
+
+// sidebar
+$menuText: #41464f;
+$menuActiveText: $primaryColor;
+$subMenuActiveText: $primaryColor;
+
+$menuBg: #f0f3f7;
+$menuHover: #e6edfa;
+
+$subMenuBg: #1f2d3d;
+$subMenuHover: #001528;
+
+$sideBarWidth: 220px;
+
+$mainHorizontalPadding: 20px;
+
+:root {
+  --el-color-primary: #1763ff;
+  --el-color-success: #30b08f;
+  --el-color-warning: #fec171;
+  --el-color-danger: #c03639;
+  --el-color-info: #3a71a8;
+}
+
+:export {
+  menuText: $menuText;
+  menuActiveText: $menuActiveText;
+  subMenuActiveText: $subMenuActiveText;
+  menuBg: $menuBg;
+  menuHover: $menuHover;
+  subMenuBg: $subMenuBg;
+  subMenuHover: $subMenuHover;
+  sideBarWidth: $sideBarWidth;
+  primaryColor: $primaryColor;
+  mainHorizontalPadding: $mainHorizontalPadding;
+}

@@ -1,0 +1,9 @@
+.tabs {
+  > .el-tabs__content {
+    height: calc(100vh - 190px);
+    overflow-y: auto;
+    > .el-tab-pane:nth-child(n + 2) {
+      height: 100%;
+    }
+  }
+}
