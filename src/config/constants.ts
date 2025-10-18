@@ -16,5 +16,4 @@ export const PROXY = {
   CORE: import.meta.env.VITE_APP_CORE_API,
   /**opensearch */
   OPENSEARCH: import.meta.env.VITE_APP_OPENSEARCH_API,
-
 }

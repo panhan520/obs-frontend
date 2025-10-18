@@ -50,13 +50,13 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => {
       }),
       // gzip压缩 生产环境生成 .gz 文件
       mode === 'production' &&
-      viteCompression({
-        verbose: true,
-        disable: false,
-        threshold: 10240,
-        algorithm: 'gzip',
-        ext: '.gz',
-      }),
+        viteCompression({
+          verbose: true,
+          disable: false,
+          threshold: 10240,
+          algorithm: 'gzip',
+          ext: '.gz',
+        }),
     ],
     css: {
       preprocessorOptions: {
@@ -86,7 +86,7 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => {
       // 代理跨域（模拟示例）
       proxy: {
         '/observable/user/v1': {
-          target: 'http://43.199.244.212:8110',
+          target: 'https://gateway.observe.dev.eks.gainetics.io/api/user',
           changeOrigin: true,
         },
         '/observable/core/v1': {
@@ -118,7 +118,7 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => {
           target: 'https://gateway.observe.dev.gainetics.io/domain',
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/domain-proxy/, '/api/v1'),
-        }
+        },
       },
     },
     // 生产环境打包配置

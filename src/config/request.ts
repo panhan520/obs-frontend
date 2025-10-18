@@ -1,4 +1,3 @@
-
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios'
 import { ElMessage } from 'element-plus'
 import qs from 'qs'
@@ -47,7 +46,8 @@ const getReqByProxyModule = ({
       // const userStore = useUserStore()
       // const token: string = userStore.token // TODO: error
       // 自定义请求头
-      if (getToken() && config.baseURL !== PROXY.OPENSEARCH) { // TODO: error
+      if (getToken() && config.baseURL !== PROXY.OPENSEARCH) {
+        // TODO: error
         config.headers['Authorization'] = `Bearer ${getToken()}`
       }
       if (!config.headers['Content-Type']) {
@@ -64,7 +64,11 @@ const getReqByProxyModule = ({
   //  response interceptor 接口响应拦截
   axiosInstance.interceptors.response.use(
     (response: AxiosResponse) => {
-      const resData = response.data as { code?: number | string; message?: string;[key: string]: any }
+      const resData = response.data as {
+        code?: number | string
+        message?: string
+        [key: string]: any
+      }
 
       // 如果后端返回业务 code 表示未登录
       if (resData.code === 401 || resData.code === 403) {

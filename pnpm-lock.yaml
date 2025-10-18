@@ -66,8 +66,8 @@ importers:
         specifier: ^5.3.1
         version: 5.6.0
       element-plus:
-        specifier: ^2.10.3
-        version: 2.10.4(vue@3.5.17(typescript@4.9.5))
+        specifier: ^2.11.5
+        version: 2.11.5(vue@3.5.17(typescript@4.9.5))
       exceljs:
         specifier: ^4.3.0
         version: 4.4.0
@@ -515,6 +515,11 @@ packages:
 
   '@element-plus/icons-vue@2.3.1':
     resolution: {integrity: sha512-XxVUZv48RZAd87ucGS48jPf6pKu0yV5UCg9f4FFwtrYxXOwWuVJo6wOvSLKEoMQKjv8GsX/mhP6UsC1lRwbUWg==}
+    peerDependencies:
+      vue: ^3.2.0
+
+  '@element-plus/icons-vue@2.3.2':
+    resolution: {integrity: sha512-OzIuTaIfC8QXEPmJvB4Y4kw34rSXdCJzxcD1kFStBvr8bK6X1zQAYDo0CNMjojnfTqRQCJ0I7prlErcoRiET2A==}
     peerDependencies:
       vue: ^3.2.0
 
@@ -1815,6 +1820,9 @@ packages:
   dayjs@1.11.13:
     resolution: {integrity: sha512-oaMBel6gjolK862uaPQOVTA7q3TZhuSvuMQAAglQDOWYO9A91IrAOUJEyKVlqJlHE0vq5p5UXxzdPfMH/x6xNg==}
 
+  dayjs@1.11.18:
+    resolution: {integrity: sha512-zFBQ7WFRvVRhKcWoUh+ZA1g2HVgUbsZm9sbddh8EC5iv93sui8DVVz1Npvz+r6meo9VKfa8NyLWBsQK1VvIKPA==}
+
   debug@2.6.9:
     resolution: {integrity: sha512-bC7ElrdJaJnPbAP+1EotYvqZsb3ecl5wi6Bfi6BJTUcNowp6cvspg0jXznRTKDjm/E7AdgFBVeAPVMNcKGsHMA==}
     peerDependencies:
@@ -1996,8 +2004,8 @@ packages:
   element-in-view@0.1.0:
     resolution: {integrity: sha512-bMX/nPADfY8Mgs70kG+SGJ4vo7GCOsQaFVhUHG738gzRG6OrKCp2ZbV63LE5jsgEh8tDqxvXvLeslel5HF6lrA==}
 
-  element-plus@2.10.4:
-    resolution: {integrity: sha512-UD4elWHrCnp1xlPhbXmVcaKFLCRaRAY6WWRwemGfGW3ceIjXm9fSYc9RNH3AiOEA6Ds1p9ZvhCs76CR9J8Vd+A==}
+  element-plus@2.11.5:
+    resolution: {integrity: sha512-O+bIVHQCjUDm4GiIznDXRoS8ar2TpWLwfOGnN/Aam0VXf5kbuc4SxdKKJdovWNxmxeqbcwjsSZPKgtXNcqys4A==}
     peerDependencies:
       vue: ^3.2.0
 
@@ -2204,9 +2212,6 @@ packages:
   escape-goat@2.1.1:
     resolution: {integrity: sha512-8/uIhbG12Csjy2JEW7D9pHbreaVaS/OpN3ycnyvElTdwM5n6GY6W6e2IPemfvGZeUMqZ9A/3GqIZMgKnBhAw/Q==}
     engines: {node: '>=8'}
-
-  escape-html@1.0.3:
-    resolution: {integrity: sha512-NiSupZ4OeuGwr68lGIeym/ksIZMJodUGOSCZ/FSnTxcrekbvqrgdUxlJOMpijaKZVjAJrWrGs/6Jy8OMuyj9ow==}
 
   escape-string-regexp@1.0.5:
     resolution: {integrity: sha512-vbRorB5FUQWvla16U8R/qgaFIya2qGzwDrNmCZuYKrbdSUMG6I1ZCGQRefkRVhuOkIGVne7BQ35DSfo1qvJqFg==}
@@ -5506,6 +5511,10 @@ snapshots:
     dependencies:
       vue: 3.5.17(typescript@4.9.5)
 
+  '@element-plus/icons-vue@2.3.2(vue@3.5.17(typescript@4.9.5))':
+    dependencies:
+      vue: 3.5.17(typescript@4.9.5)
+
   '@esbuild/android-arm@0.15.18':
     optional: true
 
@@ -5581,7 +5590,7 @@ snapshots:
       '@formily/reactive-vue': 2.3.7(vue@3.5.17(typescript@4.9.5))
       '@formily/shared': 2.3.7
       '@formily/vue': 2.3.7(typescript@4.9.5)(vue@3.5.17(typescript@4.9.5))
-      element-plus: 2.10.4(vue@3.5.17(typescript@4.9.5))
+      element-plus: 2.11.5(vue@3.5.17(typescript@4.9.5))
       resize-observer-polyfill: 1.5.1
       vue: 3.5.17(typescript@4.9.5)
       vue-slicksort: 1.2.0(vue@3.5.17(typescript@4.9.5))
@@ -7036,6 +7045,8 @@ snapshots:
 
   dayjs@1.11.13: {}
 
+  dayjs@1.11.18: {}
+
   debug@2.6.9:
     dependencies:
       ms: 2.0.0
@@ -7208,18 +7219,17 @@ snapshots:
 
   element-in-view@0.1.0: {}
 
-  element-plus@2.10.4(vue@3.5.17(typescript@4.9.5)):
+  element-plus@2.11.5(vue@3.5.17(typescript@4.9.5)):
     dependencies:
       '@ctrl/tinycolor': 3.4.1
-      '@element-plus/icons-vue': 2.3.1(vue@3.5.17(typescript@4.9.5))
+      '@element-plus/icons-vue': 2.3.2(vue@3.5.17(typescript@4.9.5))
       '@floating-ui/dom': 1.7.2
       '@popperjs/core': '@sxzz/popperjs-es@2.11.7'
       '@types/lodash': 4.17.20
       '@types/lodash-es': 4.17.12
       '@vueuse/core': 9.13.0(vue@3.5.17(typescript@4.9.5))
       async-validator: 4.2.5
-      dayjs: 1.11.13
-      escape-html: 1.0.3
+      dayjs: 1.11.18
       lodash: 4.17.21
       lodash-es: 4.17.21
       lodash-unified: 1.0.3(@types/lodash-es@4.17.12)(lodash-es@4.17.21)(lodash@4.17.21)
@@ -7440,8 +7450,6 @@ snapshots:
   escalade@3.2.0: {}
 
   escape-goat@2.1.1: {}
-
-  escape-html@1.0.3: {}
 
   escape-string-regexp@1.0.5: {}
 

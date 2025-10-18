@@ -14,11 +14,8 @@ const logsPanelRouter: IRouteRecordRaw[] = [
     children: [
       {
         path: 'discover',
-        component: () => import('~/businessComponents/commonIframePage'),
+        component: () => import('@/views/logsPanel/discover'),
         name: 'discover',
-        props: {
-          iframeUrl: OpensearchUrl.DISCOVER
-        },
         meta: { title: '日志检索', level: 2, headerMode: HeaderMode.SUBMENU },
       },
       {
@@ -26,7 +23,7 @@ const logsPanelRouter: IRouteRecordRaw[] = [
         component: () => import('~/businessComponents/commonIframePage'),
         name: 'indexManagement',
         props: {
-          iframeUrl: OpensearchUrl.INDEXMANEGEMENT
+          iframeUrl: OpensearchUrl.INDEXMANEGEMENT,
         },
         meta: { title: '索引管理', level: 2, headerMode: HeaderMode.SUBMENU },
       },
@@ -35,7 +32,7 @@ const logsPanelRouter: IRouteRecordRaw[] = [
         component: () => import('~/businessComponents/commonIframePage'),
         name: 'snapshot',
         props: {
-          iframeUrl: OpensearchUrl.SNAPSHOT
+          iframeUrl: OpensearchUrl.SNAPSHOT,
         },
         meta: { title: '快照管理', level: 2, headerMode: HeaderMode.SUBMENU },
       },
