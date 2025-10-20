@@ -15,6 +15,7 @@ export default defineComponent({
   name: 'LogSearchView',
   setup() {
     // 响应式数据
+    const searchField = ref('')
     const searchQuery = ref('')
     const viewMode = ref<'time' | 'source'>('time')
     const documentViewMode = ref<'table' | 'json' | 'single'>('table')
@@ -637,7 +638,7 @@ export default defineComponent({
               <ElInput
                 placeholder='搜索字段名称'
                 class={styles.searchInput}
-                v-model={searchQuery.value}
+                v-model={searchField.value}
               >
                 {{
                   prefix: () => (

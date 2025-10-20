@@ -692,6 +692,9 @@
   .el-select__wrapper {
     font-size: 13px;
   }
+  .el-tabs__content {
+    overflow: visible;
+  }
 }
 
 // 响应式设计

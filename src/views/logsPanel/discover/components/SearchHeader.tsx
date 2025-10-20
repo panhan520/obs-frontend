@@ -58,7 +58,7 @@ export default defineComponent({
     // 搜索建议相关状态
     const suggestionsVisible = ref(false)
     const cursorPosition = ref(0)
-    const searchInputRef = ref<HTMLInputElement>()
+    const searchInputRef = ref<any>() // ElInput 组件引用
 
     // 时间选择弹层
     const timeRangeVisible = ref(false)
@@ -271,8 +271,12 @@ export default defineComponent({
         setTimeout(() => {
           if (searchInputRef.value) {
             const newCursorPos = beforeCursor.length + value.length
-            searchInputRef.value.setSelectionRange(newCursorPos, newCursorPos)
-            cursorPosition.value = newCursorPos
+            // 获取 ElInput 内部的 input 元素
+            const inputElement = searchInputRef.value.input || searchInputRef.value.$refs?.input
+            if (inputElement && inputElement.setSelectionRange) {
+              inputElement.setSelectionRange(newCursorPos, newCursorPos)
+              cursorPosition.value = newCursorPos
+            }
           }
         }, 0)
       } else {
@@ -292,7 +296,10 @@ export default defineComponent({
       () => props.searchQuery,
       () => {
         if (searchInputRef.value) {
-          cursorPosition.value = searchInputRef.value.selectionStart || 0
+          const inputElement = searchInputRef.value.input || searchInputRef.value.$refs?.input
+          if (inputElement) {
+            cursorPosition.value = inputElement.selectionStart || 0
+          }
         }
       },
     )
@@ -450,6 +457,7 @@ export default defineComponent({
                           class={styles.relativeUnitSel}
                           onChange={updateRelativeTime}
                           onClick={(e: Event) => e.stopPropagation()}
+                          teleported={false}
                         >
                           {RELATIVE_TIME_OPTIONS.map((option) => (
                             <ElOption

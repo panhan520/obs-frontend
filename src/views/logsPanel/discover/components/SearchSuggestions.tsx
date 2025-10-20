@@ -103,7 +103,7 @@ export default defineComponent({
       if (shouldShowOperators.value) {
         return SEARCH_OPERATORS.map((op) => ({
           type: 'operator' as const,
-          value: op.syntax,
+          value: op.operator,
           label: op.operator,
           description: op.description,
           syntax: op.syntax,
@@ -175,7 +175,7 @@ export default defineComponent({
       return (
         <div class={styles.searchSuggestions} ref={suggestionsRef}>
           {/* 预览区域 */}
-          <div class={styles.suggestionPreview}>
+          {/* <div class={styles.suggestionPreview}>
             <div class={styles.previewIcon}>📄</div>
             <div class={styles.previewContent}>
               <div class={styles.previewLabel}>预览</div>
@@ -183,7 +183,7 @@ export default defineComponent({
                 {shouldShowOperators.value ? 'attribute:value' : '\'field\' = ""'}
               </div>
             </div>
-          </div>
+          </div> */}
 
           {/* 建议列表 */}
           <div class={styles.suggestionList}>
