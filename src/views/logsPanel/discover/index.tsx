@@ -1,6 +1,6 @@
 // LogSearchView.tsx
 import { defineComponent, ref, computed, onMounted } from 'vue'
-import { ElSelect, ElOption, ElInput, ElIcon, ElButton } from 'element-plus'
+import { ElSelect, ElOption, ElInput, ElIcon, ElButton, ElDialog, ElDrawer } from 'element-plus'
 import { Search, Refresh } from '@element-plus/icons-vue'
 import { LogField, LogDocument, FilterCondition } from '@/api/logsPanel/discover/interfaces'
 import SearchHeader from './components/SearchHeader'
@@ -21,6 +21,97 @@ export default defineComponent({
     const documentViewMode = ref<'table' | 'json' | 'single'>('table')
     const expandedDocument = ref(false)
     const showFilterDialog = ref(false)
+    // 视图管理状态
+    type SavedView = {
+      id: string
+      title: string
+      createdAt: number
+      payload: {
+        dataSource: string[]
+        index: string
+        searchQuery: string
+        timeRange: { start: string | null; end: string | null }
+      }
+    }
+    const viewsKey = 'obs.discover.savedViews'
+    const activeViewId = ref<string | null>(null)
+    const activeViewTitle = ref<string>('')
+    const showSaveDialog = ref(false)
+    const saveTitle = ref('')
+    const showOpenDrawer = ref(false)
+    const viewSearch = ref('')
+    const savedViews = ref<SavedView[]>([])
+    const timeRange = ref<{ start: string | null; end: string | null }>({ start: null, end: null })
+
+    const loadViews = () => {
+      try {
+        const raw = localStorage.getItem(viewsKey)
+        savedViews.value = raw ? (JSON.parse(raw) as SavedView[]) : []
+      } catch {
+        savedViews.value = []
+      }
+    }
+    const persistViews = () => {
+      localStorage.setItem(viewsKey, JSON.stringify(savedViews.value))
+    }
+    const resetToNewView = () => {
+      activeViewId.value = null
+      activeViewTitle.value = ''
+      saveTitle.value = ''
+    }
+    const handleNew = () => {
+      resetToNewView()
+      // 清空查询与时间范围但保留索引选择
+      searchQuery.value = ''
+      timeRange.value = { start: null, end: null }
+    }
+    const handleSave = () => {
+      saveTitle.value = activeViewTitle.value || ''
+      showSaveDialog.value = true
+    }
+    const confirmSave = () => {
+      const id = activeViewId.value ?? `view_${Date.now()}`
+      const now = Date.now()
+      const view: SavedView = {
+        id,
+        title: saveTitle.value || 'Untitled',
+        createdAt: activeViewId.value
+          ? savedViews.value.find((v) => v.id === id)?.createdAt ?? now
+          : now,
+        payload: {
+          dataSource: indexList.value,
+          index: currentIndex.value,
+          searchQuery: searchQuery.value,
+          timeRange: timeRange.value,
+        },
+      }
+      const idx = savedViews.value.findIndex((v) => v.id === id)
+      if (idx >= 0) savedViews.value[idx] = view
+      else savedViews.value.unshift(view)
+      persistViews()
+      activeViewId.value = id
+      activeViewTitle.value = view.title
+      showSaveDialog.value = false
+    }
+    const handleOpen = () => {
+      loadViews()
+      viewSearch.value = ''
+      showOpenDrawer.value = true
+    }
+    const filteredViews = computed(() => {
+      const q = viewSearch.value.trim().toLowerCase()
+      if (!q) return savedViews.value
+      return savedViews.value.filter((v) => v.title.toLowerCase().includes(q))
+    })
+    const openView = (v: SavedView) => {
+      activeViewId.value = v.id
+      activeViewTitle.value = v.title
+      currentIndex.value = v.payload.index
+      searchQuery.value = v.payload.searchQuery
+      timeRange.value = v.payload.timeRange
+      showOpenDrawer.value = false
+    }
+
     const indexList = ref<string[]>(['categraf-index-logs*'])
     const currentIndex = ref<string>('categraf-index-logs*')
 
@@ -579,11 +670,31 @@ export default defineComponent({
     }
 
     onMounted(() => {
-      // 初始化逻辑
+      loadViews()
     })
 
     return () => (
       <div class={styles.logSearchContainer}>
+        {/* 视图管理栏：新建/保存/打开 */}
+        <div class={styles.viewBar}>
+          <div class={styles.viewLeft}>
+            <span class={styles.viewBadge}>{activeViewId.value ? '已打开' : '视图'}</span>
+            {activeViewTitle.value ? (
+              <span class={styles.viewTitle}>{activeViewTitle.value}</span>
+            ) : null}
+          </div>
+          <div class={styles.viewActions}>
+            <ElButton size='small' onClick={handleNew}>
+              新建
+            </ElButton>
+            <ElButton size='small' type='primary' onClick={handleSave}>
+              保存
+            </ElButton>
+            <ElButton size='small' onClick={handleOpen}>
+              打开
+            </ElButton>
+          </div>
+        </div>
         <div class={styles.mainContent}>
           {/* 左侧面板 */}
           <div class={styles.leftPanel}>
@@ -676,11 +787,15 @@ export default defineComponent({
               searchQuery={searchQuery.value}
               viewMode={viewMode.value}
               availableFields={availableFields.value}
+              initialTimeRange={timeRange.value}
               onUpdate:searchQuery={(value) => (searchQuery.value = value)}
               onUpdate:viewMode={(value) => (viewMode.value = value)}
               onSearch={executeSearch}
               onAddFilter={handleAddFilter}
               onRefresh={refreshData}
+              onTimeRangeUpdate={(tr: { start: string | null; end: string | null }) =>
+                (timeRange.value = tr)
+              }
             />
             {/* 动态柱状图 */}
             <LogChart
@@ -696,6 +811,51 @@ export default defineComponent({
           </div>
         </div>
 
+        {/* 保存对话框 */}
+        <ElDialog
+          modelValue={showSaveDialog.value}
+          title='保存检索视图'
+          width='480px'
+          onUpdate:modelValue={(v: boolean) => (showSaveDialog.value = v)}
+          v-slots={{
+            footer: () => (
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                <ElButton onClick={() => (showSaveDialog.value = false)}>取消</ElButton>
+                <ElButton type='primary' disabled={!saveTitle.value.trim()} onClick={confirmSave}>
+                  保存
+                </ElButton>
+              </div>
+            ),
+          }}
+        >
+          <div style={{ marginBottom: '12px', color: '#606266' }}>
+            保存您的检索视图，以便在可视化和仪表板中使用它
+          </div>
+          <ElInput placeholder='请输入标题' v-model={saveTitle.value} />
+        </ElDialog>
+
+        {/* 打开抽屉 */}
+        <ElDrawer
+          modelValue={showOpenDrawer.value}
+          title='打开检索视图'
+          size='40%'
+          withHeader
+          onUpdate:modelValue={(v: boolean) => (showOpenDrawer.value = v)}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+            <ElInput placeholder='搜索...' v-model={viewSearch.value} />
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {filteredViews.value.map((v) => (
+              <div class={styles.viewItem} onClick={() => openView(v)}>
+                <ElIcon style={{ marginRight: '6px' }}>
+                  <Search />
+                </ElIcon>
+                <span>{v.title}</span>
+              </div>
+            ))}
+          </div>
+        </ElDrawer>
         <FilterDialog
           modelValue={showFilterDialog.value}
           availableFields={availableFields.value}

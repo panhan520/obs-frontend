@@ -95,11 +95,37 @@ export default defineComponent({
 
       // 检查光标前是否有空格
       const beforeCursor = props.searchQuery.substring(0, props.cursorPosition)
-      return beforeCursor.endsWith(' ')
+
+      // 统计空格数量
+      const spaceCount = (beforeCursor.match(/ /g) || []).length
+
+      // 如果有两个或更多空格，不显示任何建议
+      if (spaceCount >= 2) return null
+
+      // 如果有一个空格，检查空格后是否有内容
+      if (spaceCount === 1) {
+        const parts = beforeCursor.split(' ')
+        const lastPart = parts[parts.length - 1]
+
+        // 如果空格后没有内容（即空格是最后一个字符），显示运算符建议
+        if (beforeCursor.endsWith(' ')) {
+          return true
+        }
+
+        // 如果空格后有内容，不显示任何建议
+        return null
+      }
+
+      return false
     })
 
     // 获取建议列表
     const suggestions = computed(() => {
+      // 如果 shouldShowOperators 为 null，表示不显示任何建议
+      if (shouldShowOperators.value === null) {
+        return []
+      }
+
       if (shouldShowOperators.value) {
         return SEARCH_OPERATORS.map((op) => ({
           type: 'operator' as const,
@@ -147,9 +173,29 @@ export default defineComponent({
     }
 
     // 处理建议项点击
-    const handleSuggestionClick = (suggestion: any) => {
+    const handleSuggestionClick = (suggestion: any, e: MouseEvent) => {
+      e.preventDefault() // 阻止默认行为
+      e.stopPropagation() // 阻止事件冒泡
       props.onSelect(suggestion.value)
     }
+
+    // 计算动态预览内容
+    const previewQuery = computed(() => {
+      const beforeCursor = props.searchQuery.substring(0, props.cursorPosition)
+      const parts = beforeCursor.split(' ')
+
+      if (shouldShowOperators.value === null) {
+        // 两个空格后，显示完整的查询
+        return props.searchQuery
+      } else if (shouldShowOperators.value) {
+        // 显示运算符建议时，显示字段名
+        const field = parts[0] || 'field'
+        return `${field}:value`
+      } else {
+        // 显示字段建议时
+        return 'field:value'
+      }
+    })
 
     // 重置选中索引
     const resetSelectedIndex = () => {
@@ -179,9 +225,7 @@ export default defineComponent({
             <div class={styles.previewIcon}>📄</div>
             <div class={styles.previewContent}>
               <div class={styles.previewLabel}>预览</div>
-              <div class={styles.previewQuery}>
-                {shouldShowOperators.value ? 'attribute:value' : '\'field\' = ""'}
-              </div>
+              <div class={styles.previewQuery}>{previewQuery.value}</div>
             </div>
           </div> */}
 
@@ -194,7 +238,7 @@ export default defineComponent({
                   styles.suggestionItem,
                   index === selectedIndex.value ? styles.suggestionItemActive : '',
                 ]}
-                onClick={() => handleSuggestionClick(suggestion)}
+                onMousedown={(e) => handleSuggestionClick(suggestion, e)}
               >
                 <div class={styles.suggestionContent}>
                   <div class={styles.suggestionOperator}>{suggestion.label}</div>

@@ -47,6 +47,16 @@ export default defineComponent({
         onUpdate:modelValue={handleClose}
         title='编辑筛选条件'
         width='600px'
+        v-slots={{
+          footer: () => (
+            <span class={styles.dialogFooter}>
+              <ElButton onClick={handleClose}>取消</ElButton>
+              <ElButton type='primary' onClick={handleAddFilter}>
+                保存
+              </ElButton>
+            </span>
+          ),
+        }}
       >
         <div class={styles.filterDialog}>
           <ElForm model={newFilter} labelWidth='80px'>
@@ -69,35 +79,6 @@ export default defineComponent({
               <ElInput v-model={newFilter.value} />
             </ElFormItem>
           </ElForm>
-
-          <div class={styles.currentDocumentPreview}>
-            <h4>当前文档预览:</h4>
-            <div class={styles.previewFields}>
-              <div class={styles.previewRow}>
-                <span>@timestamp:</span>
-                <span>{props.currentDocument['@timestamp']}</span>
-              </div>
-              <div class={styles.previewRow}>
-                <span>_id:</span>
-                <span>{props.currentDocument._id}</span>
-              </div>
-            </div>
-          </div>
-
-          <div class={styles.customTagPrompt}>
-            <h4>是否创建自定义标签？</h4>
-          </div>
-
-          {{
-            footer: () => (
-              <span class={styles.dialogFooter}>
-                <ElButton onClick={handleClose}>取消</ElButton>
-                <ElButton type='primary' onClick={handleAddFilter}>
-                  保存
-                </ElButton>
-              </span>
-            ),
-          }}
         </div>
       </ElDialog>
     )

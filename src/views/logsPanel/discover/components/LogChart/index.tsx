@@ -128,7 +128,6 @@ export default defineComponent({
         },
         yAxis: {
           type: 'value',
-          name: '数量',
           nameLocation: 'middle',
           nameGap: 30,
         },

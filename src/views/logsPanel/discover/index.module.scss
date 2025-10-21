@@ -3,8 +3,49 @@
   height: 90vh;
   display: flex;
   background-color: #f5f7fa;
+  position: relative;
+  flex-direction: column;
 }
+.viewBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
 
+  .viewLeft {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    .viewBadge {
+      background: rgb(217, 236, 255);
+      color: #333333;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-weight: 600;
+    }
+    .viewTitle {
+      background: rgb(217, 236, 255);
+      color: #333333;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-weight: 700;
+    }
+  }
+  .viewActions {
+    display: flex;
+    gap: 8px;
+  }
+}
+.viewItem {
+  display: flex;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.viewItem:hover {
+  background: #f5f7fa;
+}
 .mainContent {
   flex: 1;
   display: flex;
@@ -157,6 +198,10 @@
         padding: 0;
         border-radius: 6px;
       }
+      .timeRangeBtnWrapper {
+        display: flex;
+        align-items: center;
+      }
 
       .timeRangeBtn {
         display: inline-flex;
@@ -184,6 +229,7 @@
         flex: 1;
         display: flex;
         align-items: center;
+        justify-content: center;
         gap: 8px;
         font-size: 13px;
       }
@@ -213,7 +259,8 @@
       }
 
       .refreshBtn {
-        margin-left: auto;
+        height: 36px;
+        margin-left: 10px;
       }
     }
     .addFilterBtn {
@@ -647,41 +694,6 @@
     }
   }
 }
-
-.filterDialog {
-  .currentDocumentPreview {
-    margin-top: 20px;
-    padding: 16px;
-    background: #f8f9fa;
-    border-radius: 4px;
-
-    h4 {
-      margin: 0 0 12px 0;
-    }
-
-    .previewRow {
-      display: flex;
-      justify-content: space-between;
-      padding: 4px 0;
-      font-size: 12px;
-      border-bottom: 1px solid #e4e7ed;
-
-      &:last-child {
-        border-bottom: none;
-      }
-    }
-  }
-
-  .customTagPrompt {
-    margin-top: 20px;
-    text-align: center;
-
-    h4 {
-      margin: 0;
-      color: #606266;
-    }
-  }
-}
 :global {
   .el-table--default .el-table__cell {
     padding: 5px 0;
@@ -704,16 +716,8 @@
   }
 
   .leftPanel {
-    width: 100%;
+    width: 96%;
     height: 200px;
-  }
-
-  .searchInputGroup {
-    flex-direction: column;
-
-    .searchInputWrapper {
-      width: 100%;
-    }
   }
 }
 // 响应式设计
@@ -724,8 +728,11 @@
     .searchInputWrapper {
       width: 100%;
     }
-    .timeRangeBtn {
-      width: 96%;
+    .timeRangeBtnWrapper {
+      width: 100%;
+      .timeRangeBtn {
+        width: 96%;
+      }
     }
   }
 }

@@ -48,8 +48,19 @@ export default defineComponent({
       type: Array as PropType<LogField[]>,
       required: true,
     },
+    initialTimeRange: {
+      type: Object as PropType<{ start: string | null; end: string | null }>,
+      required: false,
+    },
   },
-  emits: ['update:searchQuery', 'update:viewMode', 'search', 'addFilter', 'refresh'],
+  emits: [
+    'update:searchQuery',
+    'update:viewMode',
+    'search',
+    'addFilter',
+    'refresh',
+    'timeRangeUpdate',
+  ],
   setup(props, { emit }) {
     const handleSearch = () => emit('search')
     const handleRefresh = () => emit('refresh')
@@ -86,6 +97,10 @@ export default defineComponent({
       }
       timeRangeVisible.value = false
       handleSearch()
+      emit('timeRangeUpdate', {
+        start: startDate.value ? startDate.value.toISOString() : null,
+        end: endDate.value ? endDate.value.toISOString() : null,
+      })
     }
 
     // 计算相对时间
@@ -180,6 +195,10 @@ export default defineComponent({
           endDate.value = calculatedTime
         }
       }
+      emit('timeRangeUpdate', {
+        start: startDate.value ? startDate.value.toISOString() : null,
+        end: endDate.value ? endDate.value.toISOString() : null,
+      })
     }
     const generateTimeSlots = (): string[] => {
       const times: string[] = []
@@ -208,6 +227,10 @@ export default defineComponent({
       } else {
         endDate.value = value
       }
+      emit('timeRangeUpdate', {
+        start: startDate.value ? startDate.value.toISOString() : null,
+        end: endDate.value ? endDate.value.toISOString() : null,
+      })
     }
 
     // 计算舍入单位显示文本
@@ -273,17 +296,35 @@ export default defineComponent({
             const newCursorPos = beforeCursor.length + value.length
             // 获取 ElInput 内部的 input 元素
             const inputElement = searchInputRef.value.input || searchInputRef.value.$refs?.input
-            if (inputElement && inputElement.setSelectionRange) {
-              inputElement.setSelectionRange(newCursorPos, newCursorPos)
-              cursorPosition.value = newCursorPos
+            if (inputElement) {
+              inputElement.focus() // 保持焦点
+              if (inputElement.setSelectionRange) {
+                inputElement.setSelectionRange(newCursorPos, newCursorPos)
+                cursorPosition.value = newCursorPos
+              }
             }
           }
         }, 0)
       } else {
         // 选择字段，替换整个输入内容
         emit('update:searchQuery', value)
+        // 保持焦点
+        setTimeout(() => {
+          if (searchInputRef.value) {
+            const inputElement = searchInputRef.value.input || searchInputRef.value.$refs?.input
+            if (inputElement) {
+              inputElement.focus()
+              const newCursorPos = value.length
+              if (inputElement.setSelectionRange) {
+                inputElement.setSelectionRange(newCursorPos, newCursorPos)
+                cursorPosition.value = newCursorPos
+              }
+            }
+          }
+        }, 0)
       }
 
+      // 保持建议列表显示
       suggestionsVisible.value = true
     }
 
@@ -302,6 +343,16 @@ export default defineComponent({
           }
         }
       },
+    )
+    // 从父组件恢复初始时间范围
+    watch(
+      () => props.initialTimeRange,
+      (val) => {
+        if (!val) return
+        if (val.start) startDate.value = new Date(val.start)
+        if (val.end) endDate.value = new Date(val.end)
+      },
+      { immediate: true },
     )
     return () => (
       <div class={styles.searchHeader}>
@@ -342,172 +393,175 @@ export default defineComponent({
               onClose={handleSuggestionsClose}
             />
           </div>
-
-          {/* 时间范围选择器 */}
-          <ElPopover
-            placement={POPOVER_CONFIG.placement}
-            width={POPOVER_CONFIG.width}
-            v-model:visible={timeRangeVisible.value}
-            trigger='manual'
-            append-to-body
-            persistent
-          >
-            {{
-              reference: () => (
-                <div class={styles.timeRangeBtn}>
-                  <ElIcon class={styles.calendarIcon}>
-                    <Calendar />
-                  </ElIcon>
-                  <div class={styles.timeRangeContent}>
-                    <span
-                      class={`${styles.timePart} ${
-                        activeTimePart.value === 'start' ? styles.timePartActive : ''
-                      }`}
-                      onClick={() => {
-                        activeTimePart.value = 'start'
-                        timeRangeVisible.value = !timeRangeVisible.value
-                      }}
-                    >
-                      {formatDate(startDate.value)}
-                    </span>
-                    <span class={styles.arrow}>→</span>
-                    <span
-                      class={`${styles.timePart} ${
-                        activeTimePart.value === 'end' ? styles.timePartActive : ''
-                      }`}
-                      onClick={() => {
-                        activeTimePart.value = 'end'
-                        timeRangeVisible.value = !timeRangeVisible.value
-                      }}
-                    >
-                      {endDate.value ? formatDate(endDate.value) : 'now'}
-                    </span>
+          <div class={styles.timeRangeBtnWrapper}>
+            {/* 时间范围选择器 */}
+            <ElPopover
+              placement={POPOVER_CONFIG.placement}
+              width={POPOVER_CONFIG.width}
+              v-model:visible={timeRangeVisible.value}
+              trigger='manual'
+              append-to-body
+              persistent
+            >
+              {{
+                reference: () => (
+                  <div class={styles.timeRangeBtn}>
+                    <ElIcon class={styles.calendarIcon}>
+                      <Calendar />
+                    </ElIcon>
+                    <div class={styles.timeRangeContent}>
+                      <span
+                        class={`${styles.timePart} ${
+                          activeTimePart.value === 'start' ? styles.timePartActive : ''
+                        }`}
+                        onClick={() => {
+                          activeTimePart.value = 'start'
+                          timeRangeVisible.value = !timeRangeVisible.value
+                        }}
+                      >
+                        {formatDate(startDate.value)}
+                      </span>
+                      <span class={styles.arrow}>→</span>
+                      <span
+                        class={`${styles.timePart} ${
+                          activeTimePart.value === 'end' ? styles.timePartActive : ''
+                        }`}
+                        onClick={() => {
+                          activeTimePart.value = 'end'
+                          timeRangeVisible.value = !timeRangeVisible.value
+                        }}
+                      >
+                        {endDate.value ? formatDate(endDate.value) : 'now'}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              ),
-              default: () => (
-                <div class={styles.timePopover}>
-                  <ElTabs
-                    modelValue={activeTab.value}
-                    onUpdate:modelValue={(v) => (activeTab.value = v as any)}
-                  >
-                    {/* 绝对时间选择器 */}
-                    <ElTabPane label='Absolute' name='absolute'>
-                      <div class={styles.timeAbsolute}>
-                        <div class={styles.calendarCol}>
-                          <ElDatePickerPanel
-                            modelValue={currentDate.value}
-                            onUpdate:modelValue={setCurrentDate}
-                            placeholder={
-                              activeTimePart.value === 'start' ? 'Start date' : 'End date'
-                            }
-                            border={false}
-                          />
-                        </div>
-                        <div class={styles.timeCol}>
-                          {generateTimeSlots().map((t) => {
-                            const selectedDate = currentDate.value
-                            return (
-                              <div
-                                class={
-                                  styles.timeItem +
-                                  (selectedDate &&
-                                  new Date(selectedDate).getHours() === Number(t.split(':')[0]) &&
-                                  new Date(selectedDate).getMinutes() === Number(t.split(':')[1])
-                                    ? ' ' + styles.timeItemActive
-                                    : '')
-                                }
-                                onClick={() => {
-                                  const targetDate =
-                                    activeTimePart.value === 'start' ? startDate : endDate
-                                  if (!targetDate.value) targetDate.value = new Date()
-                                  const [h, m] = t.split(':').map((x) => Number(x))
-                                  const d = new Date(targetDate.value)
-                                  d.setHours(h, m, 0, 0)
-                                  targetDate.value = d
-                                }}
-                              >
-                                {t}
-                              </div>
-                            )
-                          })}
-                        </div>
-                      </div>
-                      <div class={styles.timeFooterRow}>
-                        <span>{activeTimePart.value === 'start' ? 'Start date' : 'End date'}</span>
-                        <div class={styles.timeFooterValue}>
-                          {formatDate(
-                            activeTimePart.value === 'start' ? startDate.value : endDate.value,
-                          )}
-                        </div>
-                      </div>
-                    </ElTabPane>
-                    {/* 相对时间选择器 */}
-                    <ElTabPane label='Relative' name='relative'>
-                      <div class={styles.timeRelative}>
-                        <ElInputNumber
-                          min={1}
-                          v-model={relativeAmount.value}
-                          controls-position='right'
-                          onChange={updateRelativeTime}
-                          onClick={(e: Event) => e.stopPropagation()}
-                        />
-                        <ElSelect
-                          v-model={relativeUnit.value}
-                          class={styles.relativeUnitSel}
-                          onChange={updateRelativeTime}
-                          onClick={(e: Event) => e.stopPropagation()}
-                          teleported={false}
-                        >
-                          {RELATIVE_TIME_OPTIONS.map((option) => (
-                            <ElOption
-                              key={option.value}
-                              label={option.label}
-                              value={option.value}
+                ),
+                default: () => (
+                  <div class={styles.timePopover}>
+                    <ElTabs
+                      modelValue={activeTab.value}
+                      onUpdate:modelValue={(v) => (activeTab.value = v as any)}
+                    >
+                      {/* 绝对时间选择器 */}
+                      <ElTabPane label='Absolute' name='absolute'>
+                        <div class={styles.timeAbsolute}>
+                          <div class={styles.calendarCol}>
+                            <ElDatePickerPanel
+                              modelValue={currentDate.value}
+                              onUpdate:modelValue={setCurrentDate}
+                              placeholder={
+                                activeTimePart.value === 'start' ? 'Start date' : 'End date'
+                              }
+                              border={false}
                             />
-                          ))}
-                        </ElSelect>
-                      </div>
-                      <div class={styles.timeRelativeOptions}>
-                        <ElSwitch
-                          v-model={includeWeek.value}
-                          onChange={updateRelativeTime}
-                          onClick={(e: Event) => e.stopPropagation()}
-                        />
-                        <span class={styles.timeRelativeOptionsText}>
-                          舍入为 {roundingUnitText.value}
-                        </span>
-                      </div>
-                      <div class={styles.timeFooterRow}>
-                        <span>{activeTimePart.value === 'start' ? 'Start' : 'End'} 日期</span>
-                        <div class={styles.timeFooterValue}>
-                          {formatDate(
-                            activeTimePart.value === 'start' ? startDate.value : endDate.value,
-                          )}
+                          </div>
+                          <div class={styles.timeCol}>
+                            {generateTimeSlots().map((t) => {
+                              const selectedDate = currentDate.value
+                              return (
+                                <div
+                                  class={
+                                    styles.timeItem +
+                                    (selectedDate &&
+                                    new Date(selectedDate).getHours() === Number(t.split(':')[0]) &&
+                                    new Date(selectedDate).getMinutes() === Number(t.split(':')[1])
+                                      ? ' ' + styles.timeItemActive
+                                      : '')
+                                  }
+                                  onClick={() => {
+                                    const targetDate =
+                                      activeTimePart.value === 'start' ? startDate : endDate
+                                    if (!targetDate.value) targetDate.value = new Date()
+                                    const [h, m] = t.split(':').map((x) => Number(x))
+                                    const d = new Date(targetDate.value)
+                                    d.setHours(h, m, 0, 0)
+                                    targetDate.value = d
+                                  }}
+                                >
+                                  {t}
+                                </div>
+                              )
+                            })}
+                          </div>
                         </div>
-                      </div>
-                    </ElTabPane>
-                    {/* 现在时间选择器 */}
-                    <ElTabPane label='Now' name='now'>
-                      <div class={styles.timeNow}>
-                        <div class={styles.timeTabBody}>
-                          Setting the time to "now" means that on every refresh this time will be
-                          set to the time of the refresh.
+                        <div class={styles.timeFooterRow}>
+                          <span>
+                            {activeTimePart.value === 'start' ? 'Start date' : 'End date'}
+                          </span>
+                          <div class={styles.timeFooterValue}>
+                            {formatDate(
+                              activeTimePart.value === 'start' ? startDate.value : endDate.value,
+                            )}
+                          </div>
                         </div>
-                        <ElButton type='primary' onClick={setNow}>
-                          Set {activeTimePart.value} date and time to now
-                        </ElButton>
-                      </div>
-                    </ElTabPane>
-                  </ElTabs>
-                </div>
-              ),
-            }}
-          </ElPopover>
+                      </ElTabPane>
+                      {/* 相对时间选择器 */}
+                      <ElTabPane label='Relative' name='relative'>
+                        <div class={styles.timeRelative}>
+                          <ElInputNumber
+                            min={1}
+                            v-model={relativeAmount.value}
+                            controls-position='right'
+                            onChange={updateRelativeTime}
+                            onClick={(e: Event) => e.stopPropagation()}
+                          />
+                          <ElSelect
+                            v-model={relativeUnit.value}
+                            class={styles.relativeUnitSel}
+                            onChange={updateRelativeTime}
+                            onClick={(e: Event) => e.stopPropagation()}
+                            teleported={false}
+                          >
+                            {RELATIVE_TIME_OPTIONS.map((option) => (
+                              <ElOption
+                                key={option.value}
+                                label={option.label}
+                                value={option.value}
+                              />
+                            ))}
+                          </ElSelect>
+                        </div>
+                        <div class={styles.timeRelativeOptions}>
+                          <ElSwitch
+                            v-model={includeWeek.value}
+                            onChange={updateRelativeTime}
+                            onClick={(e: Event) => e.stopPropagation()}
+                          />
+                          <span class={styles.timeRelativeOptionsText}>
+                            舍入为 {roundingUnitText.value}
+                          </span>
+                        </div>
+                        <div class={styles.timeFooterRow}>
+                          <span>{activeTimePart.value === 'start' ? 'Start' : 'End'} 日期</span>
+                          <div class={styles.timeFooterValue}>
+                            {formatDate(
+                              activeTimePart.value === 'start' ? startDate.value : endDate.value,
+                            )}
+                          </div>
+                        </div>
+                      </ElTabPane>
+                      {/* 现在时间选择器 */}
+                      <ElTabPane label='Now' name='now'>
+                        <div class={styles.timeNow}>
+                          <div class={styles.timeTabBody}>
+                            Setting the time to "now" means that on every refresh this time will be
+                            set to the time of the refresh.
+                          </div>
+                          <ElButton type='primary' onClick={setNow}>
+                            Set {activeTimePart.value} date and time to now
+                          </ElButton>
+                        </div>
+                      </ElTabPane>
+                    </ElTabs>
+                  </div>
+                ),
+              }}
+            </ElPopover>
 
-          <ElButton icon={Refresh} onClick={handleRefresh} class={styles.refreshBtn}>
-            刷新
-          </ElButton>
+            <ElButton icon={Refresh} onClick={handleRefresh} class={styles.refreshBtn}>
+              刷新
+            </ElButton>
+          </div>
         </div>
         <div class={styles.addFilterBtn} onclick={handleAddFilter}>
           <el-icon>

@@ -174,9 +174,11 @@ export default defineComponent({
               label='Time'
               width={200}
               sortable='custom'
-              sort-orders={['desc', 'asc']}
-              default-sort={['@timestamp', 'desc']}
-              onSortChange={handleTimeSort}
+              sortOrders={['descending', 'ascending']}
+              defaultSort={{ prop: '@timestamp', order: 'descending' }}
+              onSortChange={(args: any) =>
+                handleTimeSort(args.order === 'descending' ? 'desc' : 'asc')
+              }
               v-slots={{
                 default: ({ row }: { row: LogDocument }) => (
                   <span class={styles.timeCell}>{formatTime(row['@timestamp'])}</span>
