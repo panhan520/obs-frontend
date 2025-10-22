@@ -24,6 +24,8 @@ export default defineComponent({
   emits: ['update:modelValue', 'change'],
   setup(props, { emit }) {
     const collapsed = ref<boolean>(props.defaultCollapsed)
+    const hoveredStatus = ref<StatusKey | null>(null)
+
     const toggle = (key: StatusKey, checked: boolean) => {
       const next = new Set(props.modelValue)
       if (checked) next.add(key)
@@ -31,6 +33,34 @@ export default defineComponent({
       const arr = Array.from(next) as StatusKey[]
       emit('update:modelValue', arr)
       emit('change', arr)
+    }
+
+    // 处理Only点击：只选中当前状态
+    const handleOnlyClick = (key: StatusKey) => {
+      emit('update:modelValue', [key])
+      emit('change', [key])
+    }
+
+    // 处理All点击：全选所有状态
+    const handleAllClick = () => {
+      const allStatuses: StatusKey[] = ['Error', 'Warn', 'Info']
+      emit('update:modelValue', allStatuses)
+      emit('change', allStatuses)
+    }
+
+    // 判断是否应该显示Only
+    const shouldShowOnly = (key: StatusKey) => {
+      // 多选时，所有状态都显示Only
+      // 单选时，只有未选中的状态显示Only
+      return (
+        props.modelValue.length > 1 ||
+        (props.modelValue.length === 1 && !props.modelValue.includes(key))
+      )
+    }
+
+    // 判断是否应该显示All
+    const shouldShowAll = (key: StatusKey) => {
+      return props.modelValue.length === 1 && props.modelValue.includes(key)
     }
 
     return () => (
@@ -47,7 +77,25 @@ export default defineComponent({
         {!collapsed.value ? (
           <div class={styles.statusList}>
             {(['Error', 'Warn', 'Info'] as StatusKey[]).map((k) => (
-              <div class={styles.statusRow} key={k}>
+              <div
+                class={styles.statusRow}
+                key={k}
+                onMouseenter={() => (hoveredStatus.value = k)}
+                onMouseleave={() => (hoveredStatus.value = null)}
+                onClick={(e) => {
+                  // 如果点击的是复选框，不处理整行点击
+                  if ((e.target as HTMLElement).closest('.el-checkbox')) {
+                    return
+                  }
+
+                  // 根据当前状态决定点击行为
+                  if (shouldShowOnly(k)) {
+                    handleOnlyClick(k)
+                  } else if (shouldShowAll(k)) {
+                    handleAllClick()
+                  }
+                }}
+              >
                 <ElCheckbox
                   modelValue={props.modelValue.includes(k)}
                   onChange={(val: boolean) => toggle(k, val)}
@@ -55,6 +103,17 @@ export default defineComponent({
                 <span class={[styles.statusDot, styles[`dot${k}`]]}></span>
                 <span class={styles.statusLabel}>{k}</span>
                 <span class={styles.statusCount}>{props.counts[k] ?? 0}</span>
+
+                {/* Only/All 按钮 */}
+                {hoveredStatus.value === k && (
+                  <span class={styles.statusAction}>
+                    {shouldShowOnly(k) ? (
+                      <span class={styles.onlyButton}>Only</span>
+                    ) : shouldShowAll(k) ? (
+                      <span class={styles.allButton}>All</span>
+                    ) : null}
+                  </span>
+                )}
               </div>
             ))}
           </div>

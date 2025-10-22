@@ -7,20 +7,28 @@ export interface LogField {
 }
 
 export interface LogDocument {
-  _id: string
-  _index: string
-  _score: number
-  _type: string
-  '@timestamp': string
-  agent_hostname: string
-  event: string
-  fcservice: string
-  fcsource: string
+  timestamp: string
+  logJson: string
+  _id?: string
+  _index?: string
+  _score?: number
+  _type?: string
+  '@timestamp'?: string
+  agent_hostname?: string
+  event?: string
+  fcservice?: string
+  fcsource?: string
   [key: string]: any
+}
+export interface logChartData {
+  time: string
+  level: string
+  count: string
 }
 
 export interface FilterCondition {
   field: string
   operator: string
   value: string
+  isValid?: boolean // 是否为有效的过滤条件
 }

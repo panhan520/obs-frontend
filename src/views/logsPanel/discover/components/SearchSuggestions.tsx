@@ -9,51 +9,61 @@ const SEARCH_OPERATORS = [
     operator: '=',
     syntax: 'attribute:value',
     description: '等于',
+    backendId: 'equals',
   },
   {
     operator: '≠',
     syntax: '-attribute:value',
     description: '不等于',
+    backendId: 'not_equals',
   },
   {
     operator: 'match',
     syntax: 'attribute:~value',
     description: '包含',
+    backendId: 'contains',
   },
   {
     operator: 'not match',
     syntax: '-attribute:~value',
     description: '不包含',
+    backendId: 'not_contains',
   },
   {
     operator: 'wildcard',
     syntax: 'attribute:*value*',
     description: '通配',
+    backendId: 'wildcard',
   },
   {
     operator: 'not wildcard',
     syntax: '-attribute:*value*',
     description: '反向通配',
+    backendId: 'not_wildcard',
   },
   {
     operator: 'exist',
     syntax: 'attribute:*',
     description: '存在',
+    backendId: 'exists',
   },
   {
     operator: 'not exist',
     syntax: '-attribute:*',
     description: '不存在',
+    backendId: 'not_exists',
   },
   {
     operator: 'regexp',
     syntax: 'attribute:/.*value.*/',
     description: '正则匹配',
+    backendId: 'regexp',
   },
   {
     operator: 'not regexp',
     syntax: '-attribute:/.*value.*/',
     description: '反向正则匹配',
+    backendId: 'not_regexp',
   },
 ]
 
@@ -77,7 +87,7 @@ export default defineComponent({
       required: true,
     },
     onSelect: {
-      type: Function as PropType<(value: string) => void>,
+      type: Function as PropType<(suggestion: any) => void>,
       required: true,
     },
     onClose: {
@@ -133,6 +143,7 @@ export default defineComponent({
           label: op.operator,
           description: op.description,
           syntax: op.syntax,
+          backendId: op.backendId,
         }))
       } else {
         // 显示所有字段
@@ -162,7 +173,7 @@ export default defineComponent({
         case 'Enter':
           e.preventDefault()
           if (suggestions.value[selectedIndex.value]) {
-            props.onSelect(suggestions.value[selectedIndex.value].value)
+            props.onSelect(suggestions.value[selectedIndex.value])
           }
           break
         case 'Escape':
@@ -176,7 +187,7 @@ export default defineComponent({
     const handleSuggestionClick = (suggestion: any, e: MouseEvent) => {
       e.preventDefault() // 阻止默认行为
       e.stopPropagation() // 阻止事件冒泡
-      props.onSelect(suggestion.value)
+      props.onSelect(suggestion)
     }
 
     // 计算动态预览内容

@@ -24,17 +24,46 @@ export default defineComponent({
   setup(props, { emit }) {
     const newFilter = reactive<FilterCondition>({
       field: '',
-      operator: 'is',
+      operator: 'equals',
       value: '',
     })
 
     const handleAddFilter = () => {
-      if (newFilter.field) {
-        emit('addFilter', { ...newFilter })
+      if (newFilter.field && newFilter.operator && newFilter.value) {
+        // 验证过滤条件是否有效
+        const isValid = validateFilterCondition(newFilter)
+        const filterWithValidation = { ...newFilter, isValid }
+
+        emit('addFilter', filterWithValidation)
         newFilter.field = ''
+        newFilter.operator = 'equals'
         newFilter.value = ''
         emit('update:modelValue', false)
       }
+    }
+
+    // 验证过滤条件是否有效
+    const validateFilterCondition = (filter: FilterCondition) => {
+      // 这里可以添加具体的验证逻辑
+      // 例如：某些字段不允许某些操作符，某些值格式不正确等
+
+      // 示例验证规则：
+      // 1. 时间字段不能使用包含操作符
+      if (filter.field.includes('timestamp') && filter.operator === 'contains') {
+        return false
+      }
+
+      // 2. 数字字段不能使用通配符操作符
+      if (filter.field.includes('id') && filter.operator === 'wildcard') {
+        return false
+      }
+
+      // 3. 空值检查
+      if (!filter.value.trim()) {
+        return false
+      }
+
+      return true
     }
 
     const handleClose = () => {
@@ -69,10 +98,18 @@ export default defineComponent({
             </ElFormItem>
             <ElFormItem label='运算符'>
               <ElSelect v-model={newFilter.operator}>
-                <ElOption label='是' value='is' />
-                <ElOption label='包含' value='contains' />
-                <ElOption label='大于' value='gt' />
-                <ElOption label='小于' value='lt' />
+                <ElOption label='等于 (=)' value='equals' />
+                <ElOption label='不等于 (≠)' value='not_equals' />
+                <ElOption label='包含 (match)' value='contains' />
+                <ElOption label='不包含 (not match)' value='not_contains' />
+                <ElOption label='通配 (wildcard)' value='wildcard' />
+                <ElOption label='反向通配 (not wildcard)' value='not_wildcard' />
+                <ElOption label='存在 (exist)' value='exists' />
+                <ElOption label='不存在 (not exist)' value='not_exists' />
+                <ElOption label='大于 (>)' value='gt' />
+                <ElOption label='大于等于 (>=)' value='gte' />
+                <ElOption label='小于 (<)' value='lt' />
+                <ElOption label='小于等于 (<=)' value='lte' />
               </ElSelect>
             </ElFormItem>
             <ElFormItem label='值'>

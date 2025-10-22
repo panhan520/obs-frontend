@@ -1,9 +1,14 @@
 // LogChart.tsx
 import { defineComponent, ref, onMounted, onUnmounted, watch, PropType } from 'vue'
 import * as echarts from 'echarts'
-import type { LogDocument } from '@/api/logsPanel/discover/interfaces'
 import type { StatusKey } from '../StatusFilter'
 import styles from './LogChart.module.scss'
+
+interface LogChartData {
+  time: string
+  level: string
+  count: string
+}
 
 interface ChartDataPoint {
   time: string
@@ -15,17 +20,13 @@ interface ChartDataPoint {
 export default defineComponent({
   name: 'LogChart',
   props: {
-    logDocuments: {
-      type: Array as PropType<LogDocument[]>,
+    logChartData: {
+      type: Array as PropType<LogChartData[]>,
       required: true,
     },
     selectedStatuses: {
       type: Array as PropType<StatusKey[]>,
       required: true,
-    },
-    timeRange: {
-      type: Object as PropType<{ start: Date | null; end: Date | null }>,
-      default: () => ({ start: null, end: null }),
     },
   },
   setup(props) {
@@ -33,30 +34,31 @@ export default defineComponent({
     let chartInstance: echarts.ECharts | null = null
 
     // 处理日志数据，按时间分组统计
-    const processLogData = (documents: LogDocument[]): ChartDataPoint[] => {
+    const processLogData = (data: LogChartData[]): ChartDataPoint[] => {
       const timeMap = new Map<string, { info: number; error: number; warn: number }>()
 
-      documents.forEach((doc) => {
-        const level = (doc as any).level as string | undefined
-        if (!level) return
+      data.forEach((item) => {
+        const level = item.level
+        const count = parseInt(item.count, 10)
+
+        if (!level || isNaN(count)) return
 
         // 检查是否在选中的状态中
         const statusKey = (level[0].toUpperCase() + level.slice(1)) as StatusKey
         if (!props.selectedStatuses.includes(statusKey)) return
 
-        // 获取时间戳，按小时分组
-        const timestamp = new Date(doc['@timestamp']).getTime()
-        const hourKey = new Date(timestamp).toISOString().slice(0, 13) + ':00:00'
+        // 使用时间作为键
+        const timeKey = item.time
 
-        if (!timeMap.has(hourKey)) {
-          timeMap.set(hourKey, { info: 0, error: 0, warn: 0 })
+        if (!timeMap.has(timeKey)) {
+          timeMap.set(timeKey, { info: 0, error: 0, warn: 0 })
         }
 
-        const counts = timeMap.get(hourKey)!
+        const counts = timeMap.get(timeKey)!
 
-        if (statusKey === 'Info') counts.info++
-        else if (statusKey === 'Error') counts.error++
-        else if (statusKey === 'Warn') counts.warn++
+        if (statusKey === 'Info') counts.info += count
+        else if (statusKey === 'Error') counts.error += count
+        else if (statusKey === 'Warn') counts.warn += count
       })
 
       // 转换为数组并按时间排序
@@ -119,12 +121,12 @@ export default defineComponent({
         xAxis: {
           type: 'category',
           data: times,
-          axisLabel: {
-            formatter: (value: string) => {
-              const date = new Date(value)
-              return `${date.getMonth() + 1}/${date.getDate()} ${date.getHours()}:00`
-            },
-          },
+          // axisLabel: {
+          //   formatter: (value: string) => {
+          //     const date = new Date(value)
+          //     return `${date.getMonth() + 1}/${date.getDate()} ${date.getHours()}:00`
+          //   },
+          // },
         },
         yAxis: {
           type: 'value',
@@ -181,7 +183,7 @@ export default defineComponent({
     const updateChart = () => {
       if (!chartInstance) return
 
-      const processedData = processLogData(props.logDocuments)
+      const processedData = processLogData(props.logChartData)
       const option = generateChartOption(processedData)
       chartInstance.setOption(option, true)
     }
@@ -195,7 +197,7 @@ export default defineComponent({
 
     // 监听数据变化
     watch(
-      () => [props.logDocuments, props.selectedStatuses],
+      () => [props.logChartData, props.selectedStatuses],
       () => {
         updateChart()
       },

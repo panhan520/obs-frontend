@@ -2,10 +2,11 @@
 import { defineComponent, ref, computed, PropType, watch } from 'vue'
 import {
   Search as SearchIcon,
-  Refresh,
   Calendar,
   Collection,
   CirclePlus,
+  VideoPlay,
+  VideoPause,
 } from '@element-plus/icons-vue'
 import {
   ElInput,
@@ -20,7 +21,7 @@ import {
   ElOption,
   ElSwitch,
 } from 'element-plus'
-import { LogField } from '@/api/logsPanel/discover/interfaces'
+import { LogField, FilterCondition } from '@/api/logsPanel/discover/interfaces'
 import SearchSuggestions from './SearchSuggestions'
 import styles from '../index.module.scss'
 import {
@@ -29,8 +30,10 @@ import {
   DEFAULT_RELATIVE_UNIT,
   DATE_FORMAT_OPTIONS,
   POPOVER_CONFIG,
+  PREDEFINED_TIME_OPTIONS,
   type RelativeTimeUnit,
   type TimeTab,
+  type PredefinedTimeOption,
 } from '../constants'
 
 export default defineComponent({
@@ -38,10 +41,6 @@ export default defineComponent({
   props: {
     searchQuery: {
       type: String,
-      required: true,
-    },
-    viewMode: {
-      type: String as PropType<'time' | 'source'>,
       required: true,
     },
     availableFields: {
@@ -52,19 +51,67 @@ export default defineComponent({
       type: Object as PropType<{ start: string | null; end: string | null }>,
       required: false,
     },
+    filterConditions: {
+      type: Array as PropType<FilterCondition[]>,
+      default: () => [],
+    },
   },
   emits: [
     'update:searchQuery',
-    'update:viewMode',
     'search',
     'addFilter',
-    'refresh',
+    'removeFilter',
     'timeRangeUpdate',
+    'predefinedTimeSelect',
   ],
   setup(props, { emit }) {
-    const handleSearch = () => emit('search')
-    const handleRefresh = () => emit('refresh')
     const handleAddFilter = () => emit('addFilter')
+    const handleRemoveFilter = (index: number) => emit('removeFilter', index)
+
+    // 处理查询按钮点击，传递查询数据给后端
+    const handleSearch = () => {
+      // 检查时间范围是否有效
+      if (!isTimeRangeValid.value) {
+        console.error('开始时间不能晚于结束时间')
+        return
+      }
+
+      const now = new Date()
+      const queryData: any = {
+        queryCondition: props.searchQuery,
+      }
+
+      if (isTimePaused.value && selectedPredefinedTime.value) {
+        // 启用状态：相对时间查询
+        queryData.searchTimeType = 2 // SEARCH_TIME_TYPE_RELATIVE
+        queryData.minutesPast = selectedPredefinedTime.value.value
+      } else {
+        // 暂停状态：绝对时间查询
+        queryData.searchTimeType = 1 // SEARCH_TIME_TYPE_ABSOLUTE
+
+        // 处理开始时间
+        if (startDate.value) {
+          // 如果是"现在"时间，每次查询时都重新获取当前时间
+          if (isStartTimeNow.value) {
+            queryData.startTimestamp = Math.floor(now.getTime() / 1000)
+          } else {
+            queryData.startTimestamp = Math.floor(startDate.value.getTime() / 1000)
+          }
+        }
+
+        // 处理结束时间
+        if (endDate.value) {
+          // 如果是"现在"时间，每次查询时都重新获取当前时间
+          if (isEndTimeNow.value) {
+            queryData.endTimestamp = Math.floor(now.getTime() / 1000)
+          } else {
+            queryData.endTimestamp = Math.floor(endDate.value.getTime() / 1000)
+          }
+        }
+      }
+
+      emit('search', queryData)
+    }
 
     // 搜索建议相关状态
     const suggestionsVisible = ref(false)
@@ -75,28 +122,61 @@ export default defineComponent({
     const timeRangeVisible = ref(false)
     const activeTimePart = ref<'start' | 'end'>()
     const activeTab = ref<TimeTab>('absolute')
-    const startDate = ref<Date | null>(new Date())
+    const startDate = ref<Date | null>(new Date(Date.now() - 15 * 60 * 1000))
     const endDate = ref<Date | null>(new Date())
     const relativeAmount = ref<number>(DEFAULT_RELATIVE_AMOUNT)
     const relativeUnit = ref<RelativeTimeUnit>(DEFAULT_RELATIVE_UNIT)
     const includeWeek = ref(false)
 
+    // 预定义时间选择状态
+    const isTimePaused = ref(true) // 默认为启用状态
+    const selectedPredefinedTime = ref<PredefinedTimeOption | null>(PREDEFINED_TIME_OPTIONS[0]) // 默认选择15分钟
+
+    // 标记哪些时间是"现在"时间
+    const isStartTimeNow = ref(false)
+    const isEndTimeNow = ref(true)
+
     const formatDate = (d?: Date | null) => {
       if (!d) return ''
-      return `${d.toLocaleDateString('en-US', DATE_FORMAT_OPTIONS)}.${String(
-        d.getMilliseconds(),
-      ).padStart(3, '0')}`
+      const year = d.getFullYear()
+      const month = String(d.getMonth() + 1).padStart(2, '0')
+      const day = String(d.getDate()).padStart(2, '0')
+      const hours = String(d.getHours()).padStart(2, '0')
+      const minutes = String(d.getMinutes()).padStart(2, '0')
+      const seconds = String(d.getSeconds()).padStart(2, '0')
+      return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
     }
+
+    // 格式化时间显示，如果是"现在"时间则显示"现在"
+    const formatTimeDisplay = (date: Date | null, isNow: boolean) => {
+      if (!date) return '现在'
+      if (isNow) return '现在'
+      return formatDate(date)
+    }
+
+    // 检查时间范围是否有效
+    const isTimeRangeValid = computed(() => {
+      if (!startDate.value || !endDate.value) return true
+
+      // 获取实际用于比较的时间
+      const now = new Date()
+      const actualStartTime = isStartTimeNow.value ? now : startDate.value
+      const actualEndTime = isEndTimeNow.value ? now : endDate.value
+
+      return actualStartTime < actualEndTime
+    })
 
     const setNow = () => {
       const now = new Date()
       if (activeTimePart.value === 'start') {
         startDate.value = now
+        isStartTimeNow.value = true
       } else {
         endDate.value = now
+        isEndTimeNow.value = true
       }
       timeRangeVisible.value = false
-      handleSearch()
+      // 移除自动触发查询，只更新时间范围
       emit('timeRangeUpdate', {
         start: startDate.value ? startDate.value.toISOString() : null,
         end: endDate.value ? endDate.value.toISOString() : null,
@@ -191,10 +271,13 @@ export default defineComponent({
 
         if (activeTimePart.value === 'start') {
           startDate.value = calculatedTime
+          isStartTimeNow.value = false // 清除"现在"标记
         } else {
           endDate.value = calculatedTime
+          isEndTimeNow.value = false // 清除"现在"标记
         }
       }
+      // 移除自动触发查询，只更新时间范围
       emit('timeRangeUpdate', {
         start: startDate.value ? startDate.value.toISOString() : null,
         end: endDate.value ? endDate.value.toISOString() : null,
@@ -224,9 +307,12 @@ export default defineComponent({
     const setCurrentDate = (value: Date | null) => {
       if (activeTimePart.value === 'start') {
         startDate.value = value
+        isStartTimeNow.value = false // 清除"现在"标记
       } else {
         endDate.value = value
+        isEndTimeNow.value = false // 清除"现在"标记
       }
+      // 移除自动触发查询，只更新时间范围
       emit('timeRangeUpdate', {
         start: startDate.value ? startDate.value.toISOString() : null,
         end: endDate.value ? endDate.value.toISOString() : null,
@@ -237,13 +323,13 @@ export default defineComponent({
     const roundingUnitText = computed(() => {
       const unit = relativeUnit.value.replace('_from_now', '')
       const unitMap: Record<string, string> = {
-        seconds: 'second',
-        minutes: 'minute',
-        hours: 'hour',
-        days: 'day',
-        weeks: 'week',
-        months: 'month',
-        years: 'year',
+        seconds: '秒',
+        minutes: '分钟',
+        hours: '小时',
+        days: '天',
+        weeks: '周',
+        months: '月',
+        years: '年',
       }
       return unitMap[unit] || 'unit'
     })
@@ -281,19 +367,30 @@ export default defineComponent({
       cursorPosition.value = target.selectionStart || 0
     }
 
-    const handleSuggestionSelect = (value: string) => {
+    const handleSuggestionSelect = (suggestion: {
+      value: string
+      type: string
+      backendId?: string
+    }) => {
       const currentQuery = props.searchQuery
       const beforeCursor = currentQuery.substring(0, cursorPosition.value)
       const afterCursor = currentQuery.substring(cursorPosition.value)
 
       // 如果光标前有空格，说明是选择运算符
       if (beforeCursor.endsWith(' ')) {
-        const newQuery = beforeCursor + value + afterCursor
+        const newQuery = beforeCursor + suggestion.value + afterCursor
         emit('update:searchQuery', newQuery)
+
+        // 如果有后端标识符，发送给后端
+        if (suggestion.type === 'operator' && suggestion.backendId) {
+          // 这里可以发送后端标识符给父组件
+          console.log('Operator backend ID:', suggestion.backendId)
+        }
+
         // 将光标移动到插入内容的末尾
         setTimeout(() => {
           if (searchInputRef.value) {
-            const newCursorPos = beforeCursor.length + value.length
+            const newCursorPos = beforeCursor.length + suggestion.value.length
             // 获取 ElInput 内部的 input 元素
             const inputElement = searchInputRef.value.input || searchInputRef.value.$refs?.input
             if (inputElement) {
@@ -307,14 +404,14 @@ export default defineComponent({
         }, 0)
       } else {
         // 选择字段，替换整个输入内容
-        emit('update:searchQuery', value)
+        emit('update:searchQuery', suggestion.value)
         // 保持焦点
         setTimeout(() => {
           if (searchInputRef.value) {
             const inputElement = searchInputRef.value.input || searchInputRef.value.$refs?.input
             if (inputElement) {
               inputElement.focus()
-              const newCursorPos = value.length
+              const newCursorPos = suggestion.value.length
               if (inputElement.setSelectionRange) {
                 inputElement.setSelectionRange(newCursorPos, newCursorPos)
                 cursorPosition.value = newCursorPos
@@ -330,6 +427,41 @@ export default defineComponent({
 
     const handleSuggestionsClose = () => {
       suggestionsVisible.value = false
+    }
+
+    // 处理预定义时间选择
+    const handlePredefinedTimeSelect = (option: PredefinedTimeOption) => {
+      selectedPredefinedTime.value = option
+      timeRangeVisible.value = false // 关闭弹框
+
+      // 计算时间范围
+      const now = new Date()
+      const startTime = new Date(now.getTime() - option.value * 60 * 1000) // 转换为毫秒
+
+      startDate.value = startTime
+      endDate.value = now
+
+      // 发送给后端（保留用于其他用途）
+      emit('predefinedTimeSelect', {
+        minutes: option.value,
+        start: startTime.toISOString(),
+        end: now.toISOString(),
+      })
+
+      // 更新时间范围（不触发查询）
+      emit('timeRangeUpdate', {
+        start: startTime.toISOString(),
+        end: now.toISOString(),
+      })
+    }
+
+    // 切换暂停/启用状态
+    const toggleTimePause = () => {
+      isTimePaused.value = !isTimePaused.value
+      if (!isTimePaused.value) {
+        // 如果从暂停切换到启用，清除预定义时间选择
+        selectedPredefinedTime.value = null
+      }
     }
 
     // 监听搜索查询变化，更新光标位置
@@ -363,7 +495,7 @@ export default defineComponent({
               ref={searchInputRef}
               modelValue={props.searchQuery}
               onUpdate:modelValue={handleInputChange}
-              placeholder='搜索'
+              placeholder='支持key value查询，以空格键隔开'
               class={styles.searchInput}
               onFocus={handleInputFocus}
               onBlur={handleInputBlur}
@@ -379,7 +511,6 @@ export default defineComponent({
                     </ElIcon>
                   </ElButton>
                 ),
-                append: () => <ElButton>DQL</ElButton>,
               }}
             </ElInput>
 
@@ -397,7 +528,7 @@ export default defineComponent({
             {/* 时间范围选择器 */}
             <ElPopover
               placement={POPOVER_CONFIG.placement}
-              width={POPOVER_CONFIG.width}
+              width={isTimePaused.value ? '300px' : POPOVER_CONFIG.width}
               v-model:visible={timeRangeVisible.value}
               trigger='manual'
               append-to-body
@@ -409,165 +540,267 @@ export default defineComponent({
                     <ElIcon class={styles.calendarIcon}>
                       <Calendar />
                     </ElIcon>
-                    <div class={styles.timeRangeContent}>
-                      <span
-                        class={`${styles.timePart} ${
-                          activeTimePart.value === 'start' ? styles.timePartActive : ''
-                        }`}
-                        onClick={() => {
-                          activeTimePart.value = 'start'
-                          timeRangeVisible.value = !timeRangeVisible.value
-                        }}
-                      >
-                        {formatDate(startDate.value)}
-                      </span>
-                      <span class={styles.arrow}>→</span>
-                      <span
-                        class={`${styles.timePart} ${
-                          activeTimePart.value === 'end' ? styles.timePartActive : ''
-                        }`}
-                        onClick={() => {
-                          activeTimePart.value = 'end'
-                          timeRangeVisible.value = !timeRangeVisible.value
-                        }}
-                      >
-                        {endDate.value ? formatDate(endDate.value) : 'now'}
-                      </span>
+                    <div
+                      class={styles.timeRangeContent}
+                      onClick={() => {
+                        timeRangeVisible.value = !timeRangeVisible.value
+                      }}
+                    >
+                      {isTimePaused.value ? (
+                        // 启用状态：显示预定义时间选择
+                        <div class={styles.predefinedTimeDisplay}>
+                          <span class={styles.predefinedTimeBadge}>
+                            {selectedPredefinedTime.value?.label || '1d'}
+                          </span>
+                          <span class={styles.predefinedTimeText}>
+                            {selectedPredefinedTime.value?.description || '过去一天'}
+                          </span>
+                        </div>
+                      ) : (
+                        // 暂停状态：显示日期区间
+                        <>
+                          <span
+                            class={`${styles.timePart} ${
+                              activeTimePart.value === 'start' ? styles.timePartActive : ''
+                            } ${!isTimeRangeValid.value ? styles.timePartError : ''}`}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              activeTimePart.value = 'start'
+                              timeRangeVisible.value = true
+                            }}
+                          >
+                            {formatTimeDisplay(startDate.value, isStartTimeNow.value)}
+                          </span>
+                          <span
+                            class={`${styles.arrow} ${
+                              !isTimeRangeValid.value ? styles.arrowError : ''
+                            }`}
+                          >
+                            →
+                          </span>
+                          <span
+                            class={`${styles.timePart} ${
+                              activeTimePart.value === 'end' ? styles.timePartActive : ''
+                            } ${!isTimeRangeValid.value ? styles.timePartError : ''}`}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              activeTimePart.value = 'end'
+                              timeRangeVisible.value = true
+                            }}
+                          >
+                            {formatTimeDisplay(endDate.value, isEndTimeNow.value)}
+                          </span>
+                        </>
+                      )}
                     </div>
                   </div>
                 ),
                 default: () => (
                   <div class={styles.timePopover}>
-                    <ElTabs
-                      modelValue={activeTab.value}
-                      onUpdate:modelValue={(v) => (activeTab.value = v as any)}
-                    >
-                      {/* 绝对时间选择器 */}
-                      <ElTabPane label='Absolute' name='absolute'>
-                        <div class={styles.timeAbsolute}>
-                          <div class={styles.calendarCol}>
-                            <ElDatePickerPanel
-                              modelValue={currentDate.value}
-                              onUpdate:modelValue={setCurrentDate}
-                              placeholder={
-                                activeTimePart.value === 'start' ? 'Start date' : 'End date'
-                              }
-                              border={false}
-                            />
-                          </div>
-                          <div class={styles.timeCol}>
-                            {generateTimeSlots().map((t) => {
-                              const selectedDate = currentDate.value
-                              return (
-                                <div
-                                  class={
-                                    styles.timeItem +
-                                    (selectedDate &&
-                                    new Date(selectedDate).getHours() === Number(t.split(':')[0]) &&
-                                    new Date(selectedDate).getMinutes() === Number(t.split(':')[1])
-                                      ? ' ' + styles.timeItemActive
-                                      : '')
-                                  }
-                                  onClick={() => {
-                                    const targetDate =
-                                      activeTimePart.value === 'start' ? startDate : endDate
-                                    if (!targetDate.value) targetDate.value = new Date()
-                                    const [h, m] = t.split(':').map((x) => Number(x))
-                                    const d = new Date(targetDate.value)
-                                    d.setHours(h, m, 0, 0)
-                                    targetDate.value = d
-                                  }}
-                                >
-                                  {t}
-                                </div>
-                              )
-                            })}
-                          </div>
-                        </div>
-                        <div class={styles.timeFooterRow}>
-                          <span>
-                            {activeTimePart.value === 'start' ? 'Start date' : 'End date'}
-                          </span>
-                          <div class={styles.timeFooterValue}>
-                            {formatDate(
-                              activeTimePart.value === 'start' ? startDate.value : endDate.value,
-                            )}
-                          </div>
-                        </div>
-                      </ElTabPane>
-                      {/* 相对时间选择器 */}
-                      <ElTabPane label='Relative' name='relative'>
-                        <div class={styles.timeRelative}>
-                          <ElInputNumber
-                            min={1}
-                            v-model={relativeAmount.value}
-                            controls-position='right'
-                            onChange={updateRelativeTime}
-                            onClick={(e: Event) => e.stopPropagation()}
-                          />
-                          <ElSelect
-                            v-model={relativeUnit.value}
-                            class={styles.relativeUnitSel}
-                            onChange={updateRelativeTime}
-                            onClick={(e: Event) => e.stopPropagation()}
-                            teleported={false}
+                    {isTimePaused.value ? (
+                      // 启用状态：显示预定义时间选项列表
+                      <div class={styles.predefinedTimeList}>
+                        {PREDEFINED_TIME_OPTIONS.map((option) => (
+                          <div
+                            key={option.label}
+                            class={[
+                              styles.predefinedTimeItem,
+                              selectedPredefinedTime.value?.label === option.label
+                                ? styles.predefinedTimeItemActive
+                                : '',
+                            ]}
+                            onClick={() => handlePredefinedTimeSelect(option)}
                           >
-                            {RELATIVE_TIME_OPTIONS.map((option) => (
-                              <ElOption
-                                key={option.value}
-                                label={option.label}
-                                value={option.value}
+                            <span class={styles.predefinedTimeLabel}>{option.label}</span>
+                            <span class={styles.predefinedTimeDescription}>
+                              {option.description}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      // 暂停状态：显示原有的时间选择器
+                      <ElTabs
+                        modelValue={activeTab.value}
+                        onUpdate:modelValue={(v) => (activeTab.value = v as any)}
+                      >
+                        {/* 绝对时间选择器 */}
+                        <ElTabPane label='绝对时间' name='absolute'>
+                          <div class={styles.timeAbsolute}>
+                            <div class={styles.calendarCol}>
+                              <ElDatePickerPanel
+                                modelValue={currentDate.value}
+                                onUpdate:modelValue={setCurrentDate}
+                                placeholder={
+                                  activeTimePart.value === 'start' ? '开始时间' : '结束时间'
+                                }
+                                border={false}
                               />
-                            ))}
-                          </ElSelect>
-                        </div>
-                        <div class={styles.timeRelativeOptions}>
-                          <ElSwitch
-                            v-model={includeWeek.value}
-                            onChange={updateRelativeTime}
-                            onClick={(e: Event) => e.stopPropagation()}
-                          />
-                          <span class={styles.timeRelativeOptionsText}>
-                            舍入为 {roundingUnitText.value}
-                          </span>
-                        </div>
-                        <div class={styles.timeFooterRow}>
-                          <span>{activeTimePart.value === 'start' ? 'Start' : 'End'} 日期</span>
-                          <div class={styles.timeFooterValue}>
-                            {formatDate(
-                              activeTimePart.value === 'start' ? startDate.value : endDate.value,
-                            )}
+                            </div>
+                            <div class={styles.timeCol}>
+                              {generateTimeSlots().map((t) => {
+                                const selectedDate = currentDate.value
+                                return (
+                                  <div
+                                    class={
+                                      styles.timeItem +
+                                      (selectedDate &&
+                                      new Date(selectedDate).getHours() ===
+                                        Number(t.split(':')[0]) &&
+                                      new Date(selectedDate).getMinutes() ===
+                                        Number(t.split(':')[1])
+                                        ? ' ' + styles.timeItemActive
+                                        : '')
+                                    }
+                                    onClick={() => {
+                                      const targetDate =
+                                        activeTimePart.value === 'start' ? startDate : endDate
+                                      if (!targetDate.value) targetDate.value = new Date()
+                                      const [h, m] = t.split(':').map((x) => Number(x))
+                                      const d = new Date(targetDate.value)
+                                      d.setHours(h, m, 0, 0)
+                                      targetDate.value = d
+
+                                      // 清除"现在"标记
+                                      if (activeTimePart.value === 'start') {
+                                        isStartTimeNow.value = false
+                                      } else {
+                                        isEndTimeNow.value = false
+                                      }
+                                    }}
+                                  >
+                                    {t}
+                                  </div>
+                                )
+                              })}
+                            </div>
                           </div>
-                        </div>
-                      </ElTabPane>
-                      {/* 现在时间选择器 */}
-                      <ElTabPane label='Now' name='now'>
-                        <div class={styles.timeNow}>
-                          <div class={styles.timeTabBody}>
-                            Setting the time to "now" means that on every refresh this time will be
-                            set to the time of the refresh.
+                          <div class={styles.timeFooterRow}>
+                            <span>
+                              {activeTimePart.value === 'start' ? '开始时间' : '结束时间'}
+                            </span>
+                            <div class={styles.timeFooterValue}>
+                              {formatTimeDisplay(
+                                activeTimePart.value === 'start' ? startDate.value : endDate.value,
+                                activeTimePart.value === 'start'
+                                  ? isStartTimeNow.value
+                                  : isEndTimeNow.value,
+                              )}
+                            </div>
                           </div>
-                          <ElButton type='primary' onClick={setNow}>
-                            Set {activeTimePart.value} date and time to now
-                          </ElButton>
-                        </div>
-                      </ElTabPane>
-                    </ElTabs>
+                        </ElTabPane>
+                        {/* 相对时间选择器 */}
+                        <ElTabPane label='相对时间' name='relative'>
+                          <div class={styles.timeRelative}>
+                            <ElInputNumber
+                              min={1}
+                              v-model={relativeAmount.value}
+                              controls-position='right'
+                              onChange={updateRelativeTime}
+                              onClick={(e: Event) => e.stopPropagation()}
+                            />
+                            <ElSelect
+                              v-model={relativeUnit.value}
+                              class={styles.relativeUnitSel}
+                              onChange={updateRelativeTime}
+                              onClick={(e: Event) => e.stopPropagation()}
+                              teleported={false}
+                            >
+                              {RELATIVE_TIME_OPTIONS.map((option) => (
+                                <ElOption
+                                  key={option.value}
+                                  label={option.label}
+                                  value={option.value}
+                                />
+                              ))}
+                            </ElSelect>
+                          </div>
+                          <div class={styles.timeRelativeOptions}>
+                            <ElSwitch
+                              v-model={includeWeek.value}
+                              onChange={updateRelativeTime}
+                              onClick={(e: Event) => e.stopPropagation()}
+                            />
+                            <span class={styles.timeRelativeOptionsText}>
+                              舍入为{roundingUnitText.value}
+                            </span>
+                          </div>
+                          <div class={styles.timeFooterRow}>
+                            <span>
+                              {activeTimePart.value === 'start' ? '开始时间' : '结束时间'}
+                            </span>
+                            <div class={styles.timeFooterValue}>
+                              {formatTimeDisplay(
+                                activeTimePart.value === 'start' ? startDate.value : endDate.value,
+                                activeTimePart.value === 'start'
+                                  ? isStartTimeNow.value
+                                  : isEndTimeNow.value,
+                              )}
+                            </div>
+                          </div>
+                        </ElTabPane>
+                        {/* 现在时间选择器 */}
+                        <ElTabPane label='现在' name='now'>
+                          <div class={styles.timeNow}>
+                            <div class={styles.timeTabBody}>
+                              将时间设置为“现在”意味着每次查询时该时间都将设置为查询时间。
+                            </div>
+                            <ElButton type='primary' onClick={setNow}>
+                              设置{activeTimePart.value === 'start' ? '开始时间' : '结束时间'}为现在
+                            </ElButton>
+                          </div>
+                        </ElTabPane>
+                      </ElTabs>
+                    )}
                   </div>
                 ),
               }}
             </ElPopover>
 
-            <ElButton icon={Refresh} onClick={handleRefresh} class={styles.refreshBtn}>
-              刷新
+            {/* 暂停/启用按钮 */}
+            <ElButton onClick={toggleTimePause} class={styles.pauseBtn}>
+              <ElIcon size={22}>{isTimePaused.value ? <VideoPause /> : <VideoPlay />}</ElIcon>
+            </ElButton>
+
+            <ElButton
+              icon={SearchIcon}
+              onClick={handleSearch}
+              class={styles.refreshBtn}
+              disabled={!isTimeRangeValid.value}
+            >
+              查询
             </ElButton>
           </div>
         </div>
-        <div class={styles.addFilterBtn} onclick={handleAddFilter}>
-          <el-icon>
-            <CirclePlus />
-          </el-icon>
-          添加过滤条件
+        <div class={styles.filterConditionsContainer}>
+          {/* 过滤条件展示 */}
+          {props.filterConditions.length > 0 && (
+            <div class={styles.filterConditions}>
+              {props.filterConditions.map((condition, index) => (
+                <div
+                  key={index}
+                  class={`${styles.filterCondition} ${
+                    condition.isValid === false ? styles.filterConditionInvalid : ''
+                  }`}
+                >
+                  {condition.isValid === false && <span class={styles.forbiddenText}>禁止</span>}
+                  <span class={styles.filterText}>
+                    {condition.field}: {condition.value}
+                  </span>
+                  <span class={styles.removeFilter} onClick={() => handleRemoveFilter(index)}>
+                    ×
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div class={styles.addFilterBtn} onclick={handleAddFilter}>
+            <el-icon>
+              <CirclePlus />
+            </el-icon>
+            添加过滤条件
+          </div>
         </div>
       </div>
     )

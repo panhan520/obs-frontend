@@ -46,6 +46,126 @@
 .viewItem:hover {
   background: #f5f7fa;
 }
+
+// 预定义时间选择器样式
+.pauseBtn {
+  margin: 0 8px;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+}
+
+.predefinedTimeBtn {
+  margin-right: 8px;
+  min-width: 80px;
+}
+
+.predefinedTimeList {
+  padding: 8px 0;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.predefinedTimeItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  cursor: pointer;
+  border-radius: 6px;
+  margin: 2px 8px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: #f5f7fa;
+  }
+}
+
+.predefinedTimeItemActive {
+  background-color: #e6f7ff;
+  color: #1890ff;
+  border: 1px solid #91d5ff;
+}
+
+.predefinedTimeLabel {
+  font-weight: 600;
+  font-size: 14px;
+  background: #f0f0f0;
+  color: #333;
+  padding: 4px 8px;
+  border-radius: 4px;
+  min-width: 40px;
+  text-align: center;
+}
+
+.predefinedTimeItemActive .predefinedTimeLabel {
+  background: #1890ff;
+  color: white;
+}
+
+.predefinedTimeDescription {
+  font-size: 13px;
+  color: #666;
+  flex: 1;
+  margin-left: 12px;
+}
+
+// 预定义时间显示样式
+.predefinedTimeDisplay {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.predefinedTimeBadge {
+  background: #1890ff;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 12px;
+  min-width: 40px;
+  text-align: center;
+}
+
+.predefinedTimeText {
+  color: #374151;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+// JSON 源数据样式
+.sourceJsonContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  line-height: 1.4;
+  font-size: 12px;
+}
+
+.sourceJsonItem {
+  display: inline-flex;
+  align-items: center;
+}
+
+.sourceJsonKey {
+  background: #e6f7ff;
+  color: #1890ff;
+  padding: 1px 2px;
+  border-radius: 3px;
+  margin-right: 2px;
+  border: 1px solid #91d5ff;
+}
+
+.sourceJsonValue {
+  color: #333;
+  margin-left: 2px;
+}
+
+.sourceJsonSeparator {
+  color: #999;
+  margin: 0 2px;
+}
 .mainContent {
   flex: 1;
   display: flex;
@@ -140,6 +260,16 @@
     display: flex;
     align-items: center;
     gap: 8px;
+    position: relative;
+    padding: 4px 0;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: #f0f9ff;
+    }
+
     .statusDot {
       width: 5px;
       height: 16px;
@@ -162,6 +292,37 @@
 
     .statusCount {
       color: #909399;
+      min-width: 20px;
+      text-align: right;
+    }
+
+    .statusAction {
+      position: absolute;
+      right: 30px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 12px;
+      cursor: pointer;
+      z-index: 10;
+      margin-left: 8px;
+
+      .onlyButton {
+        color: #409eff;
+        font-weight: 500;
+
+        &:hover {
+          color: #66b1ff;
+        }
+      }
+
+      .allButton {
+        color: #67c23a;
+        font-weight: 500;
+
+        &:hover {
+          color: #85ce61;
+        }
+      }
     }
   }
 }
@@ -252,6 +413,16 @@
         border-bottom: 2px solid #1763ff;
       }
 
+      .timePartError {
+        color: #ff4d4f !important;
+        background-color: #fff2f0 !important;
+        border-bottom: 2px solid #ff4d4f !important;
+      }
+
+      .arrowError {
+        color: #ff4d4f !important;
+      }
+
       .arrow {
         color: #909399;
         font-weight: bold;
@@ -263,14 +434,68 @@
         margin-left: 10px;
       }
     }
-    .addFilterBtn {
-      cursor: pointer;
-      font-size: 13px;
-      color: #1763ff;
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
+    // 过滤条件容器
+    .filterConditionsContainer {
       margin-top: 10px;
+      .filterConditions {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0 4px;
+        flex-wrap: wrap;
+      }
+
+      .filterCondition {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 8px;
+        background: #f5f7fa;
+        border: 1px solid #e4e7ed;
+        border-radius: 4px;
+        font-size: 12px;
+        color: #606266;
+        position: relative;
+
+        .forbiddenText {
+          color: #f56c6c;
+          font-weight: 500;
+        }
+
+        .filterText {
+          flex: 1;
+        }
+
+        .removeFilter {
+          color: #909399;
+          cursor: pointer;
+          font-size: 14px;
+          line-height: 1;
+          padding: 2px;
+          border-radius: 2px;
+          transition: all 0.2s ease;
+
+          &:hover {
+            color: #f56c6c;
+            background: #fef0f0;
+          }
+        }
+      }
+
+      .filterConditionInvalid {
+        border-color: #f56c6c;
+        background: #fef0f0;
+      }
+
+      .addFilterBtn {
+        cursor: pointer;
+        font-size: 13px;
+        color: #1763ff;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        vertical-align: middle;
+      }
     }
 
     // 搜索建议样式
@@ -314,7 +539,6 @@
     .previewQuery {
       font-size: 13px;
       color: #303133;
-      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
     }
 
     .suggestionList {
@@ -355,7 +579,6 @@
 
     .suggestionSyntax {
       flex: 0 0 200px;
-      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
       font-size: 12px;
       color: #606266;
     }
@@ -532,14 +755,12 @@
 
 // 时间单元格
 .timeCell {
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
   font-size: 12px;
   color: #606266;
 }
 
 // 消息单元格
 .messageCell {
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
   font-size: 12px;
   color: #303133;
   word-break: break-all;
@@ -554,7 +775,6 @@
 
 // 数字单元格
 .numberCell {
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
   font-size: 12px;
   color: #409eff;
   text-align: right;
@@ -604,21 +824,9 @@
   position: relative;
 }
 
-.keyIcon {
-  display: inline-block;
-  line-height: 16px;
-  text-align: center;
-  border-radius: 2px;
-  font-size: 12px;
-  font-weight: bold;
-  margin-right: 8px;
-  font-style: italic;
-}
-
 .documentValue {
   flex: 1;
   padding: 8px 12px;
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
   font-size: 12px;
   color: #303133;
   word-break: break-all;
@@ -638,7 +846,6 @@
   border-radius: 4px;
   padding: 16px;
   margin: 0;
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
   font-size: 12px;
   line-height: 1.4;
   color: #303133;
@@ -666,7 +873,6 @@
 .jsonView {
   pre {
     margin: 0;
-    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
     font-size: 12px;
     background: #f8f9fa;
     padding: 16px;
@@ -689,7 +895,6 @@
 
       .detailValue {
         color: #303133;
-        font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
       }
     }
   }

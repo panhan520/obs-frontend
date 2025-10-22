@@ -42,8 +42,8 @@ export default defineComponent({
     // 排序后的数据
     const sortedDocuments = computed(() => {
       return [...props.logDocuments].sort((a, b) => {
-        const timeA = new Date(a['@timestamp']).getTime()
-        const timeB = new Date(b['@timestamp']).getTime()
+        const timeA = new Date(a['timestamp']).getTime()
+        const timeB = new Date(b['timestamp']).getTime()
         return sortOrder.value === 'desc' ? timeB - timeA : timeA - timeB
       })
     })
@@ -111,6 +111,34 @@ export default defineComponent({
       return text.substring(0, maxLength) + '...'
     }
 
+    // 渲染 JSON 格式的源数据
+    const renderSourceJson = (data: any) => {
+      if (!data || typeof data !== 'object') {
+        return <span class={styles.dashCell}>-</span>
+      }
+
+      const formatValue = (value: any): string => {
+        if (value === null) return 'null'
+        if (value === undefined) return 'undefined'
+        if (typeof value === 'string') return `"${value}"`
+        if (typeof value === 'object') return JSON.stringify(value)
+        return String(value)
+      }
+
+      const entries = Object.entries(data)
+      return (
+        <div class={styles.sourceJsonContainer}>
+          {entries.map(([key, value], index) => (
+            <span key={key} class={styles.sourceJsonItem}>
+              <span class={styles.sourceJsonKey}>{key}:</span>
+              <span class={styles.sourceJsonValue}>{formatValue(value)}</span>
+              {index < entries.length - 1 && <span class={styles.sourceJsonSeparator}> </span>}
+            </span>
+          ))}
+        </div>
+      )
+    }
+
     // 渲染展开内容
     const renderExpandedContent = (row: LogDocument) => (
       <div class={styles.expandedContent}>
@@ -119,10 +147,7 @@ export default defineComponent({
             <div class={styles.documentTable}>
               {Object.entries(row).map(([key, value]) => (
                 <div key={key} class={styles.documentRow}>
-                  <div class={styles.documentKey}>
-                    <span class={styles.keyIcon}>t</span>
-                    {key}
-                  </div>
+                  <div class={styles.documentKey}>{key}</div>
                   <div class={styles.documentValue}>
                     {typeof value === 'object' ? JSON.stringify(value) : String(value)}
                   </div>
@@ -170,39 +195,42 @@ export default defineComponent({
               }}
             />
             <ElTableColumn
-              prop='@timestamp'
+              prop='timestamp'
               label='Time'
               width={200}
               sortable='custom'
               sortOrders={['descending', 'ascending']}
-              defaultSort={{ prop: '@timestamp', order: 'descending' }}
+              defaultSort={{ prop: 'timestamp', order: 'descending' }}
               onSortChange={(args: any) =>
                 handleTimeSort(args.order === 'descending' ? 'desc' : 'asc')
               }
               v-slots={{
                 default: ({ row }: { row: LogDocument }) => (
-                  <span class={styles.timeCell}>{formatTime(row['@timestamp'])}</span>
+                  <span class={styles.timeCell}>{formatTime(row['timestamp'])}</span>
                 ),
               }}
             />
             {/* 动态渲染选中的字段列 */}
             {props.selectedFieldObjects.map((field) => {
-              // 跳过 @timestamp，因为已经单独处理了
-              if (field.name === '@timestamp') return null
+              // 跳过 timestamp，因为已经单独处理了
+              if (field.name === 'timestamp') return null
 
               return (
                 <ElTableColumn
                   key={field.name}
                   prop={field.name}
                   label={field.name}
-                  min-width={150}
+                  min-width={field.name === '_source' ? 300 : 150}
                   v-slots={{
                     default: ({ row }: { row: LogDocument }) => {
+                      // 如果是 _source 字段，使用特殊的 JSON 渲染
+                      if (field.name === '_source') {
+                        return renderSourceJson(row)
+                      }
                       const value = (row as any)[field.name]
                       if (value === undefined || value === null) {
                         return <span class={styles.dashCell}>-</span>
                       }
-
                       // 根据字段类型格式化显示
                       if (field.type === 'date') {
                         return <span class={styles.timeCell}>{formatTime(String(value))}</span>

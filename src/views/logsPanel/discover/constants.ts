@@ -1,21 +1,21 @@
 // 相对时间选项常量
 export const RELATIVE_TIME_OPTIONS = [
   // 过去时间选项
-  { label: 'Seconds ago', value: 'seconds' },
-  { label: 'Minutes ago', value: 'minutes' },
-  { label: 'Hours ago', value: 'hours' },
-  { label: 'Days ago', value: 'days' },
-  { label: 'Weeks ago', value: 'weeks' },
-  { label: 'Months ago', value: 'months' },
-  { label: 'Years ago', value: 'years' },
+  { label: '秒前', value: 'seconds' },
+  { label: '分钟前', value: 'minutes' },
+  { label: '小时前', value: 'hours' },
+  { label: '天前', value: 'days' },
+  { label: '周前', value: 'weeks' },
+  { label: '月前', value: 'months' },
+  { label: '年前', value: 'years' },
   // 未来时间选项
-  { label: 'Seconds from now', value: 'seconds_from_now' },
-  { label: 'Minutes from now', value: 'minutes_from_now' },
-  { label: 'Hours from now', value: 'hours_from_now' },
-  { label: 'Days from now', value: 'days_from_now' },
-  { label: 'Weeks from now', value: 'weeks_from_now' },
-  { label: 'Months from now', value: 'months_from_now' },
-  { label: 'Years from now', value: 'years_from_now' },
+  { label: '秒后', value: 'seconds_from_now' },
+  { label: '分钟后', value: 'minutes_from_now' },
+  { label: '小时后', value: 'hours_from_now' },
+  { label: '天后', value: 'days_from_now' },
+  { label: '周后', value: 'weeks_from_now' },
+  { label: '月后', value: 'months_from_now' },
+  { label: '年后', value: 'years_from_now' },
 ] as const
 
 // 相对时间单位类型
@@ -50,3 +50,18 @@ export const TIME_TABS = [
 ] as const
 
 export type TimeTab = (typeof TIME_TABS)[number]['value']
+
+// 预定义时间范围选项
+export const PREDEFINED_TIME_OPTIONS = [
+  { label: '15m', description: '过去15分钟', value: 15 },
+  { label: '1h', description: '过去1小时', value: 60 },
+  { label: '4h', description: '过去4小时', value: 240 },
+  { label: '1d', description: '过去一天', value: 1440 },
+  { label: '2d', description: '过去2天', value: 2880 },
+  { label: '3d', description: '过去3天', value: 4320 },
+  { label: '1w', description: '过去7天', value: 10080 },
+  { label: '15d', description: '过去15天', value: 21600 },
+  { label: '1mo', description: '过去1个月', value: 43200 },
+] as const
+
+export type PredefinedTimeOption = (typeof PREDEFINED_TIME_OPTIONS)[number]
