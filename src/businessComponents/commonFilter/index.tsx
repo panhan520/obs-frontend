@@ -1,8 +1,9 @@
-import { defineComponent, ref, computed } from 'vue'
+import { defineComponent, ref, computed, onMounted } from 'vue'
 import FormilyForm from '~/basicComponents/formilyCmps/formilyForm'
 import { getRootSchema } from '~/constants/commonPage'
 import { operateActionsSchema } from './constants'
 import { setOperateBtnsStyle } from './utils'
+import { useKeepFilter } from './useKeepFilter'
 import styles from './index.module.scss'
 
 import type { PropType } from 'vue'
@@ -30,6 +31,11 @@ const props = {
   effectHooks: {
     type: Object as PropType<IEffectHooks>,
     default: () => ({}),
+  },
+  /** 页面标识 */
+  pageKey: {
+    type: String,
+    default: '',
   },
 }
 
@@ -59,6 +65,7 @@ export default defineComponent({
     const visibleFields = computed(() => visible.value ? collapseData.value.visibleFieldKeys : collapseData.value.allFieldKeys) // 展示字段
     const collapsible = computed(() => collapseData.value.totalGridSpan > props.maxColumns) // 可折叠
     const visible = ref(true) // 展开收起
+    const { filterParams } = useKeepFilter({ pageKey: props.pageKey })
     // 展开收起
     const collapse = () => {
       collapseData.value.allFieldKeys.forEach(v => {
@@ -76,6 +83,9 @@ export default defineComponent({
       setOperateBtnsStyle(formRef.value, visible.value)
     }
     init()
+    onMounted(() => {
+      formRef.value.values = filterParams.value
+    })
     expose({
       collapsible,
       visible,
@@ -90,8 +100,8 @@ export default defineComponent({
     })
     return () => (
       <FormilyForm
-        class={styles.container}
         ref={formilyFormRef}
+        class={styles.container}
         config={fields.value}
         effectHooks={props.effectHooks}
       />

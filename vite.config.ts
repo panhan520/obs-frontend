@@ -1,4 +1,4 @@
-import { defineConfig, ConfigEnv, UserConfig } from 'vite'
+import { defineConfig, ConfigEnv, UserConfig, loadEnv } from 'vite'
 import path from 'path'
 // vite.config.ts中无法使用import.meta.env 所以需要引入
 import vue from '@vitejs/plugin-vue'
@@ -7,37 +7,69 @@ import { createSvgIconsPlugin } from 'vite-plugin-svg-icons'
 import vueSetupExtend from 'vite-plugin-vue-setup-extend'
 // 生产gz文件
 import viteCompression from 'vite-plugin-compression'
-// 按需加载
-import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 import vueJsx from '@vitejs/plugin-vue-jsx'
-
+import qiankun from 'vite-plugin-qiankun'
+import { qiankunWindow } from 'vite-plugin-qiankun/dist/helper'
 function resolve(dir) {
   return path.join(__dirname, '.', dir)
 }
 
-// https://vitejs.dev/config/
+const MICRO_APP_NAME = 'STARVIEW'
+const proxyPrefix = qiankunWindow.__POWERED_BY_QIANKUN__ ? `/${MICRO_APP_NAME}` : ''
+const proxy = {
+  [`${proxyPrefix}/observable/user/v1`]: {
+    target: 'https://gateway.observe.dev.eks.gainetics.io/api/user',
+    changeOrigin: true,
+  },
+  [`${proxyPrefix}/observable/core/v1`]: {
+    target: 'https://gateway.observe.dev.eks.gainetics.io/api/core',
+    changeOrigin: true,
+  },
+  [`${proxyPrefix}/api/v1`]: {
+    target: 'https://gateway.observe.dev.gainetics.io/domain',
+    changeOrigin: true,
+  },
+  [`${proxyPrefix}/aiagent/v1`]: {
+    target: 'https://gateway.observe.dev.gainetics.io',
+    changeOrigin: true,
+  },
+  /** 线路可观测 */
+  [`${proxyPrefix}/availability-proxy`]: {
+    target: 'https://gateway.observe.dev.gainetics.io',
+    changeOrigin: true,
+    rewrite: (path) => 
+      qiankunWindow.__POWERED_BY_QIANKUN__ 
+        ? path.replace(/^\/STARVIEW\/availability-proxy/, '')
+        : path.replace(/^\/availability-proxy/, ''),
+  },
+  /** 域名 */
+  [`${proxyPrefix}/domain-proxy`]: {
+    target: 'https://gateway.observe.dev.eks.gainetics.io/domain/api/v1',
+    changeOrigin: true,
+    rewrite: (path) => 
+      qiankunWindow.__POWERED_BY_QIANKUN__ 
+        ? path.replace(/^\/STARVIEW\/domain-proxy/, '') 
+        : path.replace(/^\/domain-proxy/, ''),
+  },
+  /** 追踪 */
+  [`${proxyPrefix}/trace-proxy`]: {
+    target: 'https://grafana-chinese.observe.dev.eks.gainetics.io',
+    changeOrigin: true,
+    rewrite: (path) => 
+      qiankunWindow.__POWERED_BY_QIANKUN__ 
+        ? path.replace(/^\/STARVIEW\/trace-proxy/, '')
+        : path.replace(/^\/trace-proxy/, ''),
+  },
+}
+
 export default defineConfig(({ mode }: ConfigEnv): UserConfig => {
   return {
     plugins: [
       vue(),
       vueJsx(),
       vueSetupExtend(),
-      // AutoImport({
-      //   imports: [
-      //     'vue',
-      //     'vue-router',
-      //     'pinia',
-      //     // 使用更安全的配置格式
-      //     {
-      //       '@/store/modules/user': ['useUserStore'],
-      //     },
-      //   ],
-      //   dts: 'src/auto-imports.d.ts',
-      //   // 确保安装了最新版本
-      //   resolvers: [ElementPlusResolver()], // 如果有使用ElementPlus
-      // }),
       Components({
         resolvers: [ElementPlusResolver()],
       }),
@@ -50,21 +82,30 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => {
       }),
       // gzip压缩 生产环境生成 .gz 文件
       mode === 'production' &&
-        viteCompression({
-          verbose: true,
-          disable: false,
-          threshold: 10240,
-          algorithm: 'gzip',
-          ext: '.gz',
-        }),
+      viteCompression({
+        verbose: true,
+        disable: false,
+        threshold: 10240,
+        algorithm: 'gzip',
+        ext: '.gz',
+      }),
+      qiankun(
+        MICRO_APP_NAME, 
+        {
+          useDevMode: true,
+        },
+      ),
     ],
     css: {
       preprocessorOptions: {
         scss: {
           additionalData: `@use "./src/styles/index.scss" as *;`,
+          quietDeps: true,
+          silenceDeprecations: ['global-builtin', 'mixed-decls', 'import', 'color'],
         },
       },
     },
+    logLevel: 'error',
     // 配置别名
     resolve: {
       alias: {
@@ -79,47 +120,13 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => {
     server: {
       // 服务器主机名，如果允许外部访问，可设置为 "0.0.0.0" 也可设置成你的ip地址
       host: '0.0.0.0',
-      port: 8080,
+      port: Number(loadEnv(mode, process.cwd())?.VITE_PORT),
       open: true,
       https: false,
       cors: true,
+      origin: 'http://localhost:8082',
       // 代理跨域（模拟示例）
-      proxy: {
-        '/observable/user/v1': {
-          target: 'https://gateway.observe.dev.eks.gainetics.io/api/user',
-          changeOrigin: true,
-        },
-        '/observable/core/v1': {
-          target: 'http://43.199.244.212:8111',
-          changeOrigin: true,
-          // rewrite: (path) => {
-          //   console.log('before rewrite:', path)
-          //   const newPath = path.replace(/^\/observable\/core/, '')
-          //   console.log('after rewrite:', newPath)
-          //   return newPath
-          // }
-        },
-        '/api/v1': {
-          target: 'https://gateway.observe.dev.gainetics.io/domain',
-          changeOrigin: true,
-        },
-        '/aiagent/v1': {
-          target: 'https://gateway.observe.dev.gainetics.io',
-          changeOrigin: true,
-        },
-        /** 线路可观测 */
-        '/availability-proxy': {
-          target: 'https://gateway.observe.dev.gainetics.io',
-          changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/availability-proxy/, ''),
-        },
-        /** 域名 */
-        '/domain-proxy': {
-          target: 'https://gateway.observe.dev.gainetics.io/domain',
-          changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/domain-proxy/, '/api/v1'),
-        },
-      },
+      proxy,
     },
     // 生产环境打包配置
     //去除 console debugger
@@ -133,6 +140,9 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => {
             vue: ['vue', 'vue-router', 'pinia'],
             element: ['element-plus'],
           },
+          entryFileNames: 'assets/[name]-[hash].js',
+          chunkFileNames: 'assets/[name]-[hash].js',
+          assetFileNames: 'assets/[name]-[hash].[ext]',
         },
       },
       sourcemap: true,

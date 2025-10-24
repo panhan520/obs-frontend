@@ -1,7 +1,7 @@
 import { defineComponent, computed } from 'vue'
 import { useSettingStore } from '~/store/modules/setting'
 import MobileMask from '../components/mobile/mask'
-import Sidebar from '../components/Sidebar'
+import Sidebar from '../components/sidebar'
 import Header from './header'
 import Main from '../components/main'
 

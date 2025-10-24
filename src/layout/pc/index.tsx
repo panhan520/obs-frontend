@@ -1,9 +1,9 @@
 import { defineComponent, onBeforeUnmount, onMounted, ref } from 'vue'
-import Sidebar from '../components/Sidebar'
+import Sidebar from '../components/sidebar'
 import Header from './header'
-import Main from '../components/Main'
-import ChatSidebar from '../components/Agent/ChatSidebar.vue'
-import ChatDialog from '../components/Agent/ChatDialog.vue'
+import Main from '../components/main'
+import ChatSidebar from '../components/agent/ChatSidebar.vue'
+import ChatDialog from '../components/agent/ChatDialog.vue'
 import emitter from '@/utils/emitter'
 export default defineComponent({
   name: 'PcLayout',

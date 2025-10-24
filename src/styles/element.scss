@@ -10,8 +10,8 @@
 
 .el-button--primary {
   &:not(.is-link) {
-    border-color: $primaryColor;
-    background: $primaryColor;
+    // border-color: $primaryColor;
+    // background: $primaryColor;
     border-radius: 4px;
   }
   &.is-link {

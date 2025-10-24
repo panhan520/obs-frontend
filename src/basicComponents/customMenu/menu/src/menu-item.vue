@@ -46,6 +46,7 @@ import {
   toRef,
 } from 'vue'
 import { ElTooltip } from 'element-plus'
+import { useRoute } from 'vue-router'
 import { debugWarn, isPropAbsent, throwError } from '../../../utils'
 import { useNamespace } from '../../../hooks'
 import useMenu from './use-menu'
@@ -60,6 +61,7 @@ defineOptions({
 })
 const props = defineProps(menuItemProps)
 const emit = defineEmits(menuItemEmits)
+const route = useRoute()
 
 isPropAbsent(props.index) &&
   debugWarn(COMPONENT_NAME, 'Missing required prop: "index"')
@@ -77,7 +79,14 @@ const subMenu = inject<SubMenuProvider>(
 )
 if (!subMenu) throwError(COMPONENT_NAME, 'can not inject sub menu')
 
-const active = computed(() => props.index === rootMenu.activeIndex)
+/**
+ * TODO: 额外注意，因为includes，筛选条件放宽了，所以路由命名要格外小心
+ * 
+ * 因为菜单绑定的是根路由，但是有些根路由会重定向到index页，这时候就造成当前路由在菜单上没有，所以菜单不会高亮的问题。
+ * 因此放宽高亮筛选条件，只要includes能匹配到，就会高亮。
+ * 没问题
+ */
+const active = computed(() => route.name.includes(props.index))
 const item: MenuItemRegistered = reactive({
   index: props.index,
   indexPath,

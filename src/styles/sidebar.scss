@@ -244,7 +244,7 @@ $icon-margin-right: 6px;
 
     // the scroll bar appears when the subMenu is too long
     > .el-menu--popup {
-      max-height: 100vh;
+      max-height: 100%;
       overflow-y: auto;
 
       .el-menu-item {

@@ -1,20 +1,15 @@
 import { defineComponent, ref, computed, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { CommonPage } from '~/businessComponents'
+import { CommonPage } from "~/businessComponents"
 import { getListApi, getListExtraApi } from '~/api/availabilityMonitoring'
-import {
-  TaskType,
-  taskTypeMap,
-  taskMethodMap,
-  ResultStatus,
-} from '~/api/availabilityMonitoring/constants'
+import { TaskType, taskTypeMap, taskMethodMap, ResultStatus } from '~/api/availabilityMonitoring/constants'
 import Space from '~/basicComponents/space'
-import successIcon from '~/assets/availabilityMonitoring/success.png'
-import failIcon from '~/assets/availabilityMonitoring/fail.png'
 import { getFields } from './fields'
 import { batchActions, PanelType } from './constants'
 import InfoPanel from './components/InfoPanel'
 import FilterPanel from './components/FilterPanel'
+import successIcon from '~/assets/availabilityMonitoring/success.png'
+import failIcon from '~/assets/availabilityMonitoring/fail.png'
 import styles from './index.module.scss'
 
 import type { ICommonObj } from '~/interfaces/common'
@@ -32,11 +27,11 @@ export default defineComponent({
     const fields = ref(getFields({ router, commonPageRef }))
     const selectedValues = ref<Array<string[]>>([]) // 左侧筛选区的选中项
     const selected = ref<IListItem[]>([]) // 选中数据
-    const selectedKeys = computed(() => selected.value.map((v) => v.id)) // 选中数据的key
+    const selectedKeys = computed(() => selected.value.map(v => v.id)) // 选中数据的key
     const resultStatus = ref<ResultStatus | ''>('') // 卡片拨测结果
     const extra = ref<Partial<IExtra>>({}) // 顶部卡片和左侧快速筛查
     const ready = ref(false) // 数据加载完成
-    const commonAction = (panelType: PanelType, val: ResultStatus | '' | Array<string[]>) => {
+    const commonAction = (panelType: PanelType, val: ResultStatus | '' | Array<string[]>) =>{
       const isTaskGroup = panelType === PanelType.TASK_GROUP
       resultStatus.value = isTaskGroup ? (val as ResultStatus | '') : ''
       selectedValues.value = isTaskGroup ? [] : (val as Array<string[]>)
@@ -49,14 +44,8 @@ export default defineComponent({
       await updateExtra() // 会在初始化时调用两次
       const result = Object.fromEntries(
         (extra.value?.filterFast || [])
-          .map((v) => [
-            v.key,
-            `${v.children
-              .filter((v1) => selectedValues.value.flat().includes(v1.value))
-              .map((v1) => v1.value)
-              .join(',')}`,
-          ])
-          .filter((v) => v?.[1]?.length),
+          .map(v => ([v.key, `${v.children.filter(v1 => selectedValues.value.flat().includes(v1.value)).map(v1 => v1.value).join(',')}`]))
+          .filter(v => v?.[1]?.length)
       )
       return {
         ...params,
@@ -74,7 +63,7 @@ export default defineComponent({
           taskList: Object.entries(v)
             .filter(([k]) => !['type', 'total'].includes(k))
             .map(([k, v]) => ({ ...v, label: taskMethodMap[k] })),
-        })),
+        }))
       }
     }
     const onClearInterval = () => {
@@ -92,9 +81,7 @@ export default defineComponent({
       try {
         onInterval()
         await updateExtra()
-        selectedValues.value = (extra.value.filterFast || []).map((v) =>
-          v.children.map((v1) => v1.value),
-        )
+        selectedValues.value = (extra.value.filterFast || []).map(v => v.children.map(v1 => v1.value))
         ready.value = true
       } catch (error: any) {
         console.error(`获取额外信息失败，失败原因：${error}`)
@@ -106,96 +93,86 @@ export default defineComponent({
     })
     const setterPrefix = () => (
       <>
-        <el-button
-          onClick={() => {
-            router.push({ path: 'create' })
-          }}
-        >
-          新建任务
-        </el-button>
+        <el-button onClick={() => { router.push({ path: 'create' }) }}>新建任务</el-button>
         <el-dropdown>
           {{
             default: () => (
-              <el-button type='primary'>
+              <el-button type="primary">
                 批量操作
-                <el-icon class='el-icon--right'>
+                <el-icon class="el-icon--right">
                   <arrow-down />
                 </el-icon>
               </el-button>
             ),
             dropdown: () => (
               <el-dropdown-menu>
-                {batchActions(commonPageRef)?.map((v) => (
-                  <el-dropdown-item
-                    onClick={() => {
-                      v.onClick?.(selectedKeys.value, selected.value)
-                    }}
-                  >
-                    {v.label}
-                  </el-dropdown-item>
+                {batchActions(commonPageRef)?.map(v => (
+                  <el-dropdown-item onClick={() => { v.onClick?.(selectedKeys.value, selected.value) }}>{v.label}</el-dropdown-item>
                 ))}
               </el-dropdown-menu>
-            ),
+            )
           }}
         </el-dropdown>
       </>
     )
     return () => (
       <Space class={styles.main} fill size={0}>
-        {ready.value && (
-          <>
-            <FilterPanel
-              ref={filterPanelRef}
-              schema={extra.value.filterFast}
-              selectedValues={selectedValues.value}
-              onUpdate:selectedValues={(val: Array<string[]>) => {
-                commonAction(PanelType.FILTER_FAST, val)
-              }}
-            />
-            <div class={styles.commonPage}>
-              <Space class={styles.infoPanelGroup} size={16}>
-                {(extra.value?.taskGroup || []).map((v) => (
-                  <InfoPanel
-                    key={v.type}
-                    data={v}
-                    resultStatus={resultStatus.value}
-                    onUpdate:resultStatus={(val: ResultStatus) => {
-                      commonAction(PanelType.TASK_GROUP, val)
+        {
+          ready.value 
+          && (
+            <>
+              <FilterPanel
+                ref={filterPanelRef}
+                schema={extra.value.filterFast} 
+                selectedValues={selectedValues.value} 
+                onUpdate:selectedValues={(val: Array<string[]>) => {
+                  commonAction(PanelType.FILTER_FAST, val)
+                }}
+              />
+              <div class={styles.commonPage}>
+                <Space class={styles.infoPanelGroup} size={16}>
+                  {(extra.value?.taskGroup || []).map(v => (
+                    <InfoPanel
+                      key={v.type}
+                      data={v}
+                      resultStatus={resultStatus.value}
+                      onUpdate:resultStatus={(val: ResultStatus) => {
+                        commonAction(PanelType.TASK_GROUP, val)
+                      }}
+                    />
+                  ))}
+                </Space>
+                <div style={{ height: 'calc(100% - 190px)' }}>
+                  <CommonPage
+                    ref={commonPageRef}
+                    fields={fields.value}
+                    listApi={getListApi}
+                    formatListParams={formatListParams}
+                    selected={selected.value}
+                    filterColumns={6}
+                    rowKey='id'
+                    pageKey='availabilityMonitoring'
+                    selectable
+                    needPagination
+                    onUpdate:selected={(val: any) => { selected.value = val }}
+                    onRowClick={({ rowData }) => {
+                      router.push({
+                        path: 'overviewPage', 
+                        query: {
+                          testId: rowData.id,
+                          requestType: rowData.requestType,
+                          resultStatus: rowData.resultStatus,
+                        }
+                      })
                     }}
+                    v-slots={{ setterPrefix }}
                   />
-                ))}
-              </Space>
-              <div style={{ height: 'calc(100% - 190px)' }}>
-                <CommonPage
-                  ref={commonPageRef}
-                  fields={fields.value}
-                  listApi={getListApi}
-                  formatListParams={formatListParams}
-                  selected={selected.value}
-                  filterColumns={6}
-                  row-key='id'
-                  selectable
-                  needPagination
-                  onUpdate:selected={(val: any) => {
-                    selected.value = val
-                  }}
-                  onRowClick={({ rowData }) => {
-                    router.push({
-                      path: 'overviewPage',
-                      query: {
-                        testId: rowData.id,
-                        requestType: rowData.requestType,
-                        resultStatus: rowData.resultStatus,
-                      },
-                    })
-                  }}
-                  v-slots={{ setterPrefix }}
-                />
+                </div>
               </div>
-            </div>
-          </>
-        )}
+            </>
+          )
+        }
       </Space>
     )
-  },
+  }
 })

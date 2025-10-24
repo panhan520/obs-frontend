@@ -1,5 +1,5 @@
 import { h } from 'vue'
-import IconFont from '~/basicComponents/iconFont'
+import { IconFont } from '~/KeepUp'
 import Layout from '~/layout'
 
 import type { IRouteRecordRaw } from '~/interfaces/common'

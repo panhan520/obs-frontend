@@ -37,7 +37,6 @@ export const getListApi = async (params: ICommonObj): Promise<ICommonGetListRes<
 export const createApi = (params: ICommonObj) => {
   params = {
     ...params,
-    domain: [params.domain],
     noticeMode: [params.noticeMode],
   }
   return request.post('/inspect/wall/', params)

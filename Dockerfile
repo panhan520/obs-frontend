@@ -1,7 +1,5 @@
 # Stage 1: Build the application
-ARG NODE_ENV=production
-
-FROM node:18-alpine AS build
+FROM node:20-alpine AS build
 WORKDIR /app
 
 ARG NODE_ENV
@@ -18,4 +16,4 @@ FROM nginx:alpine
 COPY --from=build /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/nginx.conf
 EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"] 
+CMD ["nginx", "-g", "daemon off;"]

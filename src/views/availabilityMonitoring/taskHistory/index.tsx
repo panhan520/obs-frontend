@@ -94,6 +94,7 @@ export default defineComponent({
           fields={fields.value}
           listApi={getTaskHistory}
           formatListParams={formatListParams}
+          pageKey='TaskHistory'
           filterColumns={6}
           onRowClick={openEditor}
           needPagination

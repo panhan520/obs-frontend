@@ -15,11 +15,14 @@
  */
 import { createRouter, createWebHistory } from 'vue-router'
 import Layout from '~/layout'
+import { qiankunWindow } from 'vite-plugin-qiankun/dist/helper'
+import { MICRO_APP_ROUTE } from '~/constants/qiankun'
 import {
+  controlPanel,
   domainManagement,
   availabilityMonitoring,
-  controlPanel,
   logsPanel,
+  trace,
   monitorsPanel,
   system,
   metrics,
@@ -29,12 +32,13 @@ import {
 import type { IRouteRecordRaw } from '~/interfaces/common'
 
 export const customRoutes: IRouteRecordRaw[] = [
-  ...system,
   ...controlPanel,
-  ...availabilityMonitoring,
   ...domainManagement,
-  ...metrics,
+  ...availabilityMonitoring,
   ...logsPanel,
+  ...trace,
+  ...system,
+  ...metrics,
   ...monitorsPanel,
   // ...nested,
   ...configManagement
@@ -76,14 +80,7 @@ export const basicRoutes: IRouteRecordRaw[] = [
     component: Layout,
     redirect: '/controlPanel/dashBoard',
     // meta: { icon: 'House', level: 1 },
-    children: [
-      // {
-      //   path: '/home',
-      //   component: () => import('~/views/home/index.vue'),
-      //   name: 'home',
-      //   meta: { title: '经常打开', icon: h(IconFont, { name: 'home' }), role: ['other'], level: 2 },
-      // },
-    ],
+    children: [],
   },
 ]
 export const notFoundRouter: IRouteRecordRaw = {
@@ -92,6 +89,10 @@ export const notFoundRouter: IRouteRecordRaw = {
   redirect: '/404',
 }
 export default createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHistory(
+    qiankunWindow.__POWERED_BY_QIANKUN__
+      ? MICRO_APP_ROUTE
+      : import.meta.env.BASE_URL
+  ),
   routes: basicRoutes,
 })

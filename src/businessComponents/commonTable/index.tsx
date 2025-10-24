@@ -28,6 +28,11 @@ const props = {
     type: Function as PropType<(p: any) => any>,
     default: undefined,
   },
+  /** getList前置钩子 */
+  beforeFetch: {
+    type: Function as PropType<() => void>,
+    default: undefined,
+  },
   /** 行标识 */
   rowKey: {
     type: String,
@@ -92,11 +97,12 @@ export default defineComponent({
       }),
       listApi: props.listApi,
       formatListParams: props.formatListParams,
+      beforeFetch: props.beforeFetch,
     })
     const mergedPaginationConfig = computed(() => ({ ...defaultPaginationConfig, ...props.paginationConfig }))
     onMounted(() => {
       /** 需要带上筛选项数据，所以等筛选项onMounted */
-      getList(1, pagination.pageSize)
+      getList(1, pagination?.pageSize)
     })
     watch(() => columns.value, () => {
       refreshKey.value = refreshKey.value === 0 ? 1 : 0
@@ -123,7 +129,7 @@ export default defineComponent({
               v-slots={{
                 default: (scope: { row: any, column: any, $index: number }) => {
                   return v?.render?.({ rowData: scope.row, rowIndex: scope.$index })
-                }
+                },
               }}
             />
           ))}
@@ -131,15 +137,14 @@ export default defineComponent({
         {
           props.needPagination
             && <ElPagination
-              style={{ width: '100%', justifyContent: 'end' }}
-              currentPage={currentPage.value}
-              onUpdate:currentPage={getList}
-              size='small'
-              layout='total, prev, pager, next, jumper'
-              { ...mergedPaginationConfig.value }
-              total={pagination.total}
-              background
-            />
+                style={{ width: '100%', justifyContent: 'end' }}
+                currentPage={currentPage.value}
+                onUpdate:currentPage={getList}
+                size='small'
+                layout='total, prev, pager, next, jumper'
+                { ...mergedPaginationConfig.value }
+                total={pagination?.total}
+              />
         }
       </Space>
     )

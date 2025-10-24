@@ -1,7 +1,7 @@
-import { defineComponent, computed } from "vue";
-import { useSettingStore } from "~/store/modules/setting";
-import IconFont from "~/basicComponents/iconFont";
-import styles from "./index.module.scss";
+import { defineComponent, computed } from 'vue'
+import { useSettingStore } from '~/store/modules/setting'
+import { IconFont } from '~/KeepUp'
+import styles from './index.module.scss'
 
 export default defineComponent({
   name: "CollapseIcon",

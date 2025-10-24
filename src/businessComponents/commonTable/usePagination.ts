@@ -10,6 +10,7 @@ const usePagination = ({
   setSelected,
   listApi,
   formatListParams,
+  beforeFetch,
 }: IUsePaginationParams): IUsePaginationRes => {
   const data = ref([])
   const pagination = reactive<IPagination>({ page: 0, pageSize: 10, total: 0 })
@@ -17,10 +18,11 @@ const usePagination = ({
     try {
       const fromRef = commonFilterRef.value?.getForm()
       const isFunction = typeof formatListParams === 'function'
-      const formValues = isFunction ? await formatListParams(fromRef?.values) : fromRef?.values
+      const formData = isFunction ? await formatListParams?.(fromRef?.values) : fromRef?.values
       pagination.page = curPage
       pagination.pageSize = pageSize
-      const params = { ...formValues, pagination }
+      const params = { ...formData, pagination }
+      beforeFetch?.({ formData: fromRef?.values, pagination })
       const res = await listApi(params || {})
       currentPage.value = curPage
       data.value = res[key]

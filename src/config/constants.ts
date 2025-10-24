@@ -1,3 +1,5 @@
+import { qiankunWindow } from 'vite-plugin-qiankun/dist/helper'
+
 /** 代理枚举 */
 export const PROXY = {
   /** 登录注册/仪表盘 */
@@ -7,7 +9,9 @@ export const PROXY = {
   /** 线路可观测 */
   AVAILABILITY: import.meta.env.VITE_APP_BASE_API_AVAILABILITY,
   /** 域名 */
-  DOMAIN: import.meta.env.VITE_APP_BASE_API_DOMAIN,
+  DOMAIN: qiankunWindow.__POWERED_BY_QIANKUN__ ? import.meta.env.VITE_APP_BASE_API_MICRO_APP_DOMAIN : import.meta.env.VITE_APP_BASE_API_DOMAIN,
+  /** 追踪 */
+  TRACE: qiankunWindow.__POWERED_BY_QIANKUN__ ? import.meta.env.VITE_APP_BASE_API_MICRO_APP_TRACE : import.meta.env.VITE_APP_BASE_API_TRACE,
   /** AI智能体 */
   AIAGENT: import.meta.env.VITE_APP_BASE_API_AIAGENT,
   /**仪表盘 */

@@ -1,6 +1,6 @@
 import { h } from 'vue'
 import emitter from '~/utils/emitter'
-import IconFont from '~/basicComponents/iconFont'
+import { IconFont } from '~/KeepUp'
 import Layout from '~/layout'
 import { HeaderMode } from '../constants'
 

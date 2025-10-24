@@ -1,10 +1,11 @@
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios'
 import { ElMessage } from 'element-plus'
 import qs from 'qs'
+import { qiankunWindow } from 'vite-plugin-qiankun/dist/helper'
 import { errorCodeType } from '../api/errorCodeType'
 import { PROXY } from './constants'
 import { filterEmptyParams } from './utils'
-import { getToken, removeToken } from '~/utils/auth'
+import { removeToken } from '~/utils/auth'
 
 import type { AxiosInstance } from 'axios'
 import { useUserStore } from '~/store/modules/user'
@@ -43,12 +44,13 @@ const getReqByProxyModule = ({
        * 用户登录之后获取服务端返回的token,后面每次请求都在请求头中带上token进行JWT校验
        * token 存储在本地储存中（storage）、vuex、pinia
        */
-      // const userStore = useUserStore()
-      // const token: string = userStore.token // TODO: error
+      const userStore = useUserStore()
+      const token: string = userStore.userInfo?.token // TODO: error
+      const notOpenSearch = config.baseURL !== PROXY.OPENSEARCH
       // 自定义请求头
-      if (getToken() && config.baseURL !== PROXY.OPENSEARCH) {
+      if (token && notOpenSearch) {
         // TODO: error
-        config.headers['Authorization'] = `Bearer ${getToken()}`
+        config.headers['Authorization'] = `Bearer ${token}`
       }
       if (!config.headers['Content-Type']) {
         config.headers['Content-Type'] = 'application/json'
@@ -63,41 +65,32 @@ const getReqByProxyModule = ({
 
   //  response interceptor 接口响应拦截
   axiosInstance.interceptors.response.use(
-    (response: AxiosResponse) => {
-      const resData = response.data as {
-        code?: number | string
-        message?: string
-        [key: string]: any
+    (res: AxiosResponse) => {
+      const authStore = useUserStore()
+      const businessStatusCode = res.data?.code
+      if (Boolean(businessStatusCode) && businessStatusCode !== 200) {
+        if (qiankunWindow.__POWERED_BY_QIANKUN__) {
+          if (businessStatusCode === 401) {
+            authStore.resetApp?.()
+          }
+        } else {
+          if (res.data.code === 401 || res.data.code === 403) {
+            const UserStore = useUserStore()
+            removeToken()
+            UserStore.clearInfo()
+            // 延迟加载 router，避免循环依赖
+            import('@/routers').then(({ default: router }) => {
+              router.push('/login')
+            })
+            // 弹出提示
+            ElMessage.error('登录已过期，请重新登录')
+            return Promise.reject(new Error(res.data.message || '登录已过期'))
+          }
+        }
+        ElMessage.error(res.data.message)
+        return Promise.reject(res)
       }
-
-      // 如果后端返回业务 code 表示未登录
-      if (resData.code === 401 || resData.code === 403) {
-        // const router = useRouter()
-        const UserStore = useUserStore()
-        // const TagsViewStore = useTagsViewStore()
-        // const PermissionStore = usePermissionStore()
-        // TagsViewStore.clearVisitedView()
-        // PermissionStore.clearRoutes()
-        removeToken()
-        UserStore.clearInfo()
-        // 延迟加载 router，避免循环依赖
-        import('@/routers').then(({ default: router }) => {
-          router.push('/login')
-        })
-
-        // 弹出提示
-        ElMessage.error('登录已过期，请重新登录')
-        return Promise.reject(new Error(resData.message || '登录已过期'))
-      }
-
-      // 其它业务错误统一处理
-      if (resData.code && resData.code !== 200) {
-        ElMessage.error(resData.message || '请求失败')
-        return Promise.reject(new Error(resData.message || '请求失败'))
-      }
-
-      // 正常情况返回 data
-      return resData
+      return res.data
     },
     async (error: AxiosError) => {
       const status = error.response?.status || 500

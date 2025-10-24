@@ -1,5 +1,7 @@
 import type { Ref } from 'vue'
+import type { RemovableRef } from '@vueuse/core'
 import type { Form } from '@formily/core'
+import type { ICommonObj } from '@/interfaces/common'
 
 /** CommonFilter出参 */
 export type ICommonFilterExpose = {
@@ -23,4 +25,18 @@ export interface IOperateActions {
   query: () => Promise<void>
   /** 重置 */
   reset: () => Promise<void>
+}
+
+/** useKeepFilter入参 */
+export interface IUseKeepFilterParams {
+  /** pageKey */
+  pageKey: string
+}
+
+/** useKeepFilter出参 */
+export interface IUseKeepFilterRes {
+  /** 筛选数据 */
+  filterParams: RemovableRef<{}>
+  /** 保存筛选数据 */
+  keepFilter: (p: ICommonObj) => void
 }

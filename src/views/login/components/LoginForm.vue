@@ -266,33 +266,22 @@ const submitForm = async (formEl: FormInstance | undefined) => {
       return false
     }
     loading.value = true
-    // const res = await UserStore.login(ruleForm);
-    const res: Record<string, any> = await loginApi(ruleForm)
-    if (res.code === 200 && res.message === 'success') {
-      const token = res.data.token
-      // 解析 jwt
-      const decoded = jwtDecode<JwtPayload & { tenantId: string; orgId: string; username: string }>(
-        token,
-      )
-      UserStore.setLoginInfo(token, res.data.uid, decoded)
-      router.push({
-        path: '/',
-      })
-      const infoRes = await infoApi(UserStore.userOrg.userId)
-      UserStore.setUserEmail(infoRes.data.email)
-      ElNotification({
-        title: getTimeStateStr(),
-        message: '欢迎登录 ' + UserStore.userInfo.username,
-        type: 'success',
-        duration: 3000,
-      })
-       await opensearchLoginApi({
-        username: 'admin',
-        password: 'Hp0Odv6VeNaYjTm_DO4hB1ya',
-      })
-    } else {
-      ElMessage.error(res.data)
-    }
+    await UserStore.login(ruleForm);
+    router.push({
+      path: '/',
+    })
+    const infoRes = await infoApi(UserStore.userOrg.userId)
+    UserStore.setUserEmail(infoRes.data.email)
+    ElNotification({
+      title: getTimeStateStr(),
+      message: '欢迎登录 ' + UserStore.userInfo.username,
+      type: 'success',
+      duration: 3000,
+    })
+    await opensearchLoginApi({
+      username: 'admin',
+      password: 'Hp0Odv6VeNaYjTm_DO4hB1ya',
+    })
   } catch (error) {
     ElNotification({
       title: 'error',

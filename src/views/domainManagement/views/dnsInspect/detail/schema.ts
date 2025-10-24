@@ -68,7 +68,7 @@ const getSchema = ({ formRef }): ISchema => ({
                   /** 运营商 */
                   ispName: v1.ispName,
                   /** 用于前端友好展示的区域名称，比如：浙江杭州电信 */
-                  friendlyArea: `${v1.nodeName}${v1.ispName}`,
+                  friendlyArea: `${v1.nodeName}`,
                 }))
                 initVal = [...initVal, ...formattedCurItem]
                 return initVal

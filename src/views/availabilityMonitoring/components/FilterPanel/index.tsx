@@ -2,7 +2,7 @@ import { defineComponent, ref, computed, watch } from 'vue'
 import { ElCollapse, ElCollapseItem, ElCheckbox, ElCheckboxGroup } from 'element-plus'
 import { CaretRight } from '@element-plus/icons-vue'
 import Space from '~/basicComponents/space'
-import IconFont from '~/basicComponents/iconFont'
+import { IconFont } from '~/KeepUp'
 import { generateSchema } from './utils'
 import styles from './index.module.scss'
 

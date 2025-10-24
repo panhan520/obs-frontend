@@ -190,10 +190,7 @@ const next = async () => {
           type: 'success',
           duration: 3000,
         })
-        // const res = await UserStore.logout({ userId: UserStore.userOrg.userId })
-
-       await loginOut({ userId: UserStore.userOrg.userId })
-        UserStore.clearInfo()
+        await UserStore.logout({ userId: UserStore.userOrg.userId })
         await router.push('/login')
       } else {
         ElMessage.error(res.data || '密码修改失败')
@@ -221,7 +218,7 @@ const goTOLogin = () => {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  height: 100%;
 
   & .reset-psw-content {
     width: 50%;

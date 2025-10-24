@@ -17,7 +17,6 @@ const commonLabelStyle = {
   color: '#000',
   fontSize: '16px',
 }
-
 const getSchema = ({
   protocol, 
   showFailReason,

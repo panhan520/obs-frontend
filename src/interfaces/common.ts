@@ -21,7 +21,7 @@ export interface ICommonGetListRes<L> {
   /** list */
   list: L
   /** 分页信息 */
-  pagination: {
+  pagination?: {
     /** 页码 */
     page: number
     /** 每页展示条数 */

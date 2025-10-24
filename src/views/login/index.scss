@@ -4,8 +4,6 @@ $dark_gray: #889aa4;
   width: 100%;
   height: 100%;
   // background: url('@/assets/image/login/bacakground.svg');background-size: cover; /* SVG 自适应容器 */
-  width: 100%;
-  height: 100vh;
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -93,7 +91,7 @@ $dark_gray: #889aa4;
   background: url('@/assets/image/login/bacakground.svg') no-repeat center;
   background-size: cover;
   width: 100vw;
-  height: 100vh;
+  height: 100%;
   overflow: hidden;
   display: flex;
   justify-content: center;

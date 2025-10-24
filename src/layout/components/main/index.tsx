@@ -14,7 +14,7 @@ export default defineComponent({
     const rectStore = useRect()
     const cacheRoutes = computed(() => PermissionStore.keepAliveRoutes)
     const isReload = computed(() => SettingStore.isReload)
-    const mainHeight = computed(() => `calc(100vh - ${rectStore.headerHeight}px)`)
+    const mainHeight = computed(() => `${rectStore.appHeight - rectStore.headerHeight}px`)
     return () => (
       <div class={['app-main', styles.appMain]} style={{ height: mainHeight.value }}>
         <RouterView>

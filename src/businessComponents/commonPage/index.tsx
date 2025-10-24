@@ -4,6 +4,7 @@ import { ArrowDown, Refresh, Setting, Plus } from '@element-plus/icons-vue'
 import Space from '~/basicComponents/space'
 import emitter from '~/utils/emitter'
 import CommonFilter from '../commonFilter'
+import { useKeepFilter } from '../commonFilter/useKeepFilter'
 import CommonSetter from '../commonSetter'
 import CommonTable from '../commonTable'
 import CommonEditor, { MODE } from '../commonEditor'
@@ -138,6 +139,7 @@ export default defineComponent({
       setPagePreferences,
     } = usePage({ fields: props.fields, pageKey: props.pageKey })
     provide(COMMON_FILTER_INJECTION_KEY, commonFilterRef)
+    const { keepFilter } = useKeepFilter({ pageKey: props.pageKey })
     /** 查询 */
     const query = async ({ page, text }: IQueryParams = {}) => {
       await commonTableRef.value?.getList(page || 1, props.paginationConfig.pageSize, text)
@@ -199,6 +201,7 @@ export default defineComponent({
             filterFields={visibleFilterFields.value}
             operateActions={{ query, reset: filterReset }}
             effectHooks={fetchEffects.value}
+            pageKey={props.pageKey}
             v-slots={{
               ...(slots.filterTitle ? { title: slots.filterTitle } : {}),
             }}
@@ -261,6 +264,7 @@ export default defineComponent({
               selectOptions={props.selectOptions}
               selected={props.selected}
               formatListParams={props.formatListParams}
+              beforeFetch={({ formData }) => { keepFilter?.(formData) }}
               onUpdate:selected={(val: any[]) => { emit('update:selected', val) }}
               needPagination={props.needPagination}
               onRowClick={(row: any, column: any, event: Event) => { emit('rowClick', { rowData: row, column, event }) }}
@@ -275,7 +279,7 @@ export default defineComponent({
           layout={props.editorLayout}
           effectHooks={fetchEffects.value}
           formatEditParams={props.formatEditParams}
-          onConfirmSuccess={() => { query({ page: commonTableRef.value.pagination.page }) }}
+          onConfirmSuccess={() => { query({ page: commonTableRef.value.pagination?.page }) }}
         />
       </>
     )

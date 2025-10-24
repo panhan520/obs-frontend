@@ -1,6 +1,6 @@
 import type { Ref, UnwrapNestedRefs } from 'vue'
 import type { TableRefs } from 'element-plus'
-import type { IListApi } from '~/interfaces/common'
+import type { ICommonObj, IListApi } from '~/interfaces/common'
 import type { ICommonFilterExpose } from '../commonFilter'
 
 /** CommonTable内获取列表方法 */
@@ -18,6 +18,8 @@ export interface IUsePaginationParams {
   listApi: IListApi
   /** 格式化列表接口入参 */
   formatListParams: (p: any) => any
+  /** getList前置钩子 */
+  beforeFetch: (p: Record<'formData' | 'pagination', ICommonObj | undefined>) => Promise<void> | void
 }
 
 /** page信息  */
