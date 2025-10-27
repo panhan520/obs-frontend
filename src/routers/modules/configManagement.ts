@@ -14,9 +14,29 @@ const configManagementRouter: IRouteRecordRaw[] = [
     children: [
       {
         path: 'agentPanel',
-        component: () => import('~/views/configManagement/index'),
+        component: () => import('@/views/configManagement/agent/index'),
         name: 'agentPanel',
-        meta: { title: '安装Agent', level: 2, icon: h(IconFont, { name: 'logs_panel' }), headerMode: HeaderMode.SUBMENU },
+        meta: {
+          title: '安装Agent',
+          level: 2,
+          headerMode: HeaderMode.SUBMENU,
+        },
+      },
+      {
+        path: 'dataSource',
+        component: () => import('~/views/configManagement/dataSource/index'),
+        name: 'dataSource',
+        meta: {
+          title: '数据源管理',
+          level: 2,
+          headerMode: HeaderMode.SUBMENU,
+        },
+      },
+      {
+        path: 'dataSourceForm',
+        name: 'DataSourceForm',
+        component: () => import('@/views/configManagement/dataSource/edit/index'),
+        meta: { title: '数据源配置', hidden: true, level: 3 },
       },
     ],
   },

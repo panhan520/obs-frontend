@@ -1,5 +1,5 @@
-import type { DefineComponent, VNode } from "vue"
-import type { ISchema } from "@formily/vue"
+import type { DefineComponent, VNode } from 'vue'
+import type { ISchema } from '@formily/vue'
 import type { ICommonObj } from '~/interfaces/common'
 
 /** 行数据 */
@@ -23,7 +23,7 @@ interface IColumnConfig {
   /** 固定列 */
   fixed?: 'left' | 'right'
   /** 自定义单元格 */
-  render?: ({rowData, rowIndex}: IRowData) => VNode
+  render?: ({ rowData, rowIndex }: IRowData) => VNode
 }
 
 /** 筛选项/编辑项配置 */
@@ -69,31 +69,31 @@ export interface IFieldBase {
 }
 
 /** field完整配置 */
-export type IField = IFieldBase
-  & (
+export type IField = IFieldBase &
+  (
     | { columnConfig?: undefined }
     | {
-      /** 列 */
-      isColumn: boolean
-      /** 列配置 */
-      columnConfig: IColumnConfig
-    }
-  )
-  & (
+        /** 列 */
+        isColumn: boolean
+        /** 列配置 */
+        columnConfig: IColumnConfig
+      }
+  ) &
+  (
     | { editConfig?: undefined }
-    | { 
-      /** 编辑项 */
-      isEdit: boolean
-      /** 编辑项配置（用于侧边栏的新增/查看/编辑状态） */
-      editConfig: IFilterOrEditConfig
-    }
-  )
-  & (
+    | {
+        /** 编辑项 */
+        isEdit: boolean
+        /** 编辑项配置（用于侧边栏的新增/查看/编辑状态） */
+        editConfig: IFilterOrEditConfig
+      }
+  ) &
+  (
     | { filterConfig?: undefined }
     | {
-      /** 筛选项 */
-      isFilter: boolean 
-      /** 筛选项配置 */
-      filterConfig: IFilterOrEditConfig
-    }
+        /** 筛选项 */
+        isFilter: boolean
+        /** 筛选项配置 */
+        filterConfig: IFilterOrEditConfig
+      }
   )

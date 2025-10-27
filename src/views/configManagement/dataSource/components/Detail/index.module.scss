@@ -1,0 +1,50 @@
+.drawer {
+  :global(.el-drawer__body) {
+    padding: 20px;
+  }
+}
+
+.content {
+  .section {
+    margin-bottom: 30px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  .sectionTitle {
+    margin: 0 0 16px 0;
+    color: #303133;
+    font-size: 16px;
+    font-weight: 600;
+    border-left: 4px solid #409eff;
+    padding-left: 12px;
+  }
+}
+
+.actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #e4e7ed;
+}
+
+// Element Plus 组件样式覆盖
+:global(.el-descriptions) {
+  margin-bottom: 0;
+}
+
+:global(.el-descriptions__label) {
+  font-weight: 500;
+  color: #606266;
+}
+
+:global(.el-descriptions__content) {
+  color: #303133;
+}
+
+:global(.el-tag) {
+  border-radius: 4px;
+}

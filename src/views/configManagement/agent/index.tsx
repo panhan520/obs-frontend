@@ -167,7 +167,7 @@ export default defineComponent({
           </div>
         </div>
       )
-      let specificContent = (
+      const specificContent = (
         <div class={styles.marginLeft}>
           <p style='white-space: pre-line'>
             {name === 'Kubernetes'

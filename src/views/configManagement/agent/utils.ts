@@ -4,7 +4,11 @@ import type { Ref } from 'vue'
 import type { IExpose } from '~/businessComponents/commonPage'
 
 /** 批量操作公共action */
-export const commonAction = async (actionItem: Record<string, any>, testIds: string[], commonPageRef: Ref<IExpose>) => {
+export const commonAction = async (
+  actionItem: Record<string, any>,
+  testIds: string[],
+  commonPageRef: Ref<IExpose>,
+) => {
   try {
     if (!testIds?.length) {
       ElMessage({
