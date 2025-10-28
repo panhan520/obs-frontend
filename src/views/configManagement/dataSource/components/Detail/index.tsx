@@ -1,5 +1,15 @@
-import { defineComponent, ref, computed } from 'vue'
-import { ElDrawer, ElDescriptions, ElDescriptionsItem, ElTag, ElButton } from 'element-plus'
+import { defineComponent, ref } from 'vue'
+import {
+  ElDrawer,
+  ElDescriptions,
+  ElDescriptionsItem,
+  ElTag,
+  ElButton,
+  ElDivider,
+  ElIcon,
+  ElMessage,
+} from 'element-plus'
+import { InfoFilled } from '@element-plus/icons-vue'
 import {
   DataSourceType,
   DataType,
@@ -8,7 +18,11 @@ import {
   PrometheusType,
   OpenSearchVersion,
 } from '@/api/configManagement/dataSource/interfaces'
-import type { DataSourceDetail } from '@/api/configManagement/dataSource/interfaces'
+import type {
+  DataSourceDetail,
+  CreateDataSourceParams,
+} from '@/api/configManagement/dataSource/interfaces'
+import { testDataSourceConnection } from '@/api/configManagement/dataSource'
 import styles from './index.module.scss'
 
 export default defineComponent({
@@ -29,6 +43,93 @@ export default defineComponent({
 
     const handleClose = () => {
       visible.value = false
+    }
+
+    // 测试连接
+    const testConnection = async () => {
+      if (!props.dataSource) return
+
+      try {
+        const testData: CreateDataSourceParams = {
+          name: props.dataSource.name,
+          type: props.dataSource.type,
+          dataType: props.dataSource.dataType,
+          description: props.dataSource.description,
+        }
+
+        // 根据数据源类型添加特定配置
+        switch (props.dataSource.type) {
+          case DataSourceType.ELASTIC_SEARCH:
+            if (props.dataSource.elasticSearch) {
+              testData.elasticSearch = {
+                url: props.dataSource.elasticSearch.url,
+                authType: props.dataSource.elasticSearch.authType,
+                username: props.dataSource.elasticSearch.username,
+                password: props.dataSource.elasticSearch.password,
+                skipTlsVerify: props.dataSource.elasticSearch.skipTlsVerify,
+                httpHeaders: props.dataSource.elasticSearch.httpHeaders,
+                timeout: props.dataSource.elasticSearch.timeout,
+                version: props.dataSource.elasticSearch.version,
+                maxShard: props.dataSource.elasticSearch.maxShard,
+                timeFieldName: props.dataSource.elasticSearch.timeFieldName,
+              }
+            }
+            break
+          case DataSourceType.PROMETHEUS:
+            if (props.dataSource.prometheus) {
+              testData.prometheus = {
+                url: props.dataSource.prometheus.url,
+                authType: props.dataSource.prometheus.authType,
+                username: props.dataSource.prometheus.username,
+                password: props.dataSource.prometheus.password,
+                skipTlsVerify: props.dataSource.prometheus.skipTlsVerify,
+                httpHeaders: props.dataSource.prometheus.httpHeaders,
+                timeout: props.dataSource.prometheus.timeout,
+                type: props.dataSource.prometheus.type,
+              }
+            }
+            break
+          case DataSourceType.OPEN_SEARCH:
+            if (props.dataSource.openSearch) {
+              testData.openSearch = {
+                url: props.dataSource.openSearch.url,
+                authType: props.dataSource.openSearch.authType,
+                username: props.dataSource.openSearch.username,
+                password: props.dataSource.openSearch.password,
+                skipTlsVerify: props.dataSource.openSearch.skipTlsVerify,
+                httpHeaders: props.dataSource.openSearch.httpHeaders,
+                timeout: props.dataSource.openSearch.timeout,
+                version: props.dataSource.openSearch.version,
+                maxShard: props.dataSource.openSearch.maxShard,
+                timeFieldName: props.dataSource.openSearch.timeFieldName,
+              }
+            }
+            break
+          case DataSourceType.STAR_VIEW:
+            if (props.dataSource.starView) {
+              testData.starView = {
+                url: props.dataSource.starView.url,
+                authType: props.dataSource.starView.authType,
+                username: props.dataSource.starView.username,
+                password: props.dataSource.starView.password,
+                skipTlsVerify: props.dataSource.starView.skipTlsVerify,
+                httpHeaders: props.dataSource.starView.httpHeaders,
+                timeout: props.dataSource.starView.timeout,
+              }
+            }
+            break
+        }
+
+        const result = await testDataSourceConnection(testData)
+        if (result.success) {
+          ElMessage.success('连接测试成功')
+        } else {
+          ElMessage.error(`连接测试失败: ${result.message}`)
+        }
+      } catch (error) {
+        console.error('连接测试失败:', error)
+        ElMessage.error('连接测试失败')
+      }
     }
 
     const getDataSourceTypeLabel = (type: DataSourceType) => {
@@ -81,179 +182,245 @@ export default defineComponent({
           visible.value = val
           emit('update:modelValue', val)
         }}
-        title='数据源详情'
+        title={props.dataSource?.name || '数据源详情'}
         size='50%'
         class={styles.drawer}
         onClose={handleClose}
       >
         {props.dataSource && (
           <div class={styles.content}>
-            {/* 基本信息 */}
+            {/* 1. 基本信息 */}
             <div class={styles.section}>
-              <h3 class={styles.sectionTitle}>基本信息</h3>
-              <ElDescriptions column={1} border>
-                <ElDescriptionsItem label='数据源名称'>{props.dataSource.name}</ElDescriptionsItem>
-                <ElDescriptionsItem label='数据源类型'>
+              <div class={styles.sectionHeader}>
+                <span class={styles.sectionTitle}>基本信息</span>
+              </div>
+
+              <div class={styles.sectionContent}>
+                <div class={styles.infoRow}>
+                  <span class={styles.infoLabel}>数据源类型:</span>
                   <ElTag type='primary'>{getDataSourceTypeLabel(props.dataSource.type)}</ElTag>
-                </ElDescriptionsItem>
-                <ElDescriptionsItem label='数据类型'>
-                  <ElTag type='success'>{getDataTypeLabel(props.dataSource.dataType)}</ElTag>
-                </ElDescriptionsItem>
-                <ElDescriptionsItem label='描述'>
-                  {props.dataSource.description || '无'}
-                </ElDescriptionsItem>
-                <ElDescriptionsItem label='来源'>
-                  {props.dataSource.source === 'BUILT_IN' ? '内置' : '外部接入'}
-                </ElDescriptionsItem>
-                <ElDescriptionsItem label='创建时间'>
-                  {props.dataSource.createdAt}
-                </ElDescriptionsItem>
-                <ElDescriptionsItem label='最近更新时间'>
-                  {props.dataSource.updatedAt}
-                </ElDescriptionsItem>
-              </ElDescriptions>
-            </div>
-
-            {/* ElasticSearch 配置 */}
-            {props.dataSource.type === DataSourceType.ELASTIC_SEARCH &&
-              props.dataSource.elasticSearch && (
-                <div class={styles.section}>
-                  <h3 class={styles.sectionTitle}>ElasticSearch 配置</h3>
-                  <ElDescriptions column={1} border>
-                    <ElDescriptionsItem label='连接地址'>
-                      {props.dataSource.elasticSearch.url}
-                    </ElDescriptionsItem>
-                    <ElDescriptionsItem label='认证方式'>
-                      {getAuthTypeLabel(props.dataSource.elasticSearch.authType)}
-                    </ElDescriptionsItem>
-                    {props.dataSource.elasticSearch.authType === AuthType.BASIC_AUTH && (
-                      <>
-                        <ElDescriptionsItem label='用户名'>
-                          {props.dataSource.elasticSearch.username || '无'}
-                        </ElDescriptionsItem>
-                        <ElDescriptionsItem label='密码'>
-                          {props.dataSource.elasticSearch.password ? '******' : '无'}
-                        </ElDescriptionsItem>
-                      </>
-                    )}
-                    <ElDescriptionsItem label='跳过TLS验证'>
-                      {props.dataSource.elasticSearch.skipTlsVerify ? '是' : '否'}
-                    </ElDescriptionsItem>
-                    <ElDescriptionsItem label='请求超时'>
-                      {props.dataSource.elasticSearch.timeout}ms
-                    </ElDescriptionsItem>
-                    <ElDescriptionsItem label='版本'>
-                      {getVersionLabel(props.dataSource.elasticSearch.version)}
-                    </ElDescriptionsItem>
-                    <ElDescriptionsItem label='最大并发分片请求量'>
-                      {props.dataSource.elasticSearch.maxShard}
-                    </ElDescriptionsItem>
-                    <ElDescriptionsItem label='时间戳字段'>
-                      {props.dataSource.elasticSearch.timeFieldName}
-                    </ElDescriptionsItem>
-                    <ElDescriptionsItem label='自定义HTTP标头'>
-                      {props.dataSource.elasticSearch.httpHeaders.length > 0
-                        ? props.dataSource.elasticSearch.httpHeaders
-                            .map((header) => `${header.key}: ${header.value}`)
-                            .join(', ')
-                        : '无'}
-                    </ElDescriptionsItem>
-                  </ElDescriptions>
                 </div>
-              )}
 
-            {/* Prometheus 配置 */}
-            {props.dataSource.type === DataSourceType.PROMETHEUS && props.dataSource.prometheus && (
+                <div class={styles.infoRow}>
+                  <span class={styles.infoLabel}>数据类型:</span>
+                  <ElTag type='success'>{getDataTypeLabel(props.dataSource.dataType)}</ElTag>
+                </div>
+
+                {props.dataSource.type !== DataSourceType.STAR_VIEW && (
+                  <div class={styles.infoRow}>
+                    <span class={styles.infoLabel}>URL:</span>
+                    <span class={styles.infoValue}>
+                      {props.dataSource.elasticSearch?.url ||
+                        props.dataSource.prometheus?.url ||
+                        props.dataSource.openSearch?.url ||
+                        props.dataSource.starView?.url ||
+                        '无'}
+                    </span>
+                  </div>
+                )}
+                <div class={styles.infoRow}>
+                  <span class={styles.infoLabel}>描述:</span>
+                  <span class={styles.infoValue}>{props.dataSource.description || '无'}</span>
+                </div>
+              </div>
+            </div>
+            {/* 2. 认证信息 */}
+            {props.dataSource.type !== DataSourceType.STAR_VIEW && (
               <div class={styles.section}>
-                <h3 class={styles.sectionTitle}>Prometheus 配置</h3>
-                <ElDescriptions column={1} border>
-                  <ElDescriptionsItem label='连接地址'>
-                    {props.dataSource.prometheus.url}
-                  </ElDescriptionsItem>
-                  <ElDescriptionsItem label='认证方式'>
-                    {getAuthTypeLabel(props.dataSource.prometheus.authType)}
-                  </ElDescriptionsItem>
-                  {props.dataSource.prometheus.authType === AuthType.BASIC_AUTH && (
+                <div class={styles.sectionHeader}>
+                  <span class={styles.sectionTitle}>认证信息</span>
+                </div>
+
+                <div class={styles.sectionContent}>
+                  <div class={styles.infoRow}>
+                    <span class={styles.infoLabel}>认证方式:</span>
+                    <span class={styles.infoValue}>
+                      {getAuthTypeLabel(
+                        props.dataSource.elasticSearch?.authType ||
+                          props.dataSource.prometheus?.authType ||
+                          props.dataSource.openSearch?.authType ||
+                          props.dataSource.starView?.authType ||
+                          AuthType.NONE,
+                      )}
+                    </span>
+                  </div>
+
+                  {(props.dataSource.elasticSearch?.authType === AuthType.BASIC_AUTH ||
+                    props.dataSource.prometheus?.authType === AuthType.BASIC_AUTH ||
+                    props.dataSource.openSearch?.authType === AuthType.BASIC_AUTH ||
+                    props.dataSource.starView?.authType === AuthType.BASIC_AUTH) && (
                     <>
-                      <ElDescriptionsItem label='用户名'>
-                        {props.dataSource.prometheus.username || '无'}
-                      </ElDescriptionsItem>
-                      <ElDescriptionsItem label='密码'>
-                        {props.dataSource.prometheus.password ? '******' : '无'}
-                      </ElDescriptionsItem>
+                      <div class={styles.infoRow}>
+                        <span class={styles.infoLabel}>用户名:</span>
+                        <span class={styles.infoValue}>
+                          {props.dataSource.elasticSearch?.username ||
+                            props.dataSource.prometheus?.username ||
+                            props.dataSource.openSearch?.username ||
+                            props.dataSource.starView?.username ||
+                            '无'}
+                        </span>
+                      </div>
+
+                      <div class={styles.infoRow}>
+                        <span class={styles.infoLabel}>密码:</span>
+                        <span class={styles.infoValue}>
+                          {props.dataSource.elasticSearch?.password ||
+                          props.dataSource.prometheus?.password ||
+                          props.dataSource.openSearch?.password ||
+                          props.dataSource.starView?.password
+                            ? '******'
+                            : '无'}
+                        </span>
+                      </div>
                     </>
                   )}
-                  <ElDescriptionsItem label='跳过TLS验证'>
-                    {props.dataSource.prometheus.skipTlsVerify ? '是' : '否'}
-                  </ElDescriptionsItem>
-                  <ElDescriptionsItem label='请求超时'>
-                    {props.dataSource.prometheus.timeout}ms
-                  </ElDescriptionsItem>
-                  <ElDescriptionsItem label='Prometheus类型'>
-                    {getVersionLabel(props.dataSource.prometheus.type)}
-                  </ElDescriptionsItem>
-                  <ElDescriptionsItem label='自定义HTTP标头'>
-                    {props.dataSource.prometheus.httpHeaders.length > 0
-                      ? props.dataSource.prometheus.httpHeaders
-                          .map((header) => `${header.key}: ${header.value}`)
-                          .join(', ')
-                      : '无'}
-                  </ElDescriptionsItem>
-                </ElDescriptions>
+
+                  <div class={styles.infoRow}>
+                    <span class={styles.infoLabel}>跳过TLS验证:</span>
+                    <span class={styles.infoValue}>
+                      {props.dataSource.elasticSearch?.skipTlsVerify ||
+                      props.dataSource.prometheus?.skipTlsVerify ||
+                      props.dataSource.openSearch?.skipTlsVerify ||
+                      props.dataSource.starView?.skipTlsVerify
+                        ? '是'
+                        : '否'}
+                    </span>
+                  </div>
+
+                  <div class={styles.infoRow}>
+                    <span class={styles.infoLabel}>自定义HTTP标头:</span>
+                    <div class={styles.httpHeadersTable}>
+                      <div class={styles.tableHeader}>
+                        <span class={styles.headerCell}>参数名称</span>
+                        <span class={styles.headerCell}>值</span>
+                      </div>
+                      {(() => {
+                        const hasHeaders =
+                          props.dataSource.elasticSearch?.httpHeaders?.length > 0 ||
+                          props.dataSource.prometheus?.httpHeaders?.length > 0 ||
+                          props.dataSource.openSearch?.httpHeaders?.length > 0 ||
+                          props.dataSource.starView?.httpHeaders?.length > 0
+
+                        if (hasHeaders) {
+                          const headers =
+                            props.dataSource.elasticSearch?.httpHeaders ||
+                            props.dataSource.prometheus?.httpHeaders ||
+                            props.dataSource.openSearch?.httpHeaders ||
+                            props.dataSource.starView?.httpHeaders ||
+                            []
+                          return headers.map((header, index) => (
+                            <div key={index} class={styles.tableRow}>
+                              <span class={styles.tableCell}>{header.key}</span>
+                              <span class={styles.tableCell}>{header.value}</span>
+                            </div>
+                          ))
+                        } else {
+                          return (
+                            <div class={styles.emptyRow}>
+                              <span>暂无自定义HTTP标头</span>
+                            </div>
+                          )
+                        }
+                      })()}
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
+            {/* 3. 高级设置 */}
+            {props.dataSource.type !== DataSourceType.STAR_VIEW && (
+              <div class={styles.section}>
+                <div class={styles.sectionHeader}>
+                  <span class={styles.sectionTitle}>高级设置</span>
+                </div>
 
-            {/* OpenSearch 配置 */}
-            {props.dataSource.type === DataSourceType.OPEN_SEARCH &&
-              props.dataSource.openSearch && (
-                <div class={styles.section}>
-                  <h3 class={styles.sectionTitle}>OpenSearch 配置</h3>
-                  <ElDescriptions column={1} border>
-                    <ElDescriptionsItem label='连接地址'>
-                      {props.dataSource.openSearch.url}
-                    </ElDescriptionsItem>
-                    <ElDescriptionsItem label='认证方式'>
-                      {getAuthTypeLabel(props.dataSource.openSearch.authType)}
-                    </ElDescriptionsItem>
-                    {props.dataSource.openSearch.authType === AuthType.BASIC_AUTH && (
+                <div class={styles.sectionContent}>
+                  <div class={styles.infoRow}>
+                    <span class={styles.infoLabel}>请求超时时间:</span>
+                    <span class={styles.infoValue}>
+                      {props.dataSource.elasticSearch?.timeout ||
+                        props.dataSource.prometheus?.timeout ||
+                        props.dataSource.openSearch?.timeout ||
+                        props.dataSource.starView?.timeout ||
+                        0}
+                      ms
+                    </span>
+                  </div>
+
+                  {/* ElasticSearch 特定字段 */}
+                  {props.dataSource.type === DataSourceType.ELASTIC_SEARCH &&
+                    props.dataSource.elasticSearch && (
                       <>
-                        <ElDescriptionsItem label='用户名'>
-                          {props.dataSource.openSearch.username || '无'}
-                        </ElDescriptionsItem>
-                        <ElDescriptionsItem label='密码'>
-                          {props.dataSource.openSearch.password ? '******' : '无'}
-                        </ElDescriptionsItem>
+                        <div class={styles.infoRow}>
+                          <span class={styles.infoLabel}>版本:</span>
+                          <span class={styles.infoValue}>
+                            {getVersionLabel(props.dataSource.elasticSearch.version)}
+                          </span>
+                        </div>
+
+                        <div class={styles.infoRow}>
+                          <span class={styles.infoLabel}>最大并发分片请求量:</span>
+                          <span class={styles.infoValue}>
+                            {props.dataSource.elasticSearch.maxShard}
+                          </span>
+                        </div>
+
+                        <div class={styles.infoRow}>
+                          <span class={styles.infoLabel}>时间戳字段:</span>
+                          <span class={styles.infoValue}>
+                            {props.dataSource.elasticSearch.timeFieldName}
+                          </span>
+                        </div>
                       </>
                     )}
-                    <ElDescriptionsItem label='跳过TLS验证'>
-                      {props.dataSource.openSearch.skipTlsVerify ? '是' : '否'}
-                    </ElDescriptionsItem>
-                    <ElDescriptionsItem label='请求超时'>
-                      {props.dataSource.openSearch.timeout}ms
-                    </ElDescriptionsItem>
-                    <ElDescriptionsItem label='版本'>
-                      {getVersionLabel(props.dataSource.openSearch.version)}
-                    </ElDescriptionsItem>
-                    <ElDescriptionsItem label='最大并发分片请求量'>
-                      {props.dataSource.openSearch.maxShard}
-                    </ElDescriptionsItem>
-                    <ElDescriptionsItem label='时间戳字段'>
-                      {props.dataSource.openSearch.timeFieldName}
-                    </ElDescriptionsItem>
-                    <ElDescriptionsItem label='自定义HTTP标头'>
-                      {props.dataSource.openSearch.httpHeaders.length > 0
-                        ? props.dataSource.openSearch.httpHeaders
-                            .map((header) => `${header.key}: ${header.value}`)
-                            .join(', ')
-                        : '无'}
-                    </ElDescriptionsItem>
-                  </ElDescriptions>
-                </div>
-              )}
 
+                  {/* Prometheus 特定字段 */}
+                  {props.dataSource.type === DataSourceType.PROMETHEUS &&
+                    props.dataSource.prometheus && (
+                      <>
+                        <div class={styles.infoRow}>
+                          <span class={styles.infoLabel}>Prometheus类型:</span>
+                          <span class={styles.infoValue}>
+                            {getVersionLabel(props.dataSource.prometheus.type)}
+                          </span>
+                        </div>
+                      </>
+                    )}
+
+                  {/* OpenSearch 特定字段 */}
+                  {props.dataSource.type === DataSourceType.OPEN_SEARCH &&
+                    props.dataSource.openSearch && (
+                      <>
+                        <div class={styles.infoRow}>
+                          <span class={styles.infoLabel}>版本:</span>
+                          <span class={styles.infoValue}>
+                            {getVersionLabel(props.dataSource.openSearch.version)}
+                          </span>
+                        </div>
+
+                        <div class={styles.infoRow}>
+                          <span class={styles.infoLabel}>最大并发分片请求量:</span>
+                          <span class={styles.infoValue}>
+                            {props.dataSource.openSearch.maxShard}
+                          </span>
+                        </div>
+
+                        <div class={styles.infoRow}>
+                          <span class={styles.infoLabel}>时间戳字段:</span>
+                          <span class={styles.infoValue}>
+                            {props.dataSource.openSearch.timeFieldName}
+                          </span>
+                        </div>
+                      </>
+                    )}
+                </div>
+              </div>
+            )}
             {/* 操作按钮 */}
             <div class={styles.actions}>
-              <ElButton onClick={handleClose}>关闭</ElButton>
+              <ElButton type='primary' onClick={testConnection}>
+                连接测试
+              </ElButton>
             </div>
           </div>
         )}

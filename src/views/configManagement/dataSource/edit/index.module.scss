@@ -8,11 +8,7 @@
 }
 
 .section {
-  margin-bottom: 40px;
-
-  &:last-child {
-    margin-bottom: 0;
-  }
+  margin-bottom: 50px;
 }
 
 .sectionHeader {
@@ -49,7 +45,7 @@
 }
 
 .sectionContent {
-  width: 800px;
+  width: 600px;
   padding-left: 36px;
 
   .el-form-item {
@@ -98,6 +94,12 @@
     }
   }
 }
+.httpHeadersFormItem {
+  :global(.el-form-item__content) {
+    flex-direction: column;
+    align-items: start;
+  }
+}
 
 .httpHeadersContainer {
   .httpHeaderRow {
@@ -115,28 +117,21 @@
     margin-top: 8px;
   }
 }
+.infoIcon {
+  color: #909399;
+  cursor: help;
+  font-size: 16px;
+  margin-left: 5px;
+  margin-top: -2px;
+  vertical-align: middle;
 
-.maxShardRow {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-
-  .el-input {
-    flex: 1;
-  }
-
-  .infoIcon {
-    color: #909399;
-    cursor: help;
-    font-size: 16px;
-
-    &:hover {
-      color: #409eff;
-    }
+  &:hover {
+    color: #409eff;
   }
 }
 
 .prometheusTypeRow {
+  width: 100%;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -160,14 +155,21 @@
   display: flex;
   justify-content: center;
   gap: 16px;
-  margin-top: 40px;
-  padding-top: 20px;
+  padding: 20px 0;
   border-top: 1px solid #e4e7ed;
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  background: #ffffff;
 
   .el-button {
     min-width: 100px;
     height: 40px;
   }
+}
+.customLabel {
+  display: block;
+  padding-right: 12px;
 }
 
 // 响应式设计

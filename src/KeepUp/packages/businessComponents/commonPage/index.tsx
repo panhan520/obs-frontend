@@ -27,7 +27,7 @@ const props = {
   /** fields */
   fields: {
     type: Array as PropType<IField[] | Ref<IField[]>>,
-    default: () => ([]),
+    default: () => [],
   },
   /** 获取列表 */
   listApi: {
@@ -82,7 +82,7 @@ const props = {
   /** 选中值 */
   selected: {
     type: Array,
-    default: () => ([]),
+    default: () => [],
   },
   /** 表格展开区域渲染器 */
   expandedRowRender: {
@@ -112,7 +112,7 @@ const props = {
       labelStyle: {
         width: '100px',
         margin: '0',
-      }
+      },
     }),
   },
   /** 刷新 */
@@ -135,23 +135,16 @@ export default defineComponent({
     const commonTableRef = ref<ICommonTableExpose>()
     const setterBarRef = ref()
     const extraPaneRef = ref()
-    const { 
-      allEditFields, 
+    const {
+      allEditFields,
       fetchEffects,
-      visibleFilterFields, 
+      visibleFilterFields,
       visibleColumns,
       allVisibleFilterFields,
       allVisibleColumnFields,
       setPagePreferences,
     } = usePage(props) // 数据派生
-    const {
-      query,
-      openEditor,
-      create,
-      filterReset,
-      download,
-      watchList,
-    } = usePageActions(
+    const { query, openEditor, create, filterReset, download, watchList } = usePageActions(
       props.paginationConfig,
       props.downloadApi,
       commonFilterRef,
@@ -160,18 +153,14 @@ export default defineComponent({
     ) // 动作抽离
     watchList(ref([visibleColumns]))
     provide(COMMON_FILTER_INJECTION_KEY, commonFilterRef)
-    const {
-      commonTableRefHeight,
-      updateTableHeight,
-      watchLayout,
-    } = useLayout(
+    const { commonTableRefHeight, updateTableHeight, watchLayout } = useLayout(
       containerRef,
       commonFilterRef,
       setterBarRef,
       extraPaneRef,
     ) // ui副作用
     watchLayout([visibleFilterFields, visibleColumns])
-    onMounted(async() => {
+    onMounted(async () => {
       emitter.on('openEditor', openEditor)
     })
     onUnmounted(() => {
@@ -209,40 +198,50 @@ export default defineComponent({
               updateTableHeight()
             }}
             v-slots={{
-              default: () => (
-                commonFilterRef.value?.collapseData?.collapsible 
-                  && <ElButton
+              default: () =>
+                commonFilterRef.value?.collapseData?.collapsible && (
+                  <ElButton
                     class={styles.btn}
-                    style={{ transform: `rotate(${commonFilterRef.value?.visible ? '180deg' : '0deg'})` }}
+                    style={{
+                      transform: `rotate(${commonFilterRef.value?.visible ? '180deg' : '0deg'})`,
+                    }}
                     icon={ArrowDown}
                     link
                   />
-              )
+                ),
             }}
           />
-          {slots?.extraPane && <div ref={extraPaneRef} class={styles.extraPane}>
-            {slots.extraPane()}
-          </div>}
+          {slots?.extraPane && (
+            <div ref={extraPaneRef} class={styles.extraPane}>
+              {slots.extraPane()}
+            </div>
+          )}
           <Space ref={setterBarRef} class={styles.setter} justify='end'>
             <ElSpace>
-              {props.createApi && <ElButton type='primary' icon={Plus} onClick={create}>新增</ElButton>}
+              {props.createApi && (
+                <ElButton type='primary' icon={Plus} onClick={create}>
+                  新增
+                </ElButton>
+              )}
               {slots.setterPrefix?.()}
-              {props.downloadApi && (slots.download?.(download) || <ElButton onClick={download}>下载</ElButton>)}
+              {props.downloadApi &&
+                (slots.download?.(download) || <ElButton onClick={download}>下载</ElButton>)}
             </ElSpace>
             <Space class={styles.end} fill justify='end'>
               {slots.setterSuffix?.()}
-              {props.refreshable && <ElButton icon={Refresh} link onClick={() => query({ text: '刷新' })} />}
-              {
-                props.pageKey
-                  && <CommonSetter
-                    allVisibleFilterFields={allVisibleFilterFields}
-                    allVisibleColumnFields={allVisibleColumnFields}
-                    onConfirm={setPagePreferences}
-                    v-slots={{
-                      reference: () => (<ElButton icon={Setting} link />)
-                    }}
-                  />
-              }
+              {props.refreshable && (
+                <ElButton icon={Refresh} link onClick={() => query({ text: '刷新' })} />
+              )}
+              {props.pageKey && (
+                <CommonSetter
+                  allVisibleFilterFields={allVisibleFilterFields}
+                  allVisibleColumnFields={allVisibleColumnFields}
+                  onConfirm={setPagePreferences}
+                  v-slots={{
+                    reference: () => <ElButton icon={Setting} link />,
+                  }}
+                />
+              )}
             </Space>
           </Space>
           <div class={styles.tableContainer}>
@@ -253,14 +252,20 @@ export default defineComponent({
               columns={visibleColumns}
               listApi={props.listApi}
               formatListParams={props.formatListParams}
-              beforeFetch={({ formData }) => { commonFilterRef.value?.keepFilter?.(formData) }}
+              beforeFetch={({ formData }) => {
+                commonFilterRef.value?.keepFilter?.(formData)
+              }}
               selectable={props.selectable}
               selectOptions={props.selectOptions}
               selected={props.selected}
               expandedRowRender={props.expandedRowRender}
-              onUpdate:selected={(val: any[]) => { emit('update:selected', val) }}
+              onUpdate:selected={(val: any[]) => {
+                emit('update:selected', val)
+              }}
               needPagination={props.needPagination}
-              onRowClick={(row: any, column: any, event: Event) => { emit('rowClick', { rowData: row, column, event }) }}
+              onRowClick={(row: any, column: any, event: Event) => {
+                emit('rowClick', { rowData: row, column, event })
+              }}
             />
           </div>
         </Space>
@@ -272,9 +277,11 @@ export default defineComponent({
           layout={props.editorLayout}
           effectHooks={fetchEffects.value}
           formatEditParams={props.formatEditParams}
-          onConfirmSuccess={() => { query({ page: commonTableRef.value.pagination?.page }) }}
+          onConfirmSuccess={() => {
+            query({ page: commonTableRef.value.pagination?.page })
+          }}
         />
       </>
     )
-  }
+  },
 })

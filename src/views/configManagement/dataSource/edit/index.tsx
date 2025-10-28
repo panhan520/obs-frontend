@@ -11,9 +11,8 @@ import {
   ElDivider,
   ElIcon,
   ElMessage,
-  ElUpload,
 } from 'element-plus'
-import { InfoFilled, Plus, Delete, Upload } from '@element-plus/icons-vue'
+import { InfoFilled, Plus, Delete } from '@element-plus/icons-vue'
 import {
   getDataSourceDetail,
   createDataSource,
@@ -88,7 +87,7 @@ export default defineComponent({
       description: '',
 
       // 认证信息
-      authType: AuthType.BASIC_AUTH,
+      authType: AuthType.NONE,
       username: '',
       password: '',
       skipTlsVerify: false,
@@ -115,18 +114,19 @@ export default defineComponent({
         case 'prometheus':
           formData.type = DataSourceType.PROMETHEUS
           formData.dataType = DataType.METRICS
-          formData.url = 'http://localhost:9090'
+          formData.url = 'http://localhost:9090/'
+          formData.timeout = 15000
           break
         case 'opensearch':
           formData.type = DataSourceType.OPEN_SEARCH
           formData.dataType = DataType.LOG
-          formData.url = 'http://localhost:9200'
+          formData.url = 'http://localhost:9200/'
           break
         case 'elasticsearch':
         default:
           formData.type = DataSourceType.ELASTIC_SEARCH
           formData.dataType = DataType.LOG
-          formData.url = 'http://localhost:9200'
+          formData.url = 'http://localhost:9200/'
           break
       }
     }
@@ -252,11 +252,6 @@ export default defineComponent({
         console.error('提交失败:', error)
         ElMessage.error(isEdit.value ? '更新失败' : '创建失败')
       }
-    }
-
-    // 取消操作
-    const cancelForm = () => {
-      router.push('/dataSource')
     }
 
     // 测试连接
@@ -414,7 +409,7 @@ export default defineComponent({
           ref={formRef}
           model={formData}
           rules={rules}
-          labelWidth='150px'
+          label-width='0'
           class={styles.editForm}
         >
           {/* 1. 基本信息 */}
@@ -426,22 +421,26 @@ export default defineComponent({
             </div>
 
             <div class={styles.sectionContent}>
-              <ElFormItem label='数据源名称' prop='name'>
+              <ElFormItem prop='name'>
+                <span class={styles.customLabel}>数据源名称</span>
                 <ElInput v-model={formData.name} placeholder='请输入' clearable />
               </ElFormItem>
 
-              <ElFormItem label='URL' prop='url'>
+              <ElFormItem prop='url'>
+                <span class={styles.customLabel}>URL</span>
                 <ElInput v-model={formData.url} placeholder='请输入' clearable />
               </ElFormItem>
 
-              <ElFormItem label='数据类型' prop='dataType'>
+              <ElFormItem prop='dataType'>
+                <span class={styles.customLabel}>数据类型</span>
                 <ElSelect v-model={formData.dataType} placeholder='请选择'>
                   <ElOption label='日志' value={DataType.LOG} />
                   <ElOption label='指标' value={DataType.METRICS} />
                 </ElSelect>
               </ElFormItem>
 
-              <ElFormItem label='描述' prop='description'>
+              <ElFormItem prop='description'>
+                <span class={styles.customLabel}>描述</span>
                 <ElInput
                   v-model={formData.description}
                   type='textarea'
@@ -461,7 +460,8 @@ export default defineComponent({
             </div>
 
             <div class={styles.sectionContent}>
-              <ElFormItem label='认证方式' prop='authType'>
+              <ElFormItem prop='authType'>
+                <span class={styles.customLabel}>认证方式</span>
                 <ElSelect v-model={formData.authType} placeholder='请选择'>
                   <ElOption label='无认证' value={AuthType.NONE} />
                   <ElOption label='基本认证 (Basic Authentication)' value={AuthType.BASIC_AUTH} />
@@ -486,16 +486,33 @@ export default defineComponent({
                 </>
               )}
 
-              <ElFormItem label='跳过TLS验证' prop='skipTlsVerify'>
+              <ElFormItem prop='skipTlsVerify'>
                 <div class={styles.checkboxRow}>
                   <ElCheckbox v-model={formData.skipTlsVerify}>跳过TLS验证</ElCheckbox>
-                  <ElIcon class={styles.infoIcon}>
-                    <InfoFilled />
-                  </ElIcon>
+                  <el-tooltip
+                    class='box-item'
+                    placement='top'
+                    v-slots={{
+                      content: () => (
+                        <div>
+                          跳过TLS证书验证会降低连接的安全性，因为这将使客户端接受任何证书
+                          <br />
+                          （包括自签名证书和过期证书）。这可能会使您的连接受到中间人攻击。建议
+                          <br />
+                          仅在测试环境或绝对必要的情况下使用。
+                        </div>
+                      ),
+                    }}
+                  >
+                    <ElIcon class={styles.infoIcon}>
+                      <InfoFilled />
+                    </ElIcon>
+                  </el-tooltip>
                 </div>
               </ElFormItem>
 
-              <ElFormItem label='自定义HTTP标头' prop='httpHeaders'>
+              <ElFormItem prop='httpHeaders' class={styles.httpHeadersFormItem}>
+                <span class={styles.customLabel}>自定义HTTP标头</span>
                 <div class={styles.httpHeadersContainer}>
                   {formData.httpHeaders.map((header, index) => (
                     <div key={index} class={styles.httpHeaderRow}>
@@ -522,7 +539,7 @@ export default defineComponent({
                     onClick={addHttpHeader}
                     class={styles.addHeaderBtn}
                   >
-                    +添加条件
+                    添加条件
                   </ElButton>
                 </div>
               </ElFormItem>
@@ -538,34 +555,49 @@ export default defineComponent({
             </div>
 
             <div class={styles.sectionContent}>
-              <ElFormItem label='请求超时 (ms)' prop='timeout'>
+              <ElFormItem prop='timeout'>
+                <span class={styles.customLabel}>请求超时 (ms)</span>
                 <ElInput v-model={formData.timeout} type='number' placeholder='请输入' />
               </ElFormItem>
 
               {/* ElasticSearch 特定字段 */}
               {formData.type === DataSourceType.ELASTIC_SEARCH && (
                 <>
-                  <ElFormItem label='版本' prop='elasticSearchVersion'>
+                  <ElFormItem prop='elasticSearchVersion'>
+                    <span class={styles.customLabel}>版本</span>
                     <ElSelect v-model={formData.elasticSearchVersion} placeholder='请选择'>
                       <ElOption label='8.x (ElasticSearch)' value={Version.ES8_SERIES} />
                       <ElOption label='9.x (ElasticSearch)' value={Version.ES9_SERIES} />
-                      <ElOption
-                        label='7.x及以下 (ElasticSearch)'
-                        value={Version.UPTO_ES710_SERIES}
-                      />
+                      <ElOption label='<= 7.10.x (OpenSearch)' value={Version.UPTO_ES710_SERIES} />
                     </ElSelect>
                   </ElFormItem>
 
-                  <ElFormItem label='最大并发分片请求量' prop='maxShard'>
-                    <div class={styles.maxShardRow}>
-                      <ElInput v-model={formData.maxShard} type='number' placeholder='请输入' />
-                      <ElIcon class={styles.infoIcon}>
-                        <InfoFilled />
-                      </ElIcon>
-                    </div>
+                  <ElFormItem prop='maxShard'>
+                    <span class={styles.customLabel}>
+                      最大并发分片请求量
+                      <el-tooltip
+                        class='box-item'
+                        placement='top'
+                        v-slots={{
+                          content: () => (
+                            <div>
+                              每次查询可并发访问的 shard 数，控制性能与负载平衡。默认 5。值越大，
+                              <br />
+                              查询越快但 ES 压力越大。
+                            </div>
+                          ),
+                        }}
+                      >
+                        <ElIcon class={styles.infoIcon}>
+                          <InfoFilled />
+                        </ElIcon>
+                      </el-tooltip>
+                    </span>
+                    <ElInput v-model={formData.maxShard} type='number' placeholder='请输入' />
                   </ElFormItem>
 
-                  <ElFormItem label='时间戳字段' prop='timeFieldName'>
+                  <ElFormItem prop='timeFieldName'>
+                    <span class={styles.customLabel}>时间戳字段</span>
                     <ElInput v-model={formData.timeFieldName} placeholder='请输入' clearable />
                   </ElFormItem>
                 </>
@@ -574,7 +606,29 @@ export default defineComponent({
               {/* Prometheus 特定字段 */}
               {formData.type === DataSourceType.PROMETHEUS && (
                 <>
-                  <ElFormItem label='Prometheus类型' prop='prometheusType'>
+                  <ElFormItem prop='prometheusType'>
+                    <span class={styles.customLabel}>
+                      Prometheus类型
+                      <el-tooltip
+                        class='box-item'
+                        placement='top'
+                        v-slots={{
+                          content: () => (
+                            <div>
+                              不同 Prometheus 类型实现有不同的 API 特性和行为，选择正确的类型可以
+                              <br />
+                              确保平台与数据源正常通信并获得最佳性能。不确定请保持默认的 查询越快但
+                              <br />
+                              ES 压力越大。 “Prometheus”。
+                            </div>
+                          ),
+                        }}
+                      >
+                        <ElIcon class={styles.infoIcon}>
+                          <InfoFilled />
+                        </ElIcon>
+                      </el-tooltip>
+                    </span>
                     <div class={styles.prometheusTypeRow}>
                       <ElSelect v-model={formData.prometheusType} placeholder='请选择'>
                         <ElOption label='Prometheus' value={PrometheusType.PROMETHEUS} />
@@ -583,9 +637,6 @@ export default defineComponent({
                           value={PrometheusType.VICTORIA_METRICS}
                         />
                       </ElSelect>
-                      <ElIcon class={styles.infoIcon}>
-                        <InfoFilled />
-                      </ElIcon>
                     </div>
                   </ElFormItem>
                 </>
@@ -594,7 +645,8 @@ export default defineComponent({
               {/* OpenSearch 特定字段 */}
               {formData.type === DataSourceType.OPEN_SEARCH && (
                 <>
-                  <ElFormItem label='版本' prop='openSearchVersion'>
+                  <ElFormItem prop='openSearchVersion'>
+                    <span class={styles.customLabel}>版本</span>
                     <ElSelect v-model={formData.openSearchVersion} placeholder='请选择'>
                       <ElOption label='1.x (OpenSearch)' value={OpenSearchVersion.OS1_SERIES} />
                       <ElOption label='2.x (OpenSearch)' value={OpenSearchVersion.OS2_SERIES} />
@@ -602,16 +654,32 @@ export default defineComponent({
                     </ElSelect>
                   </ElFormItem>
 
-                  <ElFormItem label='最大并发分片请求量' prop='maxShard'>
-                    <div class={styles.maxShardRow}>
-                      <ElInput v-model={formData.maxShard} type='number' placeholder='请输入' />
-                      <ElIcon class={styles.infoIcon}>
-                        <InfoFilled />
-                      </ElIcon>
-                    </div>
+                  <ElFormItem prop='maxShard'>
+                    <span class={styles.customLabel}>
+                      最大并发分片请求量
+                      <el-tooltip
+                        class='box-item'
+                        placement='top'
+                        v-slots={{
+                          content: () => (
+                            <div>
+                              每次查询可并发访问的 shard 数，控制性能与负载平衡。默认 5。值越大，
+                              <br />
+                              查询越快但 ES 压力越大。
+                            </div>
+                          ),
+                        }}
+                      >
+                        <ElIcon class={styles.infoIcon}>
+                          <InfoFilled />
+                        </ElIcon>
+                      </el-tooltip>
+                    </span>
+                    <ElInput v-model={formData.maxShard} type='number' placeholder='请输入' />
                   </ElFormItem>
 
-                  <ElFormItem label='时间戳字段' prop='timeFieldName'>
+                  <ElFormItem prop='timeFieldName'>
+                    <span class={styles.customLabel}>时间戳字段</span>
                     <ElInput v-model={formData.timeFieldName} placeholder='请输入' clearable />
                   </ElFormItem>
                 </>
@@ -621,11 +689,10 @@ export default defineComponent({
 
           {/* 操作按钮 */}
           <div class={styles.formActions}>
-            <ElButton onClick={cancelForm}>取消</ElButton>
-            <ElButton onClick={testConnection}>连接测试</ElButton>
             <ElButton type='primary' onClick={submitForm}>
-              {isEdit.value ? '更新' : '创建'}
+              保存
             </ElButton>
+            <ElButton onClick={testConnection}>连接测试</ElButton>
           </div>
         </ElForm>
       </div>

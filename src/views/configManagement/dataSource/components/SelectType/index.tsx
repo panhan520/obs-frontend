@@ -68,7 +68,7 @@ export default defineComponent({
               >
                 <div class={styles.cardContent}>
                   <div class={styles.iconContainer}>
-                    <img class={styles.img} src={type.img} alt='' />
+                    <img class={styles.img} src={type.img} alt={type.name} />
                   </div>
                   <div class={styles.typeInfo}>
                     <h3 class={styles.typeName}>{type.name}</h3>
@@ -78,12 +78,6 @@ export default defineComponent({
             ))}
           </div>
         </div>
-
-        {/* <template #footer>
-          <div class={styles.footer}>
-            <ElButton onClick={handleClose}>取消</ElButton>
-          </div>
-        </template> */}
       </ElDialog>
     )
   },

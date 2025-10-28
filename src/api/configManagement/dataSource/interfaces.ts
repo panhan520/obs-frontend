@@ -7,12 +7,27 @@ export enum DataSourceType {
   PROMETHEUS = 'PROMETHEUS',
 }
 
+// 数据源类型选项
+export const dataSourceTypeOptions = [
+  { label: '全部', value: 'All' },
+  { label: 'Prometheus', value: DataSourceType.PROMETHEUS },
+  { label: 'ES', value: DataSourceType.ELASTIC_SEARCH },
+  { label: 'OpenSearch', value: DataSourceType.OPEN_SEARCH },
+]
+
 // 数据类型枚举
 export enum DataType {
   DATA_TYPE_UNKNOWN = 'DATA_TYPE_UNKNOWN',
   METRICS = 'METRICS',
   LOG = 'LOG',
 }
+
+// 数据源类型选项
+export const dataTypeOptions = [
+  { label: '全部', value: 'All' },
+  { label: '日志', value: DataType.LOG },
+  { label: '指标', value: DataType.METRICS },
+]
 
 // 来源枚举
 export enum Source {
@@ -93,6 +108,17 @@ export enum OpenSearchVersion {
   OS3_SERIES = 'OS3_SERIES',
 }
 
+// StarView配置接口
+export interface StarViewConfig {
+  url: string
+  authType: AuthType
+  username?: string
+  password?: string
+  skipTlsVerify: boolean
+  httpHeaders: HttpHeader[]
+  timeout: number
+}
+
 // 数据源详情接口
 export interface DataSourceDetail {
   id: string
@@ -106,6 +132,7 @@ export interface DataSourceDetail {
   elasticSearch?: ElasticSearchConfig
   prometheus?: PrometheusConfig
   openSearch?: OpenSearchConfig
+  starView?: StarViewConfig
 }
 
 // 数据源列表查询参数
@@ -134,6 +161,7 @@ export interface CreateDataSourceParams {
   elasticSearch?: ElasticSearchConfig
   prometheus?: PrometheusConfig
   openSearch?: OpenSearchConfig
+  starView?: StarViewConfig
 }
 
 // 更新数据源参数

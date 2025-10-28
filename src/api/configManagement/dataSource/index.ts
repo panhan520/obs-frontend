@@ -15,17 +15,17 @@ const request = getReqByProxyModule({ proxyModule: PROXY.API })
 export const getDataSourceList = (
   params: DataSourceListParams,
 ): Promise<DataSourceListResponse> => {
-  return request.get('/api/v1/datasources', { params })
-}
-
-// 获取数据源详情
-export const getDataSourceDetail = (id: string): Promise<DataSourceDetail> => {
-  return request.get(`/api/v1/datasources/${id}`)
+  return request.get('/config/v1/datasourceManagement/list', { params })
 }
 
 // 创建数据源
 export const createDataSource = (data: CreateDataSourceParams): Promise<DataSourceDetail> => {
-  return request.post('/api/v1/datasources', data)
+  return request.post('/config/v1/datasourceManagement', data)
+}
+
+// 获取数据源详情
+export const getDataSourceDetail = (id: string): Promise<DataSourceDetail> => {
+  return request.get(`/config/v1/datasourceManagement/${id}`)
 }
 
 // 更新数据源
@@ -33,17 +33,17 @@ export const updateDataSource = (
   id: string,
   data: UpdateDataSourceParams,
 ): Promise<DataSourceDetail> => {
-  return request.put(`/api/v1/datasources/${id}`, data)
+  return request.put(`/config/v1/datasourceManagement/${id}`, data)
 }
 
 // 删除数据源
 export const deleteDataSource = (id: string): Promise<void> => {
-  return request.delete(`/api/v1/datasources/${id}`)
+  return request.delete(`/config/v1/datasourceManagement/${id}`)
 }
 
 // 测试数据源连接
 export const testDataSourceConnection = (
   data: CreateDataSourceParams,
 ): Promise<{ success: boolean; message: string }> => {
-  return request.post('/api/v1/datasources/test', data)
+  return request.post('/config/v1/datasourceManagement/connect', data)
 }

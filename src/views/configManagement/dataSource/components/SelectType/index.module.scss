@@ -78,12 +78,6 @@
   line-height: 1.5;
 }
 
-.footer {
-  display: flex;
-  justify-content: center;
-  gap: 16px;
-}
-
 // 响应式设计
 @media (max-width: 768px) {
   .typeGrid {

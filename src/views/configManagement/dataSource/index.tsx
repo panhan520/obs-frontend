@@ -1,6 +1,7 @@
 import { defineComponent, ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElButton } from 'element-plus'
+import { Plus } from '@element-plus/icons-vue'
 import { CommonPage } from '~/KeepUp/packages/businessComponents'
 import {
   getDataSourceList,
@@ -48,6 +49,7 @@ export default defineComponent({
     }
 
     const handleShowDetail = (dataSource: DataSourceDetail) => {
+      console.log(dataSource)
       selectedDataSource.value = dataSource
       showDetailDrawer.value = true
     }
@@ -62,22 +64,25 @@ export default defineComponent({
 
     return () => (
       <div>
-        <div style={{ marginBottom: '16px', textAlign: 'right' }}>
-          <ElButton type='primary' onClick={handleCreate}>
-            新建数据源
-          </ElButton>
-        </div>
         <CommonPage
           ref={commonPageRef}
           fields={fields.value}
           listApi={getListApi}
-          createApi={createDataSource}
           editApi={updateDataSource}
           formatListParams={formatListParams}
           pageKey='dataSource'
           filterColumns={5}
           rowKey='id'
           needPagination
+          v-slots={{
+            setterPrefix: () => (
+              <>
+                <ElButton type='primary' icon={Plus} onClick={handleCreate}>
+                  新增
+                </ElButton>
+              </>
+            ),
+          }}
         />
 
         {/* 数据源类型选择弹框 */}
@@ -95,7 +100,7 @@ export default defineComponent({
           onUpdate:modelValue={(val: boolean) => {
             showDetailDrawer.value = val
           }}
-          dataSource={selectedDataSource}
+          dataSource={selectedDataSource.value}
         />
       </div>
     )

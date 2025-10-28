@@ -5,6 +5,10 @@ import {
   getDataSourceDetail,
   updateDataSource,
 } from '~/api/configManagement/dataSource'
+import {
+  dataSourceTypeOptions,
+  dataTypeOptions,
+} from '~/api/configManagement/dataSource/interfaces'
 import Space from '~/KeepUp/packages/basicComponents/space'
 import emitter from '~/utils/emitter'
 import type { IGetFieldsParams } from '../../availabilityMonitoring/interface'
@@ -16,18 +20,15 @@ const commonAttrs = {
 }
 export const getFields = ({ router, commonPageRef }: IGetFieldsParams): IField[] => [
   {
-    prop: 'inspectName',
+    prop: 'num',
     label: '序号',
     isColumn: true,
     columnConfig: {
       width: 60,
-      render({ rowIndex }) {
-        return h(ElText, {}, `${rowIndex + 1}`)
-      },
     },
   },
   {
-    prop: 'domain',
+    prop: 'name',
     label: '数据源名称',
     isColumn: true,
     columnConfig: {
@@ -37,7 +38,7 @@ export const getFields = ({ router, commonPageRef }: IGetFieldsParams): IField[]
     filterConfig: {
       type: 'void',
       properties: {
-        search: {
+        name: {
           type: 'string',
           'x-decorator': 'FormItem',
           'x-component': 'Input',
@@ -52,14 +53,14 @@ export const getFields = ({ router, commonPageRef }: IGetFieldsParams): IField[]
     },
   },
   {
-    prop: 'taskStatus',
+    prop: 'type',
     label: '数据源类型',
     isColumn: true,
     isFilter: true,
     filterConfig: {
       type: 'void',
       properties: {
-        search: {
+        type: {
           type: 'string',
           'x-decorator': 'FormItem',
           'x-component': 'Select',
@@ -69,19 +70,20 @@ export const getFields = ({ router, commonPageRef }: IGetFieldsParams): IField[]
           'x-component-props': {
             placeholder: '请选择',
           },
+          enum: dataSourceTypeOptions,
         },
       },
     },
   },
   {
-    prop: 'inspectStatus',
+    prop: 'dataType',
     label: '数据类型',
     isColumn: true,
     isFilter: true,
     filterConfig: {
       type: 'void',
       properties: {
-        search: {
+        dataType: {
           type: 'string',
           'x-decorator': 'FormItem',
           'x-component': 'Select',
@@ -91,22 +93,23 @@ export const getFields = ({ router, commonPageRef }: IGetFieldsParams): IField[]
           'x-component-props': {
             placeholder: '请选择',
           },
+          enum: dataTypeOptions,
         },
       },
     },
   },
   {
-    prop: 'project',
+    prop: 'source',
     label: '来源',
     isColumn: true,
   },
   {
-    prop: 'frequency',
+    prop: 'description',
     label: '描述',
     isColumn: true,
   },
   {
-    prop: 'createdAt',
+    prop: 'updatedAt',
     label: '最近更新时间',
     isColumn: true,
     columnConfig: {
@@ -176,10 +179,28 @@ export const getFields = ({ router, commonPageRef }: IGetFieldsParams): IField[]
                 ...commonAttrs,
                 onClick: async (e: Event) => {
                   e.stopPropagation()
-                  // const res = await getDataSourceDetail(rowData.id)
-                  // 通过事件总线通知父组件显示详情抽屉
-                  console.log(1)
-                  emitter.emit('showDataSourceDetail')
+                  try {
+                    // const res = await getDataSourceDetail(rowData.id)
+                    // 通过事件总线通知父组件显示详情抽屉
+                    const res = {
+                      type: 'OPEN_SEARCH',
+                      dataType: 'METRICS',
+                      source: 'BUILT_IN',
+                      createdAt: '2025-01-01',
+                      updatedAt: '2025-01-01',
+                      elasticSearch: {
+                        url: 'http://localhost:9090',
+                        httpHeader: [],
+                      },
+                    }
+                    emitter.emit('showDataSourceDetail', res)
+                  } catch (error) {
+                    console.error('获取数据源详情失败:', error)
+                    ElMessage({
+                      message: '获取数据源详情失败',
+                      type: 'error',
+                    })
+                  }
                 },
               },
               '详情',
