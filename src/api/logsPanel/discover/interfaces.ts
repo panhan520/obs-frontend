@@ -1,4 +1,3 @@
-// types/log.ts
 export interface LogField {
   name: string
   type: string
@@ -31,4 +30,62 @@ export interface FilterCondition {
   operator: string
   value: string
   isValid?: boolean // 是否为有效的过滤条件
+}
+
+// 检索日志柱状图查询参数
+export interface LogHistogramParams {
+  dataSourceId?: number
+  indexName: string
+  searchTimeType: string
+  startTimestamp?: string
+  endTimestamp?: string
+  minutesPast?: number
+  queryCondition?: string
+  filterConditions?: []
+}
+
+// 检索日志柱状图响应
+export interface LogHistogramResponse {
+  summary: []
+  histogram: []
+}
+
+// 分页检索列表查询参数
+export interface LogListParams {
+  dataSourceId?: number
+  indexName: string
+  searchTimeType: string
+  startTimestamp?: string
+  endTimestamp?: string
+  minutesPast?: number
+  queryCondition?: string
+  filterConditions?: []
+  page?: number
+  pageSize?: number
+  sortOrder?: string
+}
+
+// 分页检索列表响应
+export interface LogListResponse {
+  total: number
+  logs: []
+}
+// 检索日志视图查询参数
+export interface QueryCondsResponse {
+  views: []
+}
+// 保存检索条件查询参数
+export interface SaveCondsResponse {
+  details: []
+}
+// 索引列表查询参数
+export interface IndexListParams {
+  dataSourceId: number
+}
+// 索引列表响应
+export interface IndexListResponse {
+  data: {
+    total: number
+    details: []
+  }
 }

@@ -2,6 +2,8 @@
 import { defineComponent, ref, computed, onMounted } from 'vue'
 import { ElSelect, ElOption, ElInput, ElIcon, ElButton, ElDialog, ElDrawer } from 'element-plus'
 import { Search, Refresh } from '@element-plus/icons-vue'
+import { getIndexList, getQueryConds, getLogHistogram, getLogList } from '@/api/logsPanel/discover'
+import { getDataSourceList } from '@/api/configManagement/dataSource'
 import {
   LogField,
   LogDocument,
@@ -19,8 +21,15 @@ import styles from './index.module.scss'
 export default defineComponent({
   name: 'LogSearchView',
   setup() {
-    // 响应式数据
+    // 数据源
+    const dataSourceList = ref<string[]>(['categraf-index-logs*'])
+    const dataSourceId = ref<number>(1)
+    // 索引
+    const indexList = ref<string[]>(['categraf-index-logs*'])
+    const indexName = ref<string>('categraf-index-logs*')
+    // 筛选字段（前端控制）
     const searchField = ref('')
+    // 搜索条件（查询语句）
     const searchQuery = ref('')
     const showFilterDialog = ref(false)
     // 视图管理状态
@@ -82,7 +91,7 @@ export default defineComponent({
           : now,
         payload: {
           dataSource: indexList.value,
-          index: currentIndex.value,
+          index: indexName.value,
           searchQuery: searchQuery.value,
           timeRange: timeRange.value,
         },
@@ -108,14 +117,11 @@ export default defineComponent({
     const openView = (v: SavedView) => {
       activeViewId.value = v.id
       activeViewTitle.value = v.title
-      currentIndex.value = v.payload.index
+      indexName.value = v.payload.index
       searchQuery.value = v.payload.searchQuery
       timeRange.value = v.payload.timeRange
       showOpenDrawer.value = false
     }
-
-    const indexList = ref<string[]>(['categraf-index-logs*'])
-    const currentIndex = ref<string>('categraf-index-logs*')
 
     // 字段数据
     const availableFields = ref<LogField[]>([
@@ -241,19 +247,22 @@ export default defineComponent({
     }
 
     // 处理查询数据
-    const executeSearch = (queryData: any) => {
+    const executeSearch = async (queryData: any) => {
       console.log('查询数据:', queryData)
-      // 这里可以调用后端API，传递查询数据
-      // 示例：
-      // api.searchLogs(queryData).then(response => {
-      //   // 处理响应数据
-      // })
+      const params = {
+        ...queryData,
+        dataSourceId: dataSourceId.value,
+        indexName: indexName.value,
+        filterConditions: filterConditions.value,
+      }
+      const resCharts = await getLogHistogram(params)
+      const res = await getLogList(params)
     }
 
     const addFilterCondition = (filter: FilterCondition) => {
       filterConditions.value.push(filter)
     }
-
+    // 打开添加过滤条件弹框
     const handleAddFilter = () => {
       showFilterDialog.value = true
     }
@@ -280,7 +289,27 @@ export default defineComponent({
         }
       })
     }
+    // 获取数据源列表
+    const getDataSourceListData = async () => {
+      const res = await getDataSourceList({})
+      // dataSourceList.value = res
+      console.log('获取数据源列表数据', res)
+    }
+    // 获取索引列表数据
+    const getIndexListData = async () => {
+      const res = await getIndexList({ dataSourceId: dataSourceId.value })
+      indexList.value = res.data.details
+      console.log('获取索引列表数据', res)
+    }
+    // 查询保存的检索条件列表
+    const getQueryCondsData = async () => {
+      const res = await getQueryConds()
+      console.log('获取查询条件数据', res)
+    }
     onMounted(() => {
+      getDataSourceListData()
+      getIndexListData()
+      getQueryCondsData()
       loadViews()
       // 模拟数据
       const res = [
@@ -332,17 +361,17 @@ export default defineComponent({
             <div class={styles.panelSection}>
               <div class={styles.indexSelectRow}>
                 <ElSelect
-                  v-model={currentIndex.value}
+                  v-model={dataSourceId.value}
                   class={styles.indexSelect}
                   placeholder='选择数据源'
                 >
-                  {indexList.value.map((it) => (
+                  {dataSourceList.value.map((it) => (
                     <ElOption label={it} value={it} />
                   ))}
                 </ElSelect>
                 <ElButton
                   onClick={() => {
-                    /* 预留：刷新索引列表 */
+                    getDataSourceListData()
                   }}
                 >
                   <ElIcon>
@@ -355,7 +384,7 @@ export default defineComponent({
             <div class={styles.panelSection}>
               <div class={styles.indexSelectRow}>
                 <ElSelect
-                  v-model={currentIndex.value}
+                  v-model={indexName.value}
                   class={styles.indexSelect}
                   placeholder='选择索引'
                 >
@@ -365,7 +394,7 @@ export default defineComponent({
                 </ElSelect>
                 <ElButton
                   onClick={() => {
-                    /* 预留：刷新索引列表 */
+                    getIndexListData()
                   }}
                 >
                   <ElIcon>

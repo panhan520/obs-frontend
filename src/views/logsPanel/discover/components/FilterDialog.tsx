@@ -24,19 +24,19 @@ export default defineComponent({
   setup(props, { emit }) {
     const newFilter = reactive<FilterCondition>({
       field: '',
-      operator: 'equals',
+      operator: 'eq',
       value: '',
     })
 
     const handleAddFilter = () => {
       if (newFilter.field && newFilter.operator && newFilter.value) {
         // 验证过滤条件是否有效
-        const isValid = validateFilterCondition(newFilter)
-        const filterWithValidation = { ...newFilter, isValid }
+        // const isValid = validateFilterCondition(newFilter)
+        const filterWithValidation = { ...newFilter }
 
         emit('addFilter', filterWithValidation)
         newFilter.field = ''
-        newFilter.operator = 'equals'
+        newFilter.operator = 'eq'
         newFilter.value = ''
         emit('update:modelValue', false)
       }
@@ -98,8 +98,8 @@ export default defineComponent({
             </ElFormItem>
             <ElFormItem label='运算符'>
               <ElSelect v-model={newFilter.operator}>
-                <ElOption label='等于 (=)' value='equals' />
-                <ElOption label='不等于 (≠)' value='not_equals' />
+                <ElOption label='等于 (=)' value='eq' />
+                <ElOption label='不等于 (≠)' value='ne' />
                 <ElOption label='包含 (match)' value='contains' />
                 <ElOption label='不包含 (not match)' value='not_contains' />
                 <ElOption label='通配 (wildcard)' value='wildcard' />

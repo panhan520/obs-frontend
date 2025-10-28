@@ -1,92 +1,40 @@
-import getReqByProxyModule from '~/config/request'
-const req = getReqByProxyModule({ proxyModule: 'OPENSEARCH' })
+import getReqByProxyModule from '@/config/request'
+import { PROXY } from '@/config/constants'
+import type {
+  LogHistogramParams,
+  LogHistogramResponse,
+  LogListParams,
+  LogListResponse,
+  QueryCondsResponse,
+  SaveCondsResponse,
+  IndexListParams,
+  IndexListResponse,
+} from './interfaces'
 
-export interface TimeRange {
-  from: string // ISO string
-  to: string // ISO string
+// 创建请求实例
+const request = getReqByProxyModule({ proxyModule: PROXY.API })
+
+// 检索日志柱状图
+export const getLogHistogram = (params: LogHistogramParams): Promise<LogHistogramResponse> => {
+  return request.post('/api/v1/logging/log/histogram', params)
 }
 
-export interface SearchRequest {
-  index: string
-  size?: number
-  from?: number
-  query?: string // simple query string
-  filters?: Array<{ field: string; operator: 'is' | 'is_not'; value: string }>
-  time?: TimeRange
-  sort?: Array<{ field: string; order: 'asc' | 'desc' }>
+// 分页检索列表
+export const getLogList = (params: LogListParams): Promise<LogListResponse> => {
+  return request.post('/api/v1/logging/log/list', params)
 }
 
-export interface OpenSearchHit<T = any> {
-  _index: string
-  _id: string
-  _source: T
-  sort?: any[]
+// 查询保存的检索条件列表
+export const getQueryConds = (): Promise<QueryCondsResponse> => {
+  return request.get('/api/v1/logging/log/query-conds')
 }
 
-export interface SearchResponse<T = any> {
-  took: number
-  timed_out: boolean
-  hits: {
-    total: { value: number; relation: string } | number
-    hits: OpenSearchHit<T>[]
-  }
+// 保存检索条件
+export const setQueryConds = (params: LogHistogramParams): Promise<SaveCondsResponse> => {
+  return request.post('/api/v1/logging/save-query', params)
 }
 
-function buildDsl(body: SearchRequest) {
-  const must: any[] = []
-  const mustNot: any[] = []
-
-  if (body.query && body.query.trim()) {
-    must.push({
-      query_string: {
-        query: body.query,
-        default_operator: 'AND',
-      },
-    })
-  }
-
-  if (body.filters && body.filters.length) {
-    body.filters.forEach((f) => {
-      const term = { match_phrase: { [f.field]: f.value } }
-      if (f.operator === 'is_not') mustNot.push(term)
-      else must.push(term)
-    })
-  }
-
-  if (body.time) {
-    must.push({
-      range: {
-        '@timestamp': {
-          gte: body.time.from,
-          lte: body.time.to,
-        },
-      },
-    })
-  }
-
-  const dsl: any = {
-    size: body.size ?? 25,
-    from: body.from ?? 0,
-    sort: (body.sort && body.sort.length
-      ? body.sort.map((s) => ({ [s.field]: { order: s.order } }))
-      : [{ '@timestamp': { order: 'desc' } }]) as any,
-    query: {
-      bool: {
-        must,
-        must_not: mustNot,
-      },
-    },
-  }
-
-  return dsl
-}
-
-export async function searchLogs<T = any>(payload: SearchRequest) {
-  const { index, ...rest } = payload
-  const dsl = buildDsl(rest as SearchRequest)
-  const res = (await req.post<SearchResponse<T>>(
-    `/${encodeURIComponent(index)}/_search`,
-    dsl,
-  )) as unknown as SearchResponse<T>
-  return res
+// 查询索引列表
+export const getIndexList = (params: IndexListParams): Promise<IndexListResponse> => {
+  return request.post('/api/v1/logging/index/list', params)
 }

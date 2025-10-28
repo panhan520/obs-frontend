@@ -9,9 +9,13 @@ export const PROXY = {
   /** 线路可观测 */
   AVAILABILITY: import.meta.env.VITE_APP_BASE_API_AVAILABILITY,
   /** 域名 */
-  DOMAIN: qiankunWindow.__POWERED_BY_QIANKUN__ ? import.meta.env.VITE_APP_BASE_API_MICRO_APP_DOMAIN : import.meta.env.VITE_APP_BASE_API_DOMAIN,
+  DOMAIN: qiankunWindow.__POWERED_BY_QIANKUN__
+    ? import.meta.env.VITE_APP_BASE_API_MICRO_APP_DOMAIN
+    : import.meta.env.VITE_APP_BASE_API_DOMAIN,
   /** 追踪 */
-  TRACE: qiankunWindow.__POWERED_BY_QIANKUN__ ? import.meta.env.VITE_APP_BASE_API_MICRO_APP_TRACE : import.meta.env.VITE_APP_BASE_API_TRACE,
+  TRACE: qiankunWindow.__POWERED_BY_QIANKUN__
+    ? import.meta.env.VITE_APP_BASE_API_MICRO_APP_TRACE
+    : import.meta.env.VITE_APP_BASE_API_TRACE,
   /** AI智能体 */
   AIAGENT: import.meta.env.VITE_APP_BASE_API_AIAGENT,
   /**仪表盘 */
@@ -20,4 +24,6 @@ export const PROXY = {
   CORE: import.meta.env.VITE_APP_CORE_API,
   /**opensearch */
   OPENSEARCH: import.meta.env.VITE_APP_OPENSEARCH_API,
+  /** 日志 */
+  LOG: import.meta.env.VITE_APP_BASE_API_LOG,
 }

@@ -93,9 +93,9 @@ export default defineComponent({
         if (startDate.value) {
           // 如果是"现在"时间，每次查询时都重新获取当前时间
           if (isStartTimeNow.value) {
-            queryData.startTimestamp = Math.floor(now.getTime() / 1000)
+            queryData.startTimestamp = Math.floor(now.getTime())
           } else {
-            queryData.startTimestamp = Math.floor(startDate.value.getTime() / 1000)
+            queryData.startTimestamp = Math.floor(startDate.value.getTime())
           }
         }
 
@@ -103,9 +103,9 @@ export default defineComponent({
         if (endDate.value) {
           // 如果是"现在"时间，每次查询时都重新获取当前时间
           if (isEndTimeNow.value) {
-            queryData.endTimestamp = Math.floor(now.getTime() / 1000)
+            queryData.endTimestamp = Math.floor(now.getTime())
           } else {
-            queryData.endTimestamp = Math.floor(endDate.value.getTime() / 1000)
+            queryData.endTimestamp = Math.floor(endDate.value.getTime())
           }
         }
       }
@@ -129,7 +129,7 @@ export default defineComponent({
     const includeWeek = ref(false)
 
     // 预定义时间选择状态
-    const isTimePaused = ref(true) // 默认为启用状态
+    const isTimePaused = ref(false) // 默认为启用状态
     const selectedPredefinedTime = ref<PredefinedTimeOption | null>(PREDEFINED_TIME_OPTIONS[0]) // 默认选择15分钟
 
     // 标记哪些时间是"现在"时间

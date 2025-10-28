@@ -39,8 +39,8 @@ const proxy = {
   [`${proxyPrefix}/availability-proxy`]: {
     target: 'https://gateway.observe.dev.gainetics.io',
     changeOrigin: true,
-    rewrite: (path) => 
-      qiankunWindow.__POWERED_BY_QIANKUN__ 
+    rewrite: (path) =>
+      qiankunWindow.__POWERED_BY_QIANKUN__
         ? path.replace(/^\/STARVIEW\/availability-proxy/, '')
         : path.replace(/^\/availability-proxy/, ''),
   },
@@ -48,19 +48,23 @@ const proxy = {
   [`${proxyPrefix}/domain-proxy`]: {
     target: 'https://gateway.observe.dev.eks.gainetics.io/domain/api/v1',
     changeOrigin: true,
-    rewrite: (path) => 
-      qiankunWindow.__POWERED_BY_QIANKUN__ 
-        ? path.replace(/^\/STARVIEW\/domain-proxy/, '') 
+    rewrite: (path) =>
+      qiankunWindow.__POWERED_BY_QIANKUN__
+        ? path.replace(/^\/STARVIEW\/domain-proxy/, '')
         : path.replace(/^\/domain-proxy/, ''),
   },
   /** 追踪 */
   [`${proxyPrefix}/trace-proxy`]: {
     target: 'https://grafana-chinese.observe.dev.eks.gainetics.io',
     changeOrigin: true,
-    rewrite: (path) => 
-      qiankunWindow.__POWERED_BY_QIANKUN__ 
+    rewrite: (path) =>
+      qiankunWindow.__POWERED_BY_QIANKUN__
         ? path.replace(/^\/STARVIEW\/trace-proxy/, '')
         : path.replace(/^\/trace-proxy/, ''),
+  },
+  [`${proxyPrefix}/api/v1/logging`]: {
+    target: 'https://gateway.observe.dev.eks.gainetics.io',
+    changeOrigin: true,
   },
 }
 
@@ -82,19 +86,16 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => {
       }),
       // gzip压缩 生产环境生成 .gz 文件
       mode === 'production' &&
-      viteCompression({
-        verbose: true,
-        disable: false,
-        threshold: 10240,
-        algorithm: 'gzip',
-        ext: '.gz',
+        viteCompression({
+          verbose: true,
+          disable: false,
+          threshold: 10240,
+          algorithm: 'gzip',
+          ext: '.gz',
+        }),
+      qiankun(MICRO_APP_NAME, {
+        useDevMode: true,
       }),
-      qiankun(
-        MICRO_APP_NAME, 
-        {
-          useDevMode: true,
-        },
-      ),
     ],
     css: {
       preprocessorOptions: {
