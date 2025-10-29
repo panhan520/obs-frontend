@@ -19,6 +19,22 @@ function resolve(dir) {
 const MICRO_APP_NAME = 'STARVIEW'
 const proxyPrefix = qiankunWindow.__POWERED_BY_QIANKUN__ ? `/${MICRO_APP_NAME}` : ''
 const proxy = {
+  [`${proxyPrefix}/api/v1/logging`]: {
+    target: 'https://gateway.observe.dev.eks.gainetics.io',
+    changeOrigin: true,
+  },
+  [`${proxyPrefix}/api/v1/iam`]: {
+    target: 'https://gateway.observe.dev.eks.gainetics.io',
+    changeOrigin: true,
+  },
+  [`${proxyPrefix}/config/v1`]: {
+    target: 'https://gateway.observe.dev.eks.gainetics.io',
+    changeOrigin: true,
+  },
+  [`${proxyPrefix}/api/v1/iam`]: {
+    target: 'https://gateway.observe.dev.eks.gainetics.io',
+    changeOrigin: true,
+  },
   [`${proxyPrefix}/observable/user/v1`]: {
     target: 'https://gateway.observe.dev.eks.gainetics.io/api/user',
     changeOrigin: true,
@@ -61,10 +77,6 @@ const proxy = {
       qiankunWindow.__POWERED_BY_QIANKUN__
         ? path.replace(/^\/STARVIEW\/trace-proxy/, '')
         : path.replace(/^\/trace-proxy/, ''),
-  },
-  [`${proxyPrefix}/api/v1/logging`]: {
-    target: 'https://gateway.observe.dev.eks.gainetics.io',
-    changeOrigin: true,
   },
 }
 

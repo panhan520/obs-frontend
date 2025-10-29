@@ -33,21 +33,28 @@ export interface FilterCondition {
 }
 
 // 检索日志柱状图查询参数
+export interface FilterCondition {
+  field: string
+  operator: string
+  value: string
+}
 export interface LogHistogramParams {
   dataSourceId?: number
-  indexName: string
-  searchTimeType: string
-  startTimestamp?: string
-  endTimestamp?: string
+  indexName?: string
+  searchTimeType?: string
+  startTimestamp?: number
+  endTimestamp?: number
   minutesPast?: number
   queryCondition?: string
-  filterConditions?: []
+  filterConditions?: FilterCondition[]
 }
 
 // 检索日志柱状图响应
 export interface LogHistogramResponse {
-  summary: []
-  histogram: []
+  data: {
+    summary: []
+    histogram: []
+  }
 }
 
 // 分页检索列表查询参数
@@ -67,12 +74,27 @@ export interface LogListParams {
 
 // 分页检索列表响应
 export interface LogListResponse {
-  total: number
-  logs: []
+  data: {
+    total: number
+    list: []
+  }
 }
+// 保存的视图项
+export interface SavedView {
+  id: string
+  title: string
+  createdAt: number
+  payload: {
+    dataSource: string[]
+    index: string
+    searchQuery: string
+    timeRange: { start: string | null; end: string | null }
+  }
+}
+
 // 检索日志视图查询参数
 export interface QueryCondsResponse {
-  views: []
+  views: SavedView[]
 }
 // 保存检索条件查询参数
 export interface SaveCondsResponse {
@@ -85,7 +107,7 @@ export interface IndexListParams {
 // 索引列表响应
 export interface IndexListResponse {
   data: {
-    total: number
-    details: []
+    total?: number
+    list?: []
   }
 }

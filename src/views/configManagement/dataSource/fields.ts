@@ -47,6 +47,7 @@ export const getFields = ({ router, commonPageRef }: IGetFieldsParams): IField[]
           },
           'x-component-props': {
             placeholder: '请输入',
+            clearable: true,
           },
         },
       },
@@ -69,6 +70,7 @@ export const getFields = ({ router, commonPageRef }: IGetFieldsParams): IField[]
           },
           'x-component-props': {
             placeholder: '请选择',
+            clearable: true,
           },
           enum: dataSourceTypeOptions,
         },
@@ -92,6 +94,7 @@ export const getFields = ({ router, commonPageRef }: IGetFieldsParams): IField[]
           },
           'x-component-props': {
             placeholder: '请选择',
+            clearable: true,
           },
           enum: dataTypeOptions,
         },

@@ -2,12 +2,13 @@ import getReqByProxyModule from '~/config/request'
 import type { LoginParams } from './types'
 
 import { PROXY } from '~/config/constants'
-const userAxios = getReqByProxyModule({ proxyModule: PROXY.USER })
+const userAxios = getReqByProxyModule({ proxyModule: PROXY.API })
 const opensearchAxios = getReqByProxyModule({ proxyModule: PROXY.OPENSEARCH })
 
 // 登录
 export const loginApi = (data: LoginParams) => {
-  return userAxios.post('/v1/login', data)
+  data.type = 'ACCOUNT_TYPE_USERNAME'
+  return userAxios.post('/api/v1/iam/login', data)
   // return userAxios.post('/user/v1/login', data)
 }
 // 注册
@@ -20,7 +21,7 @@ export const sendEmail = (data: sendEmailParams) => {
 }
 // 登出
 export const loginOut = (data) => {
-  return userAxios.post('/v1/logout', data)
+  return userAxios.get('/api/v1/iam/logout', data)
 }
 // 密码验证
 export const checkApi = (data) => {
@@ -53,7 +54,7 @@ export const opensearchLoginApi = (data) => {
       accept: '*/*',
       'content-type': 'application/json',
       'osd-version': '2.19.3-SNAPSHOT',
-      'osd-xsrf': 'osd-fetch'
-    }
+      'osd-xsrf': 'osd-fetch',
+    },
   })
 }

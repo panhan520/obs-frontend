@@ -26,4 +26,5 @@ export const PROXY = {
   OPENSEARCH: import.meta.env.VITE_APP_OPENSEARCH_API,
   /** 日志 */
   LOG: import.meta.env.VITE_APP_BASE_API_LOG,
+  DATASOURCE: import.meta.env.VITE_APP_BASE_API_DATASOURCE,
 }

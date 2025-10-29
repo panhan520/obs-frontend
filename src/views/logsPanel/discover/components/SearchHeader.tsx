@@ -502,6 +502,7 @@ export default defineComponent({
               onKeyup={handleInputKeyup}
               onClick={handleInputClick}
               onKeydown={handleInputKeydown}
+              clearable
             >
               {{
                 prepend: () => (

@@ -1,14 +1,30 @@
 // LogSearchView.tsx
 import { defineComponent, ref, computed, onMounted } from 'vue'
-import { ElSelect, ElOption, ElInput, ElIcon, ElButton, ElDialog, ElDrawer } from 'element-plus'
+import {
+  ElSelect,
+  ElOption,
+  ElInput,
+  ElIcon,
+  ElButton,
+  ElDialog,
+  ElDrawer,
+  ElMessage,
+} from 'element-plus'
 import { Search, Refresh } from '@element-plus/icons-vue'
-import { getIndexList, getQueryConds, getLogHistogram, getLogList } from '@/api/logsPanel/discover'
-import { getDataSourceList } from '@/api/configManagement/dataSource'
+import {
+  getIndexList,
+  getQueryConds,
+  getLogHistogram,
+  getLogList,
+  setQueryConds,
+} from '@/api/logsPanel/discover'
+import { getDatasourceUseList } from '@/api/configManagement/dataSource'
 import {
   LogField,
   LogDocument,
   logChartData,
   FilterCondition,
+  SavedView,
 } from '@/api/logsPanel/discover/interfaces'
 import SearchHeader from './components/SearchHeader'
 import FieldPanel from './components/FieldPanel'
@@ -22,29 +38,17 @@ export default defineComponent({
   name: 'LogSearchView',
   setup() {
     // 数据源
-    const dataSourceList = ref<string[]>(['categraf-index-logs*'])
-    const dataSourceId = ref<number>(1)
+    const dataSourceList = ref<string[]>([])
+    const dataSourceId = ref<number>(3)
     // 索引
-    const indexList = ref<string[]>(['categraf-index-logs*'])
-    const indexName = ref<string>('categraf-index-logs*')
+    const indexList = ref([])
+    const indexName = ref<string>('')
     // 筛选字段（前端控制）
     const searchField = ref('')
     // 搜索条件（查询语句）
     const searchQuery = ref('')
     const showFilterDialog = ref(false)
     // 视图管理状态
-    type SavedView = {
-      id: string
-      title: string
-      createdAt: number
-      payload: {
-        dataSource: string[]
-        index: string
-        searchQuery: string
-        timeRange: { start: string | null; end: string | null }
-      }
-    }
-    const viewsKey = 'obs.discover.savedViews'
     const activeViewId = ref<string | null>(null)
     const activeViewTitle = ref<string>('')
     const showSaveDialog = ref(false)
@@ -52,18 +56,38 @@ export default defineComponent({
     const showOpenDrawer = ref(false)
     const viewSearch = ref('')
     const savedViews = ref<SavedView[]>([])
-    const timeRange = ref<{ start: string | null; end: string | null }>({ start: null, end: null })
+    // 初始化时间范围，与子组件SearchHeader保持一致（过去15分钟到现在）
+    const now = new Date()
+    const fifteenMinutesAgo = new Date(now.getTime() - 15 * 60 * 1000)
+    const timeRange = ref<{ start: string | null; end: string | null }>({
+      start: fifteenMinutesAgo.toISOString(),
+      end: now.toISOString(),
+    })
 
-    const loadViews = () => {
+    // 最近一次的查询参数，实时由子组件更新
+    const latestQuery = ref<{
+      queryCondition: string
+      filterConditions: FilterCondition[]
+      startTimestamp?: number | null
+      endTimestamp?: number | null
+      searchTimeType?: 1 | 2 // 1: 绝对时间, 2: 相对时间
+      minutesPast?: number
+    }>({
+      queryCondition: '',
+      filterConditions: [],
+      startTimestamp: fifteenMinutesAgo.getTime(),
+      endTimestamp: now.getTime(),
+      searchTimeType: 1,
+    })
+
+    const loadViews = async () => {
       try {
-        const raw = localStorage.getItem(viewsKey)
-        savedViews.value = raw ? (JSON.parse(raw) as SavedView[]) : []
-      } catch {
+        const res = await getQueryConds()
+        savedViews.value = res.views || []
+      } catch (error) {
+        console.error('加载保存的视图失败:', error)
         savedViews.value = []
       }
-    }
-    const persistViews = () => {
-      localStorage.setItem(viewsKey, JSON.stringify(savedViews.value))
     }
     const resetToNewView = () => {
       activeViewId.value = null
@@ -80,32 +104,47 @@ export default defineComponent({
       saveTitle.value = activeViewTitle.value || ''
       showSaveDialog.value = true
     }
-    const confirmSave = () => {
-      const id = activeViewId.value ?? `view_${Date.now()}`
-      const now = Date.now()
-      const view: SavedView = {
-        id,
-        title: saveTitle.value || 'Untitled',
-        createdAt: activeViewId.value
-          ? savedViews.value.find((v) => v.id === id)?.createdAt ?? now
-          : now,
-        payload: {
-          dataSource: indexList.value,
-          index: indexName.value,
-          searchQuery: searchQuery.value,
-          timeRange: timeRange.value,
-        },
+    const confirmSave = async () => {
+      try {
+        const params = {
+          searchName: saveTitle.value,
+          dataSourceId: dataSourceId.value,
+          indexName: indexName.value,
+          queryCondition: latestQuery.value.queryCondition || searchQuery.value,
+          filterConditions: latestQuery.value.filterConditions?.length
+            ? latestQuery.value.filterConditions
+            : filterConditions.value,
+          startTimestamp:
+            latestQuery.value.startTimestamp != null ? latestQuery.value.startTimestamp : undefined,
+          endTimestamp:
+            latestQuery.value.endTimestamp != null ? latestQuery.value.endTimestamp : undefined,
+          searchTimeType:
+            latestQuery.value.searchTimeType === 2
+              ? 'SEARCH_TIME_TYPE_RELATIVE'
+              : 'SEARCH_TIME_TYPE_ABSOLUTE',
+          minutesPast: latestQuery.value.minutesPast,
+        }
+        await setQueryConds(params)
+        ElMessage.success('保存成功')
+
+        // 重新加载视图列表
+        await loadViews()
+
+        // 设置当前活动视图
+        const savedView = savedViews.value.find((v) => v.title === saveTitle.value)
+        if (savedView) {
+          activeViewId.value = savedView.id
+          activeViewTitle.value = savedView.title
+        }
+
+        showSaveDialog.value = false
+      } catch (error) {
+        console.error('保存失败:', error)
+        ElMessage.error('保存失败')
       }
-      const idx = savedViews.value.findIndex((v) => v.id === id)
-      if (idx >= 0) savedViews.value[idx] = view
-      else savedViews.value.unshift(view)
-      persistViews()
-      activeViewId.value = id
-      activeViewTitle.value = view.title
-      showSaveDialog.value = false
     }
-    const handleOpen = () => {
-      loadViews()
+    const handleOpen = async () => {
+      await loadViews()
       viewSearch.value = ''
       showOpenDrawer.value = true
     }
@@ -120,44 +159,55 @@ export default defineComponent({
       indexName.value = v.payload.index
       searchQuery.value = v.payload.searchQuery
       timeRange.value = v.payload.timeRange
+
+      // 更新latestQuery以保持同步
+      latestQuery.value.queryCondition = v.payload.searchQuery
+      if (v.payload.timeRange.start) {
+        latestQuery.value.startTimestamp = Date.parse(v.payload.timeRange.start)
+      }
+      if (v.payload.timeRange.end) {
+        latestQuery.value.endTimestamp = Date.parse(v.payload.timeRange.end)
+      }
+
       showOpenDrawer.value = false
     }
 
-    // 字段数据
-    const availableFields = ref<LogField[]>([
-      { name: '_id', type: 'string', selected: false },
-      { name: '_index', type: 'string', selected: false },
-      { name: '_score', type: 'number', selected: false },
-      { name: '_type', type: 'string', selected: false },
-      { name: '@timestamp', type: 'date', selected: false },
-      { name: '_source', type: 'object', selected: false, isSystemField: true }, // 系统字段，不可手动删除
-      { name: 'agent_hostname', type: 'string', selected: false },
-      { name: 'business.amount', type: 'number', selected: false },
-      { name: 'business.currency', type: 'string', selected: false },
-      { name: 'business.current_stock', type: 'number', selected: false },
-      { name: 'business.customer', type: 'string', selected: false },
-      { name: 'business.order_id', type: 'string', selected: false },
-      { name: 'business.payment_method', type: 'string', selected: false },
-      { name: 'business.product_id', type: 'string', selected: false },
-    ])
+    // 字段数据 - 初始化为空，将从API动态获取
+    const availableFields = ref<LogField[]>([])
 
     const filterConditions = ref<FilterCondition[]>([])
 
     // 示例日志数据
     const logDocuments = ref<LogDocument[]>([])
-    const logChartDatas = ref<logChartData[]>([
-      { time: '2025-10-08 00:00:00', level: 'error', count: '3' },
-      { time: '2025-10-08 00:00:00', level: 'info', count: '3' },
-      { time: '2025-10-08 00:00:00', level: 'warn', count: '3' },
-      { time: '2025-10-09 00:00:00', level: 'warn', count: '2' },
-      { time: '2025-10-09 00:00:00', level: 'info', count: '1' },
-      { time: '2025-10-09 00:00:00', level: 'error', count: '1' },
-      { time: '2025-10-10 00:00:00', level: 'warn', count: '2' },
-      { time: '2025-10-12 00:00:00', level: 'info', count: '1' },
-      { time: '2025-10-11 00:00:00', level: 'error', count: '1' },
-    ])
+    const logChartDatas = ref<logChartData[]>([])
 
     const currentDocument = ref(logDocuments.value[0])
+
+    // Loading状态
+    const dataSourceLoading = ref(false)
+    const indexListLoading = ref(false)
+    const loading = ref(false)
+    const chartLoading = ref(false)
+    const fieldsLoading = ref(false)
+
+    // 分页参数
+    const paginationParams = ref({
+      page: 1,
+      pageSize: 50,
+      sortOrder: 'desc' as 'desc' | 'asc',
+    })
+
+    // 处理分页参数变化
+    const handlePaginationUpdate = (params: {
+      page: number
+      pageSize: number
+      sortOrder: 'desc' | 'asc'
+    }) => {
+      paginationParams.value = params
+      console.log('分页参数更新:', params)
+      // 这里可以触发重新查询数据
+      // executeSearch({ ...searchQuery.value, ...timeRange.value })
+    }
 
     // 计算属性
     const selectedFields = computed(() =>
@@ -168,10 +218,22 @@ export default defineComponent({
     const statusCounts = computed<Record<StatusKey, number>>(() => {
       // 假计数：可根据 logDocuments 实际字段统计，比如 level 或 status
       const counts: Record<StatusKey, number> = { Error: 0, Warn: 0, Info: 0 }
-      logDocuments.value.forEach((d) => {
+      logChartDatas.value.forEach((d) => {
         const level = (d as any).level as string | undefined
         if (!level) return
-        const key = (level[0].toUpperCase() + level.slice(1)) as StatusKey
+
+        // 处理后端返回的全大写格式，如 ERROR, WARN, INFO
+        const normalizedLevel = level.toUpperCase()
+        let key: StatusKey
+
+        if (normalizedLevel === 'ERROR') key = 'Error'
+        else if (normalizedLevel === 'WARN') key = 'Warn'
+        else if (normalizedLevel === 'INFO') key = 'Info'
+        else {
+          // 如果不是标准格式，尝试首字母大写
+          key = (level[0].toUpperCase() + level.slice(1).toLowerCase()) as StatusKey
+        }
+
         if (counts[key] !== undefined) counts[key]++
       })
       return counts
@@ -179,10 +241,21 @@ export default defineComponent({
 
     const filteredDocuments = computed(() => {
       // 根据勾选的状态过滤日志文档
-      return logDocuments.value.filter((d) => {
+      return logChartDatas.value.filter((d) => {
         const level = (d as any).level as string | undefined
         if (!level) return true
-        const key = (level[0].toUpperCase() + level.slice(1)) as StatusKey
+
+        // 处理后端返回的全大写格式
+        const normalizedLevel = level.toUpperCase()
+        let key: StatusKey
+
+        if (normalizedLevel === 'ERROR') key = 'Error'
+        else if (normalizedLevel === 'WARN') key = 'Warn'
+        else if (normalizedLevel === 'INFO') key = 'Info'
+        else {
+          key = (level[0].toUpperCase() + level.slice(1).toLowerCase()) as StatusKey
+        }
+
         return statusChecked.value.includes(key)
       })
     })
@@ -230,11 +303,6 @@ export default defineComponent({
 
     // 方法
     const toggleFieldSelection = (field: LogField) => {
-      // 如果是系统字段（如 _source），不允许手动切换
-      if (field.isSystemField) {
-        return
-      }
-
       field.selected = !field.selected
 
       // 如果选中了其他字段，自动取消 _source 字段的选中状态
@@ -247,25 +315,163 @@ export default defineComponent({
     }
 
     // 处理查询数据
-    const executeSearch = async (queryData: any) => {
-      console.log('查询数据:', queryData)
-      const params = {
-        ...queryData,
+    const executeSearch = (queryData: any) => {
+      if (!dataSourceId.value) {
+        ElMessage.warning('请选择数据源')
+        return
+      }
+      if (!indexName.value) {
+        ElMessage.warning('请选择索引')
+        return
+      }
+      // 同步 latestQuery
+      latestQuery.value.queryCondition = queryData?.queryCondition ?? searchQuery.value
+      if (typeof queryData?.searchTimeType !== 'undefined') {
+        latestQuery.value.searchTimeType = queryData.searchTimeType
+      }
+      if (typeof queryData?.startTimestamp !== 'undefined') {
+        latestQuery.value.startTimestamp = queryData.startTimestamp
+      }
+      if (typeof queryData?.endTimestamp !== 'undefined') {
+        latestQuery.value.endTimestamp = queryData.endTimestamp
+      }
+      if (typeof queryData?.minutesPast !== 'undefined') {
+        latestQuery.value.minutesPast = queryData.minutesPast
+      }
+      latestQuery.value.filterConditions = [...filterConditions.value]
+
+      const normalizedSearchTimeType =
+        queryData?.searchTimeType === 2 ? 'SEARCH_TIME_TYPE_RELATIVE' : 'SEARCH_TIME_TYPE_ABSOLUTE'
+
+      let params: any = {
         dataSourceId: dataSourceId.value,
         indexName: indexName.value,
         filterConditions: filterConditions.value,
+        queryCondition: latestQuery.value.queryCondition || searchQuery.value,
+        searchTimeType: normalizedSearchTimeType,
       }
-      const resCharts = await getLogHistogram(params)
-      const res = await getLogList(params)
+
+      if (normalizedSearchTimeType === 'SEARCH_TIME_TYPE_RELATIVE') {
+        if (typeof latestQuery.value.minutesPast !== 'undefined') {
+          params.minutesPast = latestQuery.value.minutesPast
+        }
+      } else {
+        if (typeof latestQuery.value.startTimestamp !== 'undefined') {
+          params.startTimestamp = latestQuery.value.startTimestamp
+        }
+        if (typeof latestQuery.value.endTimestamp !== 'undefined') {
+          params.endTimestamp = latestQuery.value.endTimestamp
+        }
+      }
+      getChartData(params)
+      params = {
+        ...params,
+        ...paginationParams.value,
+        sortOrder:
+          paginationParams.value.sortOrder === 'asc' ? 'SORT_ORDER_ASC' : 'SORT_ORDER_DESC',
+      }
+      getList(params)
+    }
+    // 获取图表数据
+    const getChartData = async (params) => {
+      try {
+        chartLoading.value = true
+        const resCharts = await getLogHistogram(params)
+        logChartDatas.value = resCharts.data.histogram
+      } finally {
+        chartLoading.value = false
+      }
+    }
+    // 获取日志列表
+    const getList = async (params) => {
+      try {
+        loading.value = true
+        fieldsLoading.value = true
+        const res = await getLogList(params)
+        const logList = res.data.list as LogDocument[]
+        logDocuments.value = transformLogData(logList)
+
+        // 从第一个日志条目的logJson动态解析字段
+        if (logList && logList.length > 0) {
+          const firstLog = logList[0]
+          if (firstLog && firstLog.logJson) {
+            const parsedFields = parseFieldsFromLogJson(firstLog.logJson)
+            availableFields.value = parsedFields
+          }
+        }
+      } finally {
+        loading.value = false
+        fieldsLoading.value = false
+      }
     }
 
     const addFilterCondition = (filter: FilterCondition) => {
       filterConditions.value.push(filter)
+      latestQuery.value.filterConditions = [...filterConditions.value]
     }
     // 打开添加过滤条件弹框
     const handleAddFilter = () => {
       showFilterDialog.value = true
     }
+    // 从logJson动态解析字段
+    const parseFieldsFromLogJson = (logJson: string) => {
+      try {
+        const logData = JSON.parse(logJson)
+        const fields: LogField[] = []
+
+        // 递归解析 logData 中的字段
+        const parseObjectFields = (obj: any, prefix = '') => {
+          // 如果存在 _source，则拍平到当前对象
+          if (obj && typeof obj === 'object' && obj._source && typeof obj._source === 'object') {
+            Object.assign(obj, obj._source) // 将 _source 的字段展开到 obj
+            // delete obj._source // 删除原来的 _source 字段
+          }
+
+          Object.keys(obj).forEach((key) => {
+            const fullKey = prefix ? `${prefix}.${key}` : key
+            const value = obj[key]
+            let type = 'string'
+
+            if (value === null) {
+              type = 'string'
+            } else if (typeof value === 'number') {
+              type = 'number'
+            } else if (typeof value === 'boolean') {
+              type = 'boolean'
+            } else if (value instanceof Date) {
+              type = 'date'
+            } else if (typeof value === 'object' && value !== null) {
+              type = 'object'
+              // 递归处理嵌套对象
+              parseObjectFields(value, fullKey)
+            } else if (typeof value === 'string') {
+              // 尝试判断是否为日期字符串
+              if (key.toLowerCase().includes('time') || key.toLowerCase().includes('date')) {
+                type = 'date'
+              } else {
+                type = 'string'
+              }
+            }
+
+            // 避免重复添加字段
+            if (!fields.some((f) => f.name === fullKey)) {
+              fields.push({
+                name: fullKey,
+                type,
+                selected: false,
+              })
+            }
+          })
+        }
+
+        parseObjectFields(logData)
+        return fields
+      } catch (error) {
+        console.error('解析logJson失败:', error)
+        return []
+      }
+    }
+
     // 处理日志数据，将 logJson 字符串转换为对象
     const transformLogData = (data: LogDocument[]) => {
       return data.map((item) => {
@@ -274,10 +480,21 @@ export default defineComponent({
           const logData = JSON.parse(item.logJson)
 
           // 创建新对象，包含 timestamp 和所有解析后的字段
-          return {
+          const result = {
             timestamp: item.timestamp,
             ...logData,
           }
+
+          // 如果存在 _source 字段，将其内容拍平到第一层级
+          if (logData._source && typeof logData._source === 'object') {
+            // 将 _source 中的字段添加到第一层级
+            Object.keys(logData._source).forEach((key) => {
+              result[key] = logData._source[key]
+            })
+          }
+          delete result._source
+
+          return result
         } catch (error) {
           console.error('解析 JSON 失败:', error)
           // 如果解析失败，返回原始数据
@@ -291,45 +508,32 @@ export default defineComponent({
     }
     // 获取数据源列表
     const getDataSourceListData = async () => {
-      const res = await getDataSourceList({})
-      // dataSourceList.value = res
-      console.log('获取数据源列表数据', res)
+      try {
+        dataSourceLoading.value = true
+        const res = await getDatasourceUseList()
+        dataSourceList.value = res.data.list
+      } finally {
+        dataSourceLoading.value = false
+      }
     }
     // 获取索引列表数据
     const getIndexListData = async () => {
-      const res = await getIndexList({ dataSourceId: dataSourceId.value })
-      indexList.value = res.data.details
-      console.log('获取索引列表数据', res)
+      try {
+        indexListLoading.value = true
+        const res = await getIndexList({ dataSourceId: dataSourceId.value })
+        indexList.value = res.data.list
+      } finally {
+        indexListLoading.value = false
+      }
     }
     // 查询保存的检索条件列表
     const getQueryCondsData = async () => {
       const res = await getQueryConds()
-      console.log('获取查询条件数据', res)
     }
-    onMounted(() => {
+    onMounted(async () => {
       getDataSourceListData()
-      getIndexListData()
-      getQueryCondsData()
-      loadViews()
-      // 模拟数据
-      const res = [
-        {
-          timestamp: '2025-10-08 00:00:00',
-          logJson:
-            '{"_id": "kih0pZkBkhra2IgY05Tt8","_index": "categraf-index-logs","_score": 1,"_type": "_doc","@timestamp": "Oct 2, 2025 @ 22:16:45.456","agent_hostname": "server-02","event": "disk_space_warning","fcservice": "monitoring","fcsource": "system_monitor","fctags": { "filename": "system.log"},"system.disk_usage": "90%", "system.threshold": "85%","system.path": "/var/log","topic": "system-log","msg_key": "SYS123456789", "level": "error"}',
-        },
-        {
-          timestamp: '2025-10-08 00:00:00',
-          logJson:
-            '{"_id": "kih0pZkBkhra2IgY05Tt2","_index": "categraf-index-logs","_score": 1.0,"_type": "_doc","@timestamp": "Oct 2, 2025 @ 21:30:15.123","agent_hostname": "server-01","event": "user_login","fcservice": "auth_service","fcsource": "web_app","fctags": { "filename": "auth.log"},"user.id": "12345","user.name": "john_doe","topic": "auth-log","msg_key": "AUTH123456789","level": "info"}',
-        },
-        {
-          timestamp: '2025-10-08 00:00:00',
-          logJson:
-            '{"_id": "kih0pZkBkhra2IgY05Tt3","_index": "categraf-index-logs","_score": 1.0,"_type": "_doc","@timestamp": "Oct 2, 2025 @ 20:45:30.456","agent_hostname": "server-02","event": "high_memory_usage","fcservice": "monitoring","fcsource": "system_monitor","fctags": { "filename": "system.log"},"system.memory_usage": "85%","system.threshold": "80%","topic": "system-log","msg_key": "SYS987654321","level": "warn"}',
-        },
-      ]
-      logDocuments.value = transformLogData(res)
+      await getIndexListData()
+      await getQueryCondsData()
     })
 
     return () => (
@@ -364,6 +568,8 @@ export default defineComponent({
                   v-model={dataSourceId.value}
                   class={styles.indexSelect}
                   placeholder='选择数据源'
+                  loading={dataSourceLoading.value}
+                  disabled={dataSourceLoading.value}
                 >
                   {dataSourceList.value.map((it) => (
                     <ElOption label={it} value={it} />
@@ -373,10 +579,15 @@ export default defineComponent({
                   onClick={() => {
                     getDataSourceListData()
                   }}
+                  loading={dataSourceLoading.value}
                 >
-                  <ElIcon>
-                    <Refresh />
-                  </ElIcon>
+                  {dataSourceLoading.value ? (
+                    ''
+                  ) : (
+                    <ElIcon>
+                      <Refresh />
+                    </ElIcon>
+                  )}
                 </ElButton>
               </div>
             </div>
@@ -387,19 +598,26 @@ export default defineComponent({
                   v-model={indexName.value}
                   class={styles.indexSelect}
                   placeholder='选择索引'
+                  loading={indexListLoading.value}
+                  disabled={indexListLoading.value}
                 >
                   {indexList.value.map((it) => (
-                    <ElOption label={it} value={it} />
+                    <ElOption label={it.indexName} value={it.indexName} />
                   ))}
                 </ElSelect>
                 <ElButton
+                  loading={indexListLoading.value}
                   onClick={() => {
                     getIndexListData()
                   }}
                 >
-                  <ElIcon>
-                    <Refresh />
-                  </ElIcon>
+                  {indexListLoading.value ? (
+                    ''
+                  ) : (
+                    <ElIcon>
+                      <Refresh />
+                    </ElIcon>
+                  )}
                 </ElButton>
               </div>
             </div>
@@ -434,11 +652,13 @@ export default defineComponent({
               onUpdate:modelValue={(v: StatusKey[]) => (statusChecked.value = v)}
             />
             {/* 可选字段 */}
-            <FieldPanel
-              title='Available fields'
-              fields={availableFieldObjects.value}
-              onFieldToggle={toggleFieldSelection}
-            />
+            <div v-loading={fieldsLoading.value}>
+              <FieldPanel
+                title='Available fields'
+                fields={availableFieldObjects.value}
+                onFieldToggle={toggleFieldSelection}
+              />
+            </div>
           </div>
           {/* 右侧面板 */}
           <div class={styles.rightContent}>
@@ -448,27 +668,46 @@ export default defineComponent({
               availableFields={availableFields.value}
               initialTimeRange={timeRange.value}
               filterConditions={filterConditions.value}
-              onUpdate:searchQuery={(value) => (searchQuery.value = value)}
+              onUpdate:searchQuery={(value) => {
+                searchQuery.value = value
+                latestQuery.value.queryCondition = value
+              }}
               onSearch={executeSearch}
               onAddFilter={handleAddFilter}
               onRemoveFilter={(index: number) => {
                 filterConditions.value.splice(index, 1)
+                latestQuery.value.filterConditions = [...filterConditions.value]
               }}
-              onTimeRangeUpdate={(tr: { start: string | null; end: string | null }) =>
-                (timeRange.value = tr)
-              }
+              onTimeRangeUpdate={(tr: { start: string | null; end: string | null }) => {
+                timeRange.value = tr
+                // 绝对时间
+                latestQuery.value.searchTimeType = 1
+                latestQuery.value.startTimestamp = tr.start ? Date.parse(tr.start) : null
+                latestQuery.value.endTimestamp = tr.end ? Date.parse(tr.end) : null
+              }}
               onPredefinedTimeSelect={(data: { minutes: number; start: string; end: string }) => {
-                console.log('Predefined time selected:', data)
-                // 这里可以将分钟数发送给后端
+                // 相对时间
+                latestQuery.value.searchTimeType = 2
+                latestQuery.value.minutesPast = data.minutes
+                latestQuery.value.startTimestamp = Date.parse(data.start)
+                latestQuery.value.endTimestamp = Date.parse(data.end)
               }}
             />
             {/* 动态柱状图 */}
-            <LogChart logChartData={logChartDatas.value} selectedStatuses={statusChecked.value} />
+            <div v-loading={chartLoading.value}>
+              <LogChart logChartData={logChartDatas.value} selectedStatuses={statusChecked.value} />
+            </div>
             {/* 搜索结果 */}
-            <DocumentView
-              logDocuments={filteredDocuments.value}
-              selectedFieldObjects={selectedFieldObjects.value}
-            />
+            {logDocuments.value.length > 0 && (
+              <div v-loading={loading.value}>
+                <DocumentView
+                  logDocuments={logDocuments.value}
+                  selectedFieldObjects={selectedFieldObjects.value}
+                  pagination={paginationParams.value}
+                  onUpdate:pagination={handlePaginationUpdate}
+                />
+              </div>
+            )}
           </div>
         </div>
 

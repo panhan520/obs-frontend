@@ -146,10 +146,12 @@ export interface DataSourceListParams {
 
 // 数据源列表响应
 export interface DataSourceListResponse {
-  items: DataSourceDetail[]
-  total: number
-  page: number
-  pageSize: number
+  data?: {
+    list?: []
+    total?: number
+    page?: number
+    pageSize?: number
+  }
 }
 
 // 创建数据源参数

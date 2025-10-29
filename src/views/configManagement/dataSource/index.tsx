@@ -3,12 +3,7 @@ import { useRouter } from 'vue-router'
 import { ElButton } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import { CommonPage } from '~/KeepUp/packages/businessComponents'
-import {
-  getDataSourceList,
-  createDataSource,
-  updateDataSource,
-} from '~/api/configManagement/dataSource'
-import { getListApi, createApi, editApi } from '~/api/domainManagement/inspectionWall'
+import { getDataSourceList } from '~/api/configManagement/dataSource'
 
 import { getFields } from './fields'
 import DataSourceTypeDialog from './components/SelectType/index'
@@ -67,8 +62,7 @@ export default defineComponent({
         <CommonPage
           ref={commonPageRef}
           fields={fields.value}
-          listApi={getListApi}
-          editApi={updateDataSource}
+          listApi={getDataSourceList}
           formatListParams={formatListParams}
           pageKey='dataSource'
           filterColumns={5}

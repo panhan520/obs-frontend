@@ -245,9 +245,6 @@ export default defineComponent({
           await createDataSource(submitData as CreateDataSourceParams)
           ElMessage.success('创建成功')
         }
-
-        // 返回列表页
-        router.push('/configManagement/dataSource')
       } catch (error) {
         console.error('提交失败:', error)
         ElMessage.error(isEdit.value ? '更新失败' : '创建失败')

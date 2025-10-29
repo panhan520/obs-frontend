@@ -50,7 +50,7 @@
 // 预定义时间选择器样式
 .pauseBtn {
   margin: 0 8px;
-  width: 36px;
+  min-width: 36px;
   height: 36px;
   padding: 0;
 }
@@ -246,6 +246,9 @@
       width: 32px;
       height: 32px;
     }
+    .el-icon.is-loading {
+      margin-left: 5px;
+    }
   }
 }
 
@@ -333,6 +336,7 @@
   flex-direction: column;
   overflow: hidden;
   margin-left: 16px;
+  background: #ffffff;
 
   .searchHeader {
     padding: 10px 5px;
@@ -368,7 +372,7 @@
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        min-width: 400px;
+        min-width: 300px;
         padding: 5px 12px;
         border: 1px solid #dcdfe6;
         border-radius: 4px;
@@ -431,7 +435,7 @@
 
       .refreshBtn {
         height: 36px;
-        margin-left: 10px;
+        margin-left: 0;
       }
     }
     // 过滤条件容器
@@ -937,6 +941,7 @@
       width: 100%;
       .timeRangeBtn {
         width: 96%;
+        min-width: auto;
       }
     }
   }

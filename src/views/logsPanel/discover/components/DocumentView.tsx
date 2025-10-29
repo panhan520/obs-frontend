@@ -1,5 +1,5 @@
 // components/DocumentView.tsx
-import { defineComponent, PropType, ref, computed } from 'vue'
+import { defineComponent, PropType, ref, computed, watch } from 'vue'
 import { LogDocument, LogField } from '@/api/logsPanel/discover/interfaces'
 import {
   ElTable,
@@ -12,6 +12,7 @@ import {
   ElTooltip,
 } from 'element-plus'
 import { ArrowDown, ArrowRight, CopyDocument, View, Filter } from '@element-plus/icons-vue'
+import dayjs from 'dayjs'
 import styles from '../index.module.scss'
 
 export default defineComponent({
@@ -25,19 +26,32 @@ export default defineComponent({
       type: Array as PropType<LogField[]>,
       required: true,
     },
+    pagination: {
+      type: Object as PropType<{
+        page: number
+        pageSize: number
+        sortOrder: 'desc' | 'asc'
+      }>,
+      default: () => ({
+        page: 1,
+        pageSize: 50,
+        sortOrder: 'desc' as 'desc' | 'asc',
+      }),
+    },
   },
-  setup(props) {
-    // 分页相关状态
-    const currentPage = ref(1)
-    const pageSize = ref(50)
+  emits: ['update:pagination'],
+  setup(props, { emit }) {
+    // 分页相关状态 - 使用父组件传入的值
+    const currentPage = ref(props.pagination.page)
+    const pageSize = ref(props.pagination.pageSize)
     const pageSizes = [10, 20, 50, 100]
 
     // 展开状态管理
     const expandedRows = ref<Set<string>>(new Set())
     const expandedDocumentTab = ref<'table' | 'json'>('table')
 
-    // 排序状态
-    const sortOrder = ref<'desc' | 'asc'>('desc') // 默认按时间降序（最新在前）
+    // 排序状态 - 使用父组件传入的值
+    const sortOrder = ref<'desc' | 'asc'>(props.pagination.sortOrder)
 
     // 排序后的数据
     const sortedDocuments = computed(() => {
@@ -62,8 +76,23 @@ export default defineComponent({
     const handleTimeSort = (order: 'desc' | 'asc' | null) => {
       if (order) {
         sortOrder.value = order
+        emitPaginationUpdate()
       }
     }
+
+    // 发送分页参数更新事件
+    const emitPaginationUpdate = () => {
+      emit('update:pagination', {
+        page: currentPage.value,
+        pageSize: pageSize.value,
+        sortOrder: sortOrder.value,
+      })
+    }
+
+    // 监听分页参数变化
+    watch([currentPage, pageSize, sortOrder], () => {
+      emitPaginationUpdate()
+    })
 
     // 切换行展开状态
     const toggleRowExpansion = (row: LogDocument) => {
@@ -88,20 +117,17 @@ export default defineComponent({
     }
 
     // 格式化时间显示
-    const formatTime = (timestamp: string) => {
+    const formatTime = (timestamp: string | number) => {
       try {
-        const date = new Date(timestamp)
-        return date.toLocaleString('en-US', {
-          month: 'short',
-          day: '2-digit',
-          year: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-          second: '2-digit',
-          hour12: false,
-        })
+        const timestampNum = Number(timestamp)
+
+        if (isNaN(timestampNum) || timestampNum <= 0) {
+          return String(timestamp)
+        }
+
+        return dayjs(timestampNum).format('YYYY-MM-DD HH:mm:ss')
       } catch {
-        return timestamp
+        return String(timestamp)
       }
     }
 
@@ -206,7 +232,8 @@ export default defineComponent({
               }
               v-slots={{
                 default: ({ row }: { row: LogDocument }) => (
-                  <span class={styles.timeCell}>{formatTime(row['timestamp'])}</span>
+                  // <span class={styles.timeCell}>{formatTime(row['timestamp'])}</span>
+                  <span class={styles.timeCell}>{row['timestamp']}</span>
                 ),
               }}
             />
