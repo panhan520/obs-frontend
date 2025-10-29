@@ -1,5 +1,5 @@
 // LogSearchView.tsx
-import { defineComponent, ref, computed, onMounted } from 'vue'
+import { defineComponent, ref, computed, onMounted, reactive } from 'vue'
 import {
   ElSelect,
   ElOption,
@@ -37,17 +37,50 @@ import styles from './index.module.scss'
 export default defineComponent({
   name: 'LogSearchView',
   setup() {
-    // 数据源
-    const dataSourceList = ref<string[]>([])
-    const dataSourceId = ref<number>(3)
-    // 索引
+    // 统一的检索条件状态管理
+    const searchConditions = reactive({
+      // 数据源和索引
+      dataSourceId: '',
+      indexName: '',
+
+      // 搜索条件
+      queryCondition: '',
+      filterConditions: [] as FilterCondition[],
+
+      // 时间范围
+      timeRange: {
+        start: null as string | null,
+        end: null as string | null,
+      },
+      startTimestamp: null as number | null,
+      endTimestamp: null as number | null,
+      searchTimeType: 1 as 1 | 2, // 1: 绝对时间, 2: 相对时间
+      minutesPast: undefined as number | undefined,
+
+      // 分页参数
+      page: 1,
+      pageSize: 50,
+      sortOrder: 'desc' as 'desc' | 'asc',
+    })
+
+    // 初始化时间范围，与子组件SearchHeader保持一致（过去15分钟到现在）
+    const now = new Date()
+    const fifteenMinutesAgo = new Date(now.getTime() - 15 * 60 * 1000)
+
+    // 设置初始时间范围
+    searchConditions.timeRange = {
+      start: fifteenMinutesAgo.toISOString(),
+      end: now.toISOString(),
+    }
+    searchConditions.startTimestamp = fifteenMinutesAgo.getTime()
+    searchConditions.endTimestamp = now.getTime()
+
+    // 其他状态
+    const dataSourceList = ref([])
     const indexList = ref([])
-    const indexName = ref<string>('')
-    // 筛选字段（前端控制）
     const searchField = ref('')
-    // 搜索条件（查询语句）
-    const searchQuery = ref('')
     const showFilterDialog = ref(false)
+
     // 视图管理状态
     const activeViewId = ref<string | null>(null)
     const activeViewTitle = ref<string>('')
@@ -56,34 +89,11 @@ export default defineComponent({
     const showOpenDrawer = ref(false)
     const viewSearch = ref('')
     const savedViews = ref<SavedView[]>([])
-    // 初始化时间范围，与子组件SearchHeader保持一致（过去15分钟到现在）
-    const now = new Date()
-    const fifteenMinutesAgo = new Date(now.getTime() - 15 * 60 * 1000)
-    const timeRange = ref<{ start: string | null; end: string | null }>({
-      start: fifteenMinutesAgo.toISOString(),
-      end: now.toISOString(),
-    })
-
-    // 最近一次的查询参数，实时由子组件更新
-    const latestQuery = ref<{
-      queryCondition: string
-      filterConditions: FilterCondition[]
-      startTimestamp?: number | null
-      endTimestamp?: number | null
-      searchTimeType?: 1 | 2 // 1: 绝对时间, 2: 相对时间
-      minutesPast?: number
-    }>({
-      queryCondition: '',
-      filterConditions: [],
-      startTimestamp: fifteenMinutesAgo.getTime(),
-      endTimestamp: now.getTime(),
-      searchTimeType: 1,
-    })
 
     const loadViews = async () => {
       try {
         const res = await getQueryConds()
-        savedViews.value = res.views || []
+        savedViews.value = res.data.views || []
       } catch (error) {
         console.error('加载保存的视图失败:', error)
         savedViews.value = []
@@ -97,8 +107,13 @@ export default defineComponent({
     const handleNew = () => {
       resetToNewView()
       // 清空查询与时间范围但保留索引选择
-      searchQuery.value = ''
-      timeRange.value = { start: null, end: null }
+      searchConditions.queryCondition = ''
+      searchConditions.filterConditions = []
+      searchConditions.timeRange = { start: null, end: null }
+      searchConditions.startTimestamp = null
+      searchConditions.endTimestamp = null
+      searchConditions.searchTimeType = 1
+      searchConditions.minutesPast = undefined
     }
     const handleSave = () => {
       saveTitle.value = activeViewTitle.value || ''
@@ -108,22 +123,19 @@ export default defineComponent({
       try {
         const params = {
           searchName: saveTitle.value,
-          dataSourceId: dataSourceId.value,
-          indexName: indexName.value,
-          queryCondition: latestQuery.value.queryCondition || searchQuery.value,
-          filterConditions: latestQuery.value.filterConditions?.length
-            ? latestQuery.value.filterConditions
-            : filterConditions.value,
-          startTimestamp:
-            latestQuery.value.startTimestamp != null ? latestQuery.value.startTimestamp : undefined,
-          endTimestamp:
-            latestQuery.value.endTimestamp != null ? latestQuery.value.endTimestamp : undefined,
+          dataSourceId: searchConditions.dataSourceId,
+          indexName: searchConditions.indexName,
+          queryCondition: searchConditions.queryCondition,
+          filterConditions: searchConditions.filterConditions,
+          startTimestamp: searchConditions.startTimestamp ?? undefined,
+          endTimestamp: searchConditions.endTimestamp ?? undefined,
           searchTimeType:
-            latestQuery.value.searchTimeType === 2
+            searchConditions.searchTimeType === 2
               ? 'SEARCH_TIME_TYPE_RELATIVE'
               : 'SEARCH_TIME_TYPE_ABSOLUTE',
-          minutesPast: latestQuery.value.minutesPast,
+          minutesPast: searchConditions.minutesPast,
         }
+        saveViewLoading.value = true
         await setQueryConds(params)
         ElMessage.success('保存成功')
 
@@ -131,16 +143,18 @@ export default defineComponent({
         await loadViews()
 
         // 设置当前活动视图
-        const savedView = savedViews.value.find((v) => v.title === saveTitle.value)
+        const savedView = savedViews.value.find((v) => v.searchName === saveTitle.value)
         if (savedView) {
-          activeViewId.value = savedView.id
-          activeViewTitle.value = savedView.title
+          activeViewId.value = savedView.searchName
+          activeViewTitle.value = savedView.searchName
         }
 
         showSaveDialog.value = false
       } catch (error) {
         console.error('保存失败:', error)
         ElMessage.error('保存失败')
+      } finally {
+        saveViewLoading.value = false
       }
     }
     const handleOpen = async () => {
@@ -151,22 +165,26 @@ export default defineComponent({
     const filteredViews = computed(() => {
       const q = viewSearch.value.trim().toLowerCase()
       if (!q) return savedViews.value
-      return savedViews.value.filter((v) => v.title.toLowerCase().includes(q))
+      return savedViews.value.filter((v) => v.searchName.toLowerCase().includes(q))
     })
     const openView = (v: SavedView) => {
-      activeViewId.value = v.id
-      activeViewTitle.value = v.title
-      indexName.value = v.payload.index
-      searchQuery.value = v.payload.searchQuery
-      timeRange.value = v.payload.timeRange
+      activeViewId.value = v.searchName
+      activeViewTitle.value = v.searchName
 
-      // 更新latestQuery以保持同步
-      latestQuery.value.queryCondition = v.payload.searchQuery
-      if (v.payload.timeRange.start) {
-        latestQuery.value.startTimestamp = Date.parse(v.payload.timeRange.start)
+      // 更新所有检索条件
+      searchConditions.dataSourceId = v.dataSourceId
+      searchConditions.indexName = v.indexName
+      searchConditions.queryCondition = v.queryCondition
+      searchConditions.filterConditions = v.filterConditions || []
+      searchConditions.minutesPast = v.minutesPast
+
+      if (v.startTimestamp) {
+        searchConditions.startTimestamp = Date.parse(v.startTimestamp)
+        searchConditions.timeRange.start = new Date(v.startTimestamp).toISOString()
       }
-      if (v.payload.timeRange.end) {
-        latestQuery.value.endTimestamp = Date.parse(v.payload.timeRange.end)
+      if (v.endTimestamp) {
+        searchConditions.endTimestamp = Date.parse(v.endTimestamp)
+        searchConditions.timeRange.end = new Date(v.endTimestamp).toISOString()
       }
 
       showOpenDrawer.value = false
@@ -174,8 +192,6 @@ export default defineComponent({
 
     // 字段数据 - 初始化为空，将从API动态获取
     const availableFields = ref<LogField[]>([])
-
-    const filterConditions = ref<FilterCondition[]>([])
 
     // 示例日志数据
     const logDocuments = ref<LogDocument[]>([])
@@ -189,13 +205,7 @@ export default defineComponent({
     const loading = ref(false)
     const chartLoading = ref(false)
     const fieldsLoading = ref(false)
-
-    // 分页参数
-    const paginationParams = ref({
-      page: 1,
-      pageSize: 50,
-      sortOrder: 'desc' as 'desc' | 'asc',
-    })
+    const saveViewLoading = ref(false)
 
     // 处理分页参数变化
     const handlePaginationUpdate = (params: {
@@ -203,7 +213,9 @@ export default defineComponent({
       pageSize: number
       sortOrder: 'desc' | 'asc'
     }) => {
-      paginationParams.value = params
+      searchConditions.page = params.page
+      searchConditions.pageSize = params.pageSize
+      searchConditions.sortOrder = params.sortOrder
       console.log('分页参数更新:', params)
       // 这里可以触发重新查询数据
       // executeSearch({ ...searchQuery.value, ...timeRange.value })
@@ -316,59 +328,64 @@ export default defineComponent({
 
     // 处理查询数据
     const executeSearch = (queryData: any) => {
-      if (!dataSourceId.value) {
+      if (!searchConditions.dataSourceId) {
         ElMessage.warning('请选择数据源')
         return
       }
-      if (!indexName.value) {
+      if (!searchConditions.indexName) {
         ElMessage.warning('请选择索引')
         return
       }
-      // 同步 latestQuery
-      latestQuery.value.queryCondition = queryData?.queryCondition ?? searchQuery.value
-      if (typeof queryData?.searchTimeType !== 'undefined') {
-        latestQuery.value.searchTimeType = queryData.searchTimeType
+      // 同步查询数据到统一状态
+      if (queryData) {
+        if (typeof queryData.queryCondition !== 'undefined') {
+          searchConditions.queryCondition = queryData.queryCondition
+        }
+        if (typeof queryData.searchTimeType !== 'undefined') {
+          searchConditions.searchTimeType = queryData.searchTimeType
+        }
+        if (typeof queryData.startTimestamp !== 'undefined') {
+          searchConditions.startTimestamp = queryData.startTimestamp
+        }
+        if (typeof queryData.endTimestamp !== 'undefined') {
+          searchConditions.endTimestamp = queryData.endTimestamp
+        }
+        if (typeof queryData.minutesPast !== 'undefined') {
+          searchConditions.minutesPast = queryData.minutesPast
+        }
       }
-      if (typeof queryData?.startTimestamp !== 'undefined') {
-        latestQuery.value.startTimestamp = queryData.startTimestamp
-      }
-      if (typeof queryData?.endTimestamp !== 'undefined') {
-        latestQuery.value.endTimestamp = queryData.endTimestamp
-      }
-      if (typeof queryData?.minutesPast !== 'undefined') {
-        latestQuery.value.minutesPast = queryData.minutesPast
-      }
-      latestQuery.value.filterConditions = [...filterConditions.value]
 
       const normalizedSearchTimeType =
-        queryData?.searchTimeType === 2 ? 'SEARCH_TIME_TYPE_RELATIVE' : 'SEARCH_TIME_TYPE_ABSOLUTE'
+        searchConditions.searchTimeType === 2
+          ? 'SEARCH_TIME_TYPE_RELATIVE'
+          : 'SEARCH_TIME_TYPE_ABSOLUTE'
 
       let params: any = {
-        dataSourceId: dataSourceId.value,
-        indexName: indexName.value,
-        filterConditions: filterConditions.value,
-        queryCondition: latestQuery.value.queryCondition || searchQuery.value,
+        dataSourceId: searchConditions.dataSourceId,
+        indexName: searchConditions.indexName,
+        filterConditions: searchConditions.filterConditions,
+        queryCondition: searchConditions.queryCondition,
         searchTimeType: normalizedSearchTimeType,
       }
 
       if (normalizedSearchTimeType === 'SEARCH_TIME_TYPE_RELATIVE') {
-        if (typeof latestQuery.value.minutesPast !== 'undefined') {
-          params.minutesPast = latestQuery.value.minutesPast
+        if (typeof searchConditions.minutesPast !== 'undefined') {
+          params.minutesPast = searchConditions.minutesPast
         }
       } else {
-        if (typeof latestQuery.value.startTimestamp !== 'undefined') {
-          params.startTimestamp = latestQuery.value.startTimestamp
+        if (typeof searchConditions.startTimestamp !== 'undefined') {
+          params.startTimestamp = searchConditions.startTimestamp
         }
-        if (typeof latestQuery.value.endTimestamp !== 'undefined') {
-          params.endTimestamp = latestQuery.value.endTimestamp
+        if (typeof searchConditions.endTimestamp !== 'undefined') {
+          params.endTimestamp = searchConditions.endTimestamp
         }
       }
       getChartData(params)
       params = {
         ...params,
-        ...paginationParams.value,
-        sortOrder:
-          paginationParams.value.sortOrder === 'asc' ? 'SORT_ORDER_ASC' : 'SORT_ORDER_DESC',
+        page: searchConditions.page,
+        pageSize: searchConditions.pageSize,
+        sortOrder: searchConditions.sortOrder === 'asc' ? 'SORT_ORDER_ASC' : 'SORT_ORDER_DESC',
       }
       getList(params)
     }
@@ -406,8 +423,7 @@ export default defineComponent({
     }
 
     const addFilterCondition = (filter: FilterCondition) => {
-      filterConditions.value.push(filter)
-      latestQuery.value.filterConditions = [...filterConditions.value]
+      searchConditions.filterConditions.push(filter)
     }
     // 打开添加过滤条件弹框
     const handleAddFilter = () => {
@@ -512,28 +528,32 @@ export default defineComponent({
         dataSourceLoading.value = true
         const res = await getDatasourceUseList()
         dataSourceList.value = res.data.list
+        if (res.data.list.length) {
+          searchConditions.dataSourceId = res.data.list[0].id
+          getIndexListData(res.data.list[0].id)
+        }
       } finally {
         dataSourceLoading.value = false
       }
     }
     // 获取索引列表数据
-    const getIndexListData = async () => {
+    const getIndexListData = async (value?: string) => {
       try {
         indexListLoading.value = true
-        const res = await getIndexList({ dataSourceId: dataSourceId.value })
+        const res = await getIndexList({ dataSourceId: value })
         indexList.value = res.data.list
       } finally {
         indexListLoading.value = false
       }
     }
-    // 查询保存的检索条件列表
-    const getQueryCondsData = async () => {
-      const res = await getQueryConds()
+    // 处理数据源切换
+    const handleDataSourceChange = async (selectedId: string) => {
+      if (!selectedId) return
+      searchConditions.dataSourceId = selectedId
+      getIndexListData(selectedId)
     }
-    onMounted(async () => {
+    onMounted(() => {
       getDataSourceListData()
-      await getIndexListData()
-      await getQueryCondsData()
     })
 
     return () => (
@@ -565,14 +585,15 @@ export default defineComponent({
             <div class={styles.panelSection}>
               <div class={styles.indexSelectRow}>
                 <ElSelect
-                  v-model={dataSourceId.value}
+                  v-model={searchConditions.dataSourceId}
                   class={styles.indexSelect}
                   placeholder='选择数据源'
                   loading={dataSourceLoading.value}
                   disabled={dataSourceLoading.value}
+                  onChange={handleDataSourceChange} // 添加 change 事件
                 >
                   {dataSourceList.value.map((it) => (
-                    <ElOption label={it} value={it} />
+                    <ElOption label={it.name} value={it.id} />
                   ))}
                 </ElSelect>
                 <ElButton
@@ -595,7 +616,7 @@ export default defineComponent({
             <div class={styles.panelSection}>
               <div class={styles.indexSelectRow}>
                 <ElSelect
-                  v-model={indexName.value}
+                  v-model={searchConditions.indexName}
                   class={styles.indexSelect}
                   placeholder='选择索引'
                   loading={indexListLoading.value}
@@ -664,33 +685,36 @@ export default defineComponent({
           <div class={styles.rightContent}>
             {/* 搜索栏 */}
             <SearchHeader
-              searchQuery={searchQuery.value}
+              searchQuery={searchConditions.queryCondition}
               availableFields={availableFields.value}
-              initialTimeRange={timeRange.value}
-              filterConditions={filterConditions.value}
+              timeRange={searchConditions.timeRange}
+              startTimestamp={searchConditions.startTimestamp}
+              endTimestamp={searchConditions.endTimestamp}
+              searchTimeType={searchConditions.searchTimeType}
+              minutesPast={searchConditions.minutesPast}
+              filterConditions={searchConditions.filterConditions}
               onUpdate:searchQuery={(value) => {
-                searchQuery.value = value
-                latestQuery.value.queryCondition = value
+                searchConditions.queryCondition = value
               }}
               onSearch={executeSearch}
               onAddFilter={handleAddFilter}
               onRemoveFilter={(index: number) => {
-                filterConditions.value.splice(index, 1)
-                latestQuery.value.filterConditions = [...filterConditions.value]
+                searchConditions.filterConditions.splice(index, 1)
               }}
-              onTimeRangeUpdate={(tr: { start: string | null; end: string | null }) => {
-                timeRange.value = tr
-                // 绝对时间
-                latestQuery.value.searchTimeType = 1
-                latestQuery.value.startTimestamp = tr.start ? Date.parse(tr.start) : null
-                latestQuery.value.endTimestamp = tr.end ? Date.parse(tr.end) : null
+              onUpdate:timeRange={(tr: { start: string | null; end: string | null }) => {
+                searchConditions.timeRange = tr
               }}
-              onPredefinedTimeSelect={(data: { minutes: number; start: string; end: string }) => {
-                // 相对时间
-                latestQuery.value.searchTimeType = 2
-                latestQuery.value.minutesPast = data.minutes
-                latestQuery.value.startTimestamp = Date.parse(data.start)
-                latestQuery.value.endTimestamp = Date.parse(data.end)
+              onUpdate:startTimestamp={(timestamp: number) => {
+                searchConditions.startTimestamp = timestamp
+              }}
+              onUpdate:endTimestamp={(timestamp: number) => {
+                searchConditions.endTimestamp = timestamp
+              }}
+              onUpdate:searchTimeType={(type: 1 | 2) => {
+                searchConditions.searchTimeType = type
+              }}
+              onUpdate:minutesPast={(minutes: number | undefined) => {
+                searchConditions.minutesPast = minutes
               }}
             />
             {/* 动态柱状图 */}
@@ -703,7 +727,11 @@ export default defineComponent({
                 <DocumentView
                   logDocuments={logDocuments.value}
                   selectedFieldObjects={selectedFieldObjects.value}
-                  pagination={paginationParams.value}
+                  pagination={{
+                    page: searchConditions.page,
+                    pageSize: searchConditions.pageSize,
+                    sortOrder: searchConditions.sortOrder,
+                  }}
                   onUpdate:pagination={handlePaginationUpdate}
                 />
               </div>
@@ -721,7 +749,12 @@ export default defineComponent({
             footer: () => (
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
                 <ElButton onClick={() => (showSaveDialog.value = false)}>取消</ElButton>
-                <ElButton type='primary' disabled={!saveTitle.value.trim()} onClick={confirmSave}>
+                <ElButton
+                  type='primary'
+                  disabled={!saveTitle.value.trim()}
+                  onClick={confirmSave}
+                  loading={saveViewLoading.value}
+                >
                   保存
                 </ElButton>
               </div>
@@ -743,7 +776,7 @@ export default defineComponent({
           onUpdate:modelValue={(v: boolean) => (showOpenDrawer.value = v)}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-            <ElInput placeholder='搜索...' v-model={viewSearch.value} />
+            <ElInput placeholder='搜索...' v-model={viewSearch.value} clearable />
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {filteredViews.value.map((v) => (
@@ -751,7 +784,7 @@ export default defineComponent({
                 <ElIcon style={{ marginRight: '6px' }}>
                   <Search />
                 </ElIcon>
-                <span>{v.title}</span>
+                <span>{v.searchName}</span>
               </div>
             ))}
           </div>

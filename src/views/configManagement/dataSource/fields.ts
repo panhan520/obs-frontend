@@ -1,10 +1,6 @@
 import { h } from 'vue'
-import { ElButton, ElMessage, ElMessageBox, ElText } from 'element-plus'
-import {
-  deleteDataSource,
-  getDataSourceDetail,
-  updateDataSource,
-} from '~/api/configManagement/dataSource'
+import { ElButton, ElMessage, ElMessageBox } from 'element-plus'
+import { deleteDataSource } from '~/api/configManagement/dataSource'
 import {
   dataSourceTypeOptions,
   dataTypeOptions,
@@ -31,9 +27,6 @@ export const getFields = ({ router, commonPageRef }: IGetFieldsParams): IField[]
     prop: 'name',
     label: '数据源名称',
     isColumn: true,
-    columnConfig: {
-      minWidth: 150,
-    },
     isFilter: true,
     filterConfig: {
       type: 'void',
@@ -116,7 +109,7 @@ export const getFields = ({ router, commonPageRef }: IGetFieldsParams): IField[]
     label: '最近更新时间',
     isColumn: true,
     columnConfig: {
-      width: 120,
+      width: 200,
     },
   },
   {
@@ -141,7 +134,7 @@ export const getFields = ({ router, commonPageRef }: IGetFieldsParams): IField[]
                 ...commonAttrs,
                 onClick: async (e: Event) => {
                   try {
-                    await ElMessageBox.confirm('确认删除当前任务?', {
+                    await ElMessageBox.confirm('确认删除当前数据源?', {
                       confirmButtonText: '确认',
                       cancelButtonText: '取消',
                       type: 'warning',
@@ -183,22 +176,8 @@ export const getFields = ({ router, commonPageRef }: IGetFieldsParams): IField[]
                 onClick: async (e: Event) => {
                   e.stopPropagation()
                   try {
-                    // const res = await getDataSourceDetail(rowData.id)
-                    // 通过事件总线通知父组件显示详情抽屉
-                    const res = {
-                      type: 'OPEN_SEARCH',
-                      dataType: 'METRICS',
-                      source: 'BUILT_IN',
-                      createdAt: '2025-01-01',
-                      updatedAt: '2025-01-01',
-                      elasticSearch: {
-                        url: 'http://localhost:9090',
-                        httpHeader: [],
-                      },
-                    }
-                    emitter.emit('showDataSourceDetail', res)
+                    emitter.emit('showDataSourceDetail', rowData)
                   } catch (error) {
-                    console.error('获取数据源详情失败:', error)
                     ElMessage({
                       message: '获取数据源详情失败',
                       type: 'error',

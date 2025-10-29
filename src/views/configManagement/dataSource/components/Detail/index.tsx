@@ -1,15 +1,5 @@
 import { defineComponent, ref } from 'vue'
-import {
-  ElDrawer,
-  ElDescriptions,
-  ElDescriptionsItem,
-  ElTag,
-  ElButton,
-  ElDivider,
-  ElIcon,
-  ElMessage,
-} from 'element-plus'
-import { InfoFilled } from '@element-plus/icons-vue'
+import { ElDrawer, ElTag, ElButton, ElMessage } from 'element-plus'
 import {
   DataSourceType,
   DataType,
@@ -36,11 +26,15 @@ export default defineComponent({
       type: Object as () => DataSourceDetail | null,
       default: null,
     },
+    loading: {
+      type: Boolean,
+      default: false,
+    },
   },
   emits: ['update:modelValue'],
   setup(props, { emit }) {
     const visible = ref(props.modelValue)
-
+    const testLoading = ref(false)
     const handleClose = () => {
       visible.value = false
     }
@@ -50,6 +44,7 @@ export default defineComponent({
       if (!props.dataSource) return
 
       try {
+        testLoading.value = true
         const testData: CreateDataSourceParams = {
           name: props.dataSource.name,
           type: props.dataSource.type,
@@ -67,7 +62,7 @@ export default defineComponent({
                 username: props.dataSource.elasticSearch.username,
                 password: props.dataSource.elasticSearch.password,
                 skipTlsVerify: props.dataSource.elasticSearch.skipTlsVerify,
-                httpHeaders: props.dataSource.elasticSearch.httpHeaders,
+                httpHeader: props.dataSource.elasticSearch.httpHeader,
                 timeout: props.dataSource.elasticSearch.timeout,
                 version: props.dataSource.elasticSearch.version,
                 maxShard: props.dataSource.elasticSearch.maxShard,
@@ -83,7 +78,7 @@ export default defineComponent({
                 username: props.dataSource.prometheus.username,
                 password: props.dataSource.prometheus.password,
                 skipTlsVerify: props.dataSource.prometheus.skipTlsVerify,
-                httpHeaders: props.dataSource.prometheus.httpHeaders,
+                httpHeader: props.dataSource.prometheus.httpHeader,
                 timeout: props.dataSource.prometheus.timeout,
                 type: props.dataSource.prometheus.type,
               }
@@ -97,7 +92,7 @@ export default defineComponent({
                 username: props.dataSource.openSearch.username,
                 password: props.dataSource.openSearch.password,
                 skipTlsVerify: props.dataSource.openSearch.skipTlsVerify,
-                httpHeaders: props.dataSource.openSearch.httpHeaders,
+                httpHeader: props.dataSource.openSearch.httpHeader,
                 timeout: props.dataSource.openSearch.timeout,
                 version: props.dataSource.openSearch.version,
                 maxShard: props.dataSource.openSearch.maxShard,
@@ -113,22 +108,24 @@ export default defineComponent({
                 username: props.dataSource.starView.username,
                 password: props.dataSource.starView.password,
                 skipTlsVerify: props.dataSource.starView.skipTlsVerify,
-                httpHeaders: props.dataSource.starView.httpHeaders,
+                httpHeader: props.dataSource.starView.httpHeader,
                 timeout: props.dataSource.starView.timeout,
               }
             }
             break
         }
 
-        const result = await testDataSourceConnection(testData)
-        if (result.success) {
+        const result = await testDataSourceConnection(testData as CreateDataSourceParams)
+        if (result.data.ok) {
           ElMessage.success('连接测试成功')
         } else {
-          ElMessage.error(`连接测试失败: ${result.message}`)
+          ElMessage.error(`连接测试失败: ${result.data.message}`)
         }
       } catch (error) {
         console.error('连接测试失败:', error)
         ElMessage.error('连接测试失败')
+      } finally {
+        testLoading.value = false
       }
     }
 
@@ -188,7 +185,7 @@ export default defineComponent({
         onClose={handleClose}
       >
         {props.dataSource && (
-          <div class={styles.content}>
+          <div class={styles.content} v-loading={props.loading}>
             {/* 1. 基本信息 */}
             <div class={styles.section}>
               <div class={styles.sectionHeader}>
@@ -289,24 +286,24 @@ export default defineComponent({
 
                   <div class={styles.infoRow}>
                     <span class={styles.infoLabel}>自定义HTTP标头:</span>
-                    <div class={styles.httpHeadersTable}>
+                    <div class={styles.httpHeaderTable}>
                       <div class={styles.tableHeader}>
                         <span class={styles.headerCell}>参数名称</span>
                         <span class={styles.headerCell}>值</span>
                       </div>
                       {(() => {
                         const hasHeaders =
-                          props.dataSource.elasticSearch?.httpHeaders?.length > 0 ||
-                          props.dataSource.prometheus?.httpHeaders?.length > 0 ||
-                          props.dataSource.openSearch?.httpHeaders?.length > 0 ||
-                          props.dataSource.starView?.httpHeaders?.length > 0
+                          props.dataSource.elasticSearch?.httpHeader?.length > 0 ||
+                          props.dataSource.prometheus?.httpHeader?.length > 0 ||
+                          props.dataSource.openSearch?.httpHeader?.length > 0 ||
+                          props.dataSource.starView?.httpHeader?.length > 0
 
                         if (hasHeaders) {
                           const headers =
-                            props.dataSource.elasticSearch?.httpHeaders ||
-                            props.dataSource.prometheus?.httpHeaders ||
-                            props.dataSource.openSearch?.httpHeaders ||
-                            props.dataSource.starView?.httpHeaders ||
+                            props.dataSource.elasticSearch?.httpHeader ||
+                            props.dataSource.prometheus?.httpHeader ||
+                            props.dataSource.openSearch?.httpHeader ||
+                            props.dataSource.starView?.httpHeader ||
                             []
                           return headers.map((header, index) => (
                             <div key={index} class={styles.tableRow}>
@@ -418,7 +415,7 @@ export default defineComponent({
             )}
             {/* 操作按钮 */}
             <div class={styles.actions}>
-              <ElButton type='primary' onClick={testConnection}>
+              <ElButton type='primary' onClick={testConnection} loading={testLoading.value}>
                 连接测试
               </ElButton>
             </div>

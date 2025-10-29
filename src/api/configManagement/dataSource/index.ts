@@ -9,6 +9,7 @@ import type {
   DataSourceDetail,
   CreateDataSourceParams,
   UpdateDataSourceParams,
+  DataSourceDetailResponse,
 } from './interfaces'
 
 // 创建请求实例
@@ -38,12 +39,12 @@ export const getDataSourceList = async (
 }
 
 // 创建数据源
-export const createDataSource = (data: CreateDataSourceParams): Promise<DataSourceDetail> => {
+export const createDataSource = (data): Promise<DataSourceDetailResponse> => {
   return request.post('/datasourceManagement', { datasource: data })
 }
 
 // 获取数据源详情
-export const getDataSourceDetail = (id: string): Promise<DataSourceDetail> => {
+export const getDataSourceDetail = (id): Promise<DataSourceDetailResponse> => {
   return request.get(`/datasourceManagement/${id}`)
 }
 
@@ -51,8 +52,8 @@ export const getDataSourceDetail = (id: string): Promise<DataSourceDetail> => {
 export const updateDataSource = (
   id: string,
   data: UpdateDataSourceParams,
-): Promise<DataSourceDetail> => {
-  return request.put(`/datasourceManagement/${id}`, data)
+): Promise<DataSourceDetailResponse> => {
+  return request.put(`/datasourceManagement/${id}`, { id, datasource: data })
 }
 
 // 删除数据源
@@ -63,8 +64,8 @@ export const deleteDataSource = (id: string): Promise<void> => {
 // 测试数据源连接
 export const testDataSourceConnection = (
   data: CreateDataSourceParams,
-): Promise<{ success: boolean; message: string }> => {
-  return request.post('/datasourceManagement/connect', data)
+): Promise<{ success: boolean; message: string; data: { ok: boolean; message: string } }> => {
+  return request.post('/datasourceManagement/connect', { datasource: data })
 }
 
 // 可用数据源列表

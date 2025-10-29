@@ -12,7 +12,7 @@ import {
   ElIcon,
   ElMessage,
 } from 'element-plus'
-import { InfoFilled, Plus, Delete } from '@element-plus/icons-vue'
+import { InfoFilled, Plus, Delete, Back } from '@element-plus/icons-vue'
 import {
   getDataSourceDetail,
   createDataSource,
@@ -20,7 +20,6 @@ import {
   testDataSourceConnection,
 } from '@/api/configManagement/dataSource'
 import type {
-  DataSourceDetail,
   CreateDataSourceParams,
   UpdateDataSourceParams,
   HttpHeader,
@@ -49,7 +48,7 @@ interface UnifiedFormData {
   username: string
   password: string
   skipTlsVerify: boolean
-  httpHeaders: HttpHeader[]
+  httpHeader: HttpHeader[]
 
   // 高级设置
   timeout: number
@@ -73,6 +72,7 @@ export default defineComponent({
     const router = useRouter()
     const isEdit = computed(() => !!route.query.id)
     const dataSourceType = computed(() => (route.query.type as string) || 'elasticsearch')
+    const loading = ref(false)
 
     // 表单引用
     const formRef = ref()
@@ -91,7 +91,7 @@ export default defineComponent({
       username: '',
       password: '',
       skipTlsVerify: false,
-      httpHeaders: [{ key: '', value: '' }],
+      httpHeader: [{ key: '', value: '' }],
 
       // 高级设置
       timeout: 10000,
@@ -156,34 +156,35 @@ export default defineComponent({
       ],
       timeout: [
         { required: true, message: '请输入请求超时时间', trigger: 'blur' },
-        { type: 'number', min: 1000, message: '超时时间不能小于1000ms', trigger: 'blur' },
+        // { type: 'number', min: 1000, message: '超时时间不能小于1000ms', trigger: 'blur' },
       ],
       maxShard: [
         { required: true, message: '请输入最大并发分片请求量', trigger: 'blur' },
-        { type: 'number', min: 1, message: '最大并发分片请求量不能小于1', trigger: 'blur' },
+        // { type: 'number', min: 1, message: '最大并发分片请求量不能小于1', trigger: 'blur' },
       ],
       timeFieldName: [{ required: true, message: '请输入时间戳字段', trigger: 'blur' }],
     }
 
     // 添加HTTP标头
     const addHttpHeader = () => {
-      formData.httpHeaders.push({ key: '', value: '' })
+      formData.httpHeader.push({ key: '', value: '' })
     }
 
     // 删除HTTP标头
     const removeHttpHeader = (index: number) => {
-      if (formData.httpHeaders.length > 1) {
-        formData.httpHeaders.splice(index, 1)
+      if (formData.httpHeader.length > 1) {
+        formData.httpHeader.splice(index, 1)
       }
     }
 
     // 提交表单
     const submitForm = async () => {
       try {
+        loading.value = true
         await formRef.value?.validate()
 
         // 过滤空的HTTP标头
-        const validHeaders = formData.httpHeaders.filter(
+        const validHeaders = formData.httpHeader.filter(
           (header) => header.key.trim() && header.value.trim(),
         )
 
@@ -203,7 +204,7 @@ export default defineComponent({
               username: formData.authType === AuthType.BASIC_AUTH ? formData.username : undefined,
               password: formData.authType === AuthType.BASIC_AUTH ? formData.password : undefined,
               skipTlsVerify: formData.skipTlsVerify,
-              httpHeaders: validHeaders,
+              httpHeader: validHeaders,
               timeout: formData.timeout,
               version: formData.elasticSearchVersion,
               maxShard: formData.maxShard,
@@ -217,7 +218,7 @@ export default defineComponent({
               username: formData.authType === AuthType.BASIC_AUTH ? formData.username : undefined,
               password: formData.authType === AuthType.BASIC_AUTH ? formData.password : undefined,
               skipTlsVerify: formData.skipTlsVerify,
-              httpHeaders: validHeaders,
+              httpHeader: validHeaders,
               timeout: formData.timeout,
               type: formData.prometheusType,
             }
@@ -229,7 +230,7 @@ export default defineComponent({
               username: formData.authType === AuthType.BASIC_AUTH ? formData.username : undefined,
               password: formData.authType === AuthType.BASIC_AUTH ? formData.password : undefined,
               skipTlsVerify: formData.skipTlsVerify,
-              httpHeaders: validHeaders,
+              httpHeader: validHeaders,
               timeout: formData.timeout,
               version: formData.openSearchVersion,
               maxShard: formData.maxShard,
@@ -249,15 +250,18 @@ export default defineComponent({
       } catch (error) {
         console.error('提交失败:', error)
         ElMessage.error(isEdit.value ? '更新失败' : '创建失败')
+      } finally {
+        loading.value = false
       }
     }
 
     // 测试连接
     const testConnection = async () => {
       try {
-        await formRef.value?.validate(['name', 'url', 'type', 'dataType'])
+        loading.value = true
+        await formRef.value?.validate()
 
-        const validHeaders = formData.httpHeaders.filter(
+        const validHeaders = formData.httpHeader.filter(
           (header) => header.key.trim() && header.value.trim(),
         )
 
@@ -277,7 +281,7 @@ export default defineComponent({
               username: formData.authType === AuthType.BASIC_AUTH ? formData.username : undefined,
               password: formData.authType === AuthType.BASIC_AUTH ? formData.password : undefined,
               skipTlsVerify: formData.skipTlsVerify,
-              httpHeaders: validHeaders,
+              httpHeader: validHeaders,
               timeout: formData.timeout,
               version: formData.elasticSearchVersion,
               maxShard: formData.maxShard,
@@ -291,7 +295,7 @@ export default defineComponent({
               username: formData.authType === AuthType.BASIC_AUTH ? formData.username : undefined,
               password: formData.authType === AuthType.BASIC_AUTH ? formData.password : undefined,
               skipTlsVerify: formData.skipTlsVerify,
-              httpHeaders: validHeaders,
+              httpHeader: validHeaders,
               timeout: formData.timeout,
               type: formData.prometheusType,
             }
@@ -303,7 +307,7 @@ export default defineComponent({
               username: formData.authType === AuthType.BASIC_AUTH ? formData.username : undefined,
               password: formData.authType === AuthType.BASIC_AUTH ? formData.password : undefined,
               skipTlsVerify: formData.skipTlsVerify,
-              httpHeaders: validHeaders,
+              httpHeader: validHeaders,
               timeout: formData.timeout,
               version: formData.openSearchVersion,
               maxShard: formData.maxShard,
@@ -312,15 +316,17 @@ export default defineComponent({
             break
         }
 
-        const result = await testDataSourceConnection(testData)
-        if (result.success) {
+        const result = await testDataSourceConnection(testData as CreateDataSourceParams)
+        if (result.data.ok) {
           ElMessage.success('连接测试成功')
         } else {
-          ElMessage.error(`连接测试失败: ${result.message}`)
+          ElMessage.error(`连接测试失败: ${result.data.message}`)
         }
       } catch (error) {
         console.error('连接测试失败:', error)
         ElMessage.error('连接测试失败')
+      } finally {
+        loading.value = false
       }
     }
 
@@ -328,8 +334,9 @@ export default defineComponent({
     const initData = async () => {
       if (isEdit.value) {
         try {
-          const data = await getDataSourceDetail(route.query.id as string)
-
+          loading.value = true
+          const res = await getDataSourceDetail(route.query.id as string)
+          const data = res.data.datasource
           // 填充基本信息
           formData.name = data.name
           formData.type = data.type
@@ -345,9 +352,9 @@ export default defineComponent({
                 formData.username = data.elasticSearch.username || ''
                 formData.password = data.elasticSearch.password || ''
                 formData.skipTlsVerify = data.elasticSearch.skipTlsVerify
-                formData.httpHeaders =
-                  data.elasticSearch.httpHeaders.length > 0
-                    ? data.elasticSearch.httpHeaders
+                formData.httpHeader =
+                  data.elasticSearch.httpHeader.length > 0
+                    ? data.elasticSearch.httpHeader
                     : [{ key: '', value: '' }]
                 formData.timeout = data.elasticSearch.timeout
                 formData.elasticSearchVersion = data.elasticSearch.version
@@ -362,9 +369,9 @@ export default defineComponent({
                 formData.username = data.prometheus.username || ''
                 formData.password = data.prometheus.password || ''
                 formData.skipTlsVerify = data.prometheus.skipTlsVerify
-                formData.httpHeaders =
-                  data.prometheus.httpHeaders.length > 0
-                    ? data.prometheus.httpHeaders
+                formData.httpHeader =
+                  data.prometheus.httpHeader.length > 0
+                    ? data.prometheus.httpHeader
                     : [{ key: '', value: '' }]
                 formData.timeout = data.prometheus.timeout
                 formData.prometheusType = data.prometheus.type
@@ -377,9 +384,9 @@ export default defineComponent({
                 formData.username = data.openSearch.username || ''
                 formData.password = data.openSearch.password || ''
                 formData.skipTlsVerify = data.openSearch.skipTlsVerify
-                formData.httpHeaders =
-                  data.openSearch.httpHeaders.length > 0
-                    ? data.openSearch.httpHeaders
+                formData.httpHeader =
+                  data.openSearch.httpHeader.length > 0
+                    ? data.openSearch.httpHeader
                     : [{ key: '', value: '' }]
                 formData.timeout = data.openSearch.timeout
                 formData.openSearchVersion = data.openSearch.version
@@ -391,10 +398,16 @@ export default defineComponent({
         } catch (error) {
           console.error('加载数据失败:', error)
           ElMessage.error('加载数据失败')
+        } finally {
+          loading.value = false
         }
       } else {
         setDefaultValues()
       }
+    }
+    // 返回上一页
+    const handleBack = () => {
+      router.back()
     }
 
     onMounted(() => {
@@ -402,7 +415,13 @@ export default defineComponent({
     })
 
     return () => (
-      <div class={styles.formContainer}>
+      <div class={styles.formContainer} v-loading={loading.value}>
+        {/* 添加返回按钮 */}
+        <div class={styles.header}>
+          <el-icon onClick={handleBack} class={styles.backButton} size={20}>
+            <Back />
+          </el-icon>
+        </div>
         <ElForm
           ref={formRef}
           model={formData}
@@ -511,10 +530,10 @@ export default defineComponent({
                 </div>
               </ElFormItem>
 
-              <ElFormItem prop='httpHeaders' class={styles.httpHeadersFormItem}>
+              <ElFormItem prop='httpHeader' class={styles.httpHeaderFormItem}>
                 <span class={styles.customLabel}>自定义HTTP标头</span>
-                <div class={styles.httpHeadersContainer}>
-                  {formData.httpHeaders.map((header, index) => (
+                <div class={styles.httpHeaderContainer}>
+                  {formData.httpHeader.map((header, index) => (
                     <div key={index} class={styles.httpHeaderRow}>
                       <ElInput
                         v-model={header.key}
@@ -522,7 +541,7 @@ export default defineComponent({
                         class={styles.headerInput}
                       />
                       <ElInput v-model={header.value} placeholder='值' class={styles.headerInput} />
-                      {formData.httpHeaders.length > 1 && (
+                      {formData.httpHeader.length > 1 && (
                         <ElButton
                           type='danger'
                           icon={<Delete />}
@@ -557,7 +576,14 @@ export default defineComponent({
             <div class={styles.sectionContent}>
               <ElFormItem prop='timeout'>
                 <span class={styles.customLabel}>请求超时 (ms)</span>
-                <ElInput v-model={formData.timeout} type='number' placeholder='请输入' />
+                <ElInput
+                  v-model={formData.timeout}
+                  type='number'
+                  placeholder='请输入'
+                  onInput={(val: string) => {
+                    formData.timeout = Number(val) || 0
+                  }}
+                />
               </ElFormItem>
 
               {/* ElasticSearch 特定字段 */}
@@ -593,7 +619,14 @@ export default defineComponent({
                         </ElIcon>
                       </el-tooltip>
                     </span>
-                    <ElInput v-model={formData.maxShard} type='number' placeholder='请输入' />
+                    <ElInput
+                      v-model={formData.maxShard}
+                      type='number'
+                      placeholder='请输入'
+                      onInput={(val: string) => {
+                        formData.maxShard = Number(val) || 0
+                      }}
+                    />
                   </ElFormItem>
 
                   <ElFormItem prop='timeFieldName'>
@@ -675,7 +708,14 @@ export default defineComponent({
                         </ElIcon>
                       </el-tooltip>
                     </span>
-                    <ElInput v-model={formData.maxShard} type='number' placeholder='请输入' />
+                    <ElInput
+                      v-model={formData.maxShard}
+                      type='number'
+                      placeholder='请输入'
+                      onInput={(val: string) => {
+                        formData.maxShard = Number(val) || 0
+                      }}
+                    />
                   </ElFormItem>
 
                   <ElFormItem prop='timeFieldName'>

@@ -3,7 +3,7 @@ import { useRouter } from 'vue-router'
 import { ElButton } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import { CommonPage } from '~/KeepUp/packages/businessComponents'
-import { getDataSourceList } from '~/api/configManagement/dataSource'
+import { getDataSourceList, getDataSourceDetail } from '~/api/configManagement/dataSource'
 
 import { getFields } from './fields'
 import DataSourceTypeDialog from './components/SelectType/index'
@@ -20,6 +20,7 @@ export default defineComponent({
     const router = useRouter()
     const commonPageRef = ref<IExpose>()
     const fields = ref(getFields({ router, commonPageRef }))
+    const loading = ref(false)
 
     // 弹框和抽屉状态
     const showTypeDialog = ref(false)
@@ -43,10 +44,15 @@ export default defineComponent({
       })
     }
 
-    const handleShowDetail = (dataSource: DataSourceDetail) => {
-      console.log(dataSource)
-      selectedDataSource.value = dataSource
-      showDetailDrawer.value = true
+    const handleShowDetail = async (dataSource) => {
+      try {
+        showDetailDrawer.value = true
+        loading.value = true
+        const res = await getDataSourceDetail(dataSource.id)
+        selectedDataSource.value = res.data.datasource
+      } finally {
+        loading.value = false
+      }
     }
     // 监听事件总线
     onMounted(() => {
@@ -87,15 +93,17 @@ export default defineComponent({
           }}
           onSelect={handleTypeSelect}
         />
-
-        {/* 数据源详情抽屉 */}
-        <DataSourceDetailDrawer
-          modelValue={showDetailDrawer}
-          onUpdate:modelValue={(val: boolean) => {
-            showDetailDrawer.value = val
-          }}
-          dataSource={selectedDataSource.value}
-        />
+        <div v-loading={loading.value}>
+          {/* 数据源详情抽屉 */}
+          <DataSourceDetailDrawer
+            modelValue={showDetailDrawer}
+            onUpdate:modelValue={(val: boolean) => {
+              showDetailDrawer.value = val
+            }}
+            loading={loading.value}
+            dataSource={selectedDataSource.value}
+          />
+        </div>
       </div>
     )
   },

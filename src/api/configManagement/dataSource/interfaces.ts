@@ -64,7 +64,7 @@ export interface ElasticSearchConfig {
   username?: string
   password?: string
   skipTlsVerify: boolean
-  httpHeaders: HttpHeader[]
+  httpHeader: HttpHeader[]
   timeout: number
   version: Version
   maxShard: number
@@ -77,7 +77,7 @@ export interface PrometheusConfig {
   username?: string
   password?: string
   skipTlsVerify: boolean
-  httpHeaders: HttpHeader[]
+  httpHeader: HttpHeader[]
   timeout: number
   type: PrometheusType
 }
@@ -94,7 +94,7 @@ export interface OpenSearchConfig {
   username?: string
   password?: string
   skipTlsVerify: boolean
-  httpHeaders: HttpHeader[]
+  httpHeader: HttpHeader[]
   timeout: number
   version: OpenSearchVersion
   maxShard: number
@@ -115,11 +115,32 @@ export interface StarViewConfig {
   username?: string
   password?: string
   skipTlsVerify: boolean
-  httpHeaders: HttpHeader[]
+  httpHeader: HttpHeader[]
   timeout: number
 }
 
 // 数据源详情接口
+export interface DataSourceDetailResponse {
+  data: {
+    id?: string
+    datasource?: {
+      id: string
+      name: string
+      type: DataSourceType
+      dataType: DataType
+      description: string
+      source: Source
+      createdAt: string
+      updatedAt: string
+      elasticSearch?: ElasticSearchConfig
+      prometheus?: PrometheusConfig
+      openSearch?: OpenSearchConfig
+      starView?: StarViewConfig
+    }
+  }
+}
+
+// 数据源详情
 export interface DataSourceDetail {
   id: string
   name: string
@@ -147,7 +168,12 @@ export interface DataSourceListParams {
 // 数据源列表响应
 export interface DataSourceListResponse {
   data?: {
-    list?: []
+    list?: [
+      {
+        id: string
+        name: string
+      },
+    ]
     total?: number
     page?: number
     pageSize?: number

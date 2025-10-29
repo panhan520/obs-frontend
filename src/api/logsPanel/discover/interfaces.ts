@@ -39,7 +39,7 @@ export interface FilterCondition {
   value: string
 }
 export interface LogHistogramParams {
-  dataSourceId?: number
+  dataSourceId?: string
   indexName?: string
   searchTimeType?: string
   startTimestamp?: number
@@ -59,7 +59,7 @@ export interface LogHistogramResponse {
 
 // 分页检索列表查询参数
 export interface LogListParams {
-  dataSourceId?: number
+  dataSourceId?: string
   indexName: string
   searchTimeType: string
   startTimestamp?: string
@@ -81,20 +81,25 @@ export interface LogListResponse {
 }
 // 保存的视图项
 export interface SavedView {
-  id: string
-  title: string
-  createdAt: number
-  payload: {
-    dataSource: string[]
-    index: string
-    searchQuery: string
-    timeRange: { start: string | null; end: string | null }
-  }
+  dataSourceId?: string
+  indexName: string
+  searchTimeType: string
+  startTimestamp?: string
+  endTimestamp?: string
+  minutesPast?: number
+  queryCondition?: string
+  filterConditions?: []
+  page?: number
+  pageSize?: number
+  sortOrder?: string
+  searchName?: string
 }
 
 // 检索日志视图查询参数
 export interface QueryCondsResponse {
-  views: SavedView[]
+  data: {
+    views: SavedView[]
+  }
 }
 // 保存检索条件查询参数
 export interface SaveCondsResponse {
@@ -102,7 +107,7 @@ export interface SaveCondsResponse {
 }
 // 索引列表查询参数
 export interface IndexListParams {
-  dataSourceId: number
+  dataSourceId: string
 }
 // 索引列表响应
 export interface IndexListResponse {

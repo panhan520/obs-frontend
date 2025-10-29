@@ -47,8 +47,25 @@ export default defineComponent({
       type: Array as PropType<LogField[]>,
       required: true,
     },
-    initialTimeRange: {
+    timeRange: {
       type: Object as PropType<{ start: string | null; end: string | null }>,
+      required: true,
+    },
+    startTimestamp: {
+      type: Number,
+      required: false,
+    },
+    endTimestamp: {
+      type: Number,
+      required: false,
+    },
+    searchTimeType: {
+      type: Number as PropType<1 | 2>,
+      required: false,
+      default: 1,
+    },
+    minutesPast: {
+      type: Number,
       required: false,
     },
     filterConditions: {
@@ -61,8 +78,11 @@ export default defineComponent({
     'search',
     'addFilter',
     'removeFilter',
-    'timeRangeUpdate',
-    'predefinedTimeSelect',
+    'update:timeRange',
+    'update:startTimestamp',
+    'update:endTimestamp',
+    'update:searchTimeType',
+    'update:minutesPast',
   ],
   setup(props, { emit }) {
     const handleAddFilter = () => emit('addFilter')
@@ -76,38 +96,16 @@ export default defineComponent({
         return
       }
 
-      const now = new Date()
       const queryData: any = {
         queryCondition: props.searchQuery,
+        searchTimeType: props.searchTimeType,
+        startTimestamp: props.startTimestamp,
+        endTimestamp: props.endTimestamp,
       }
 
-      if (isTimePaused.value && selectedPredefinedTime.value) {
-        // 启用状态：相对时间查询
-        queryData.searchTimeType = 2 // SEARCH_TIME_TYPE_RELATIVE
-        queryData.minutesPast = selectedPredefinedTime.value.value
-      } else {
-        // 暂停状态：绝对时间查询
-        queryData.searchTimeType = 1 // SEARCH_TIME_TYPE_ABSOLUTE
-
-        // 处理开始时间
-        if (startDate.value) {
-          // 如果是"现在"时间，每次查询时都重新获取当前时间
-          if (isStartTimeNow.value) {
-            queryData.startTimestamp = Math.floor(now.getTime())
-          } else {
-            queryData.startTimestamp = Math.floor(startDate.value.getTime())
-          }
-        }
-
-        // 处理结束时间
-        if (endDate.value) {
-          // 如果是"现在"时间，每次查询时都重新获取当前时间
-          if (isEndTimeNow.value) {
-            queryData.endTimestamp = Math.floor(now.getTime())
-          } else {
-            queryData.endTimestamp = Math.floor(endDate.value.getTime())
-          }
-        }
+      // 如果是相对时间，添加minutesPast
+      if (props.searchTimeType === 2) {
+        queryData.minutesPast = props.minutesPast
       }
 
       emit('search', queryData)
@@ -122,15 +120,28 @@ export default defineComponent({
     const timeRangeVisible = ref(false)
     const activeTimePart = ref<'start' | 'end'>()
     const activeTab = ref<TimeTab>('absolute')
-    const startDate = ref<Date | null>(new Date(Date.now() - 15 * 60 * 1000))
-    const endDate = ref<Date | null>(new Date())
     const relativeAmount = ref<number>(DEFAULT_RELATIVE_AMOUNT)
     const relativeUnit = ref<RelativeTimeUnit>(DEFAULT_RELATIVE_UNIT)
     const includeWeek = ref(false)
 
     // 预定义时间选择状态
-    const isTimePaused = ref(false) // 默认为启用状态
-    const selectedPredefinedTime = ref<PredefinedTimeOption | null>(PREDEFINED_TIME_OPTIONS[0]) // 默认选择15分钟
+    const isTimePaused = ref(props.searchTimeType === 2) // 根据props判断是否为相对时间
+    const selectedPredefinedTime = ref<PredefinedTimeOption | null>(null)
+
+    // 从props计算当前时间
+    const startDate = computed(() => {
+      if (props.timeRange.start) {
+        return new Date(props.timeRange.start)
+      }
+      return null
+    })
+
+    const endDate = computed(() => {
+      if (props.timeRange.end) {
+        return new Date(props.timeRange.end)
+      }
+      return null
+    })
 
     // 标记哪些时间是"现在"时间
     const isStartTimeNow = ref(false)
@@ -169,18 +180,21 @@ export default defineComponent({
     const setNow = () => {
       const now = new Date()
       if (activeTimePart.value === 'start') {
-        startDate.value = now
         isStartTimeNow.value = true
+        emit('update:startTimestamp', now.getTime())
+        emit('update:timeRange', {
+          start: now.toISOString(),
+          end: props.timeRange.end,
+        })
       } else {
-        endDate.value = now
         isEndTimeNow.value = true
+        emit('update:endTimestamp', now.getTime())
+        emit('update:timeRange', {
+          start: props.timeRange.start,
+          end: now.toISOString(),
+        })
       }
       timeRangeVisible.value = false
-      // 移除自动触发查询，只更新时间范围
-      emit('timeRangeUpdate', {
-        start: startDate.value ? startDate.value.toISOString() : null,
-        end: endDate.value ? endDate.value.toISOString() : null,
-      })
     }
 
     // 计算相对时间
@@ -270,18 +284,21 @@ export default defineComponent({
         const calculatedTime = calculateRelativeTime(relativeAmount.value, relativeUnit.value)
 
         if (activeTimePart.value === 'start') {
-          startDate.value = calculatedTime
           isStartTimeNow.value = false // 清除"现在"标记
+          emit('update:startTimestamp', calculatedTime.getTime())
+          emit('update:timeRange', {
+            start: calculatedTime.toISOString(),
+            end: props.timeRange.end,
+          })
         } else {
-          endDate.value = calculatedTime
           isEndTimeNow.value = false // 清除"现在"标记
+          emit('update:endTimestamp', calculatedTime.getTime())
+          emit('update:timeRange', {
+            start: props.timeRange.start,
+            end: calculatedTime.toISOString(),
+          })
         }
       }
-      // 移除自动触发查询，只更新时间范围
-      emit('timeRangeUpdate', {
-        start: startDate.value ? startDate.value.toISOString() : null,
-        end: endDate.value ? endDate.value.toISOString() : null,
-      })
     }
     const generateTimeSlots = (): string[] => {
       const times: string[] = []
@@ -306,17 +323,24 @@ export default defineComponent({
     // 计算当前活跃的日期设置函数
     const setCurrentDate = (value: Date | null) => {
       if (activeTimePart.value === 'start') {
-        startDate.value = value
         isStartTimeNow.value = false // 清除"现在"标记
+        if (value) {
+          emit('update:startTimestamp', value.getTime())
+          emit('update:timeRange', {
+            start: value.toISOString(),
+            end: props.timeRange.end,
+          })
+        }
       } else {
-        endDate.value = value
         isEndTimeNow.value = false // 清除"现在"标记
+        if (value) {
+          emit('update:endTimestamp', value.getTime())
+          emit('update:timeRange', {
+            start: props.timeRange.start,
+            end: value.toISOString(),
+          })
+        }
       }
-      // 移除自动触发查询，只更新时间范围
-      emit('timeRangeUpdate', {
-        start: startDate.value ? startDate.value.toISOString() : null,
-        end: endDate.value ? endDate.value.toISOString() : null,
-      })
     }
 
     // 计算舍入单位显示文本
@@ -438,18 +462,12 @@ export default defineComponent({
       const now = new Date()
       const startTime = new Date(now.getTime() - option.value * 60 * 1000) // 转换为毫秒
 
-      startDate.value = startTime
-      endDate.value = now
-
-      // 发送给后端（保留用于其他用途）
-      emit('predefinedTimeSelect', {
-        minutes: option.value,
-        start: startTime.toISOString(),
-        end: now.toISOString(),
-      })
-
-      // 更新时间范围（不触发查询）
-      emit('timeRangeUpdate', {
+      // 更新父组件状态
+      emit('update:searchTimeType', 2) // 相对时间
+      emit('update:minutesPast', option.value)
+      emit('update:startTimestamp', startTime.getTime())
+      emit('update:endTimestamp', now.getTime())
+      emit('update:timeRange', {
         start: startTime.toISOString(),
         end: now.toISOString(),
       })
@@ -461,6 +479,10 @@ export default defineComponent({
       if (!isTimePaused.value) {
         // 如果从暂停切换到启用，清除预定义时间选择
         selectedPredefinedTime.value = null
+        emit('update:searchTimeType', 1) // 绝对时间
+        emit('update:minutesPast', undefined)
+      } else {
+        emit('update:searchTimeType', 2) // 相对时间
       }
     }
 
@@ -476,13 +498,11 @@ export default defineComponent({
         }
       },
     )
-    // 从父组件恢复初始时间范围
+    // 监听props变化，更新内部状态
     watch(
-      () => props.initialTimeRange,
-      (val) => {
-        if (!val) return
-        if (val.start) startDate.value = new Date(val.start)
-        if (val.end) endDate.value = new Date(val.end)
+      () => props.searchTimeType,
+      (newType) => {
+        isTimePaused.value = newType === 2
       },
       { immediate: true },
     )
@@ -654,19 +674,30 @@ export default defineComponent({
                                         : '')
                                     }
                                     onClick={() => {
-                                      const targetDate =
-                                        activeTimePart.value === 'start' ? startDate : endDate
-                                      if (!targetDate.value) targetDate.value = new Date()
+                                      const baseDate =
+                                        activeTimePart.value === 'start'
+                                          ? startDate.value
+                                          : endDate.value
+                                      if (!baseDate) return
                                       const [h, m] = t.split(':').map((x) => Number(x))
-                                      const d = new Date(targetDate.value)
+                                      const d = new Date(baseDate)
                                       d.setHours(h, m, 0, 0)
-                                      targetDate.value = d
 
                                       // 清除"现在"标记
                                       if (activeTimePart.value === 'start') {
                                         isStartTimeNow.value = false
+                                        emit('update:startTimestamp', d.getTime())
+                                        emit('update:timeRange', {
+                                          start: d.toISOString(),
+                                          end: props.timeRange.end,
+                                        })
                                       } else {
                                         isEndTimeNow.value = false
+                                        emit('update:endTimestamp', d.getTime())
+                                        emit('update:timeRange', {
+                                          start: props.timeRange.start,
+                                          end: d.toISOString(),
+                                        })
                                       }
                                     }}
                                   >
