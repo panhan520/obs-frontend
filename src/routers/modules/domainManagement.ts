@@ -46,11 +46,60 @@ export default [
       //   meta: { title: 'HTTP检测', level: 2, headerMode: HeaderMode.SUBMENU },
       // },
       {
+        path: 'hijackDetection',
+        name: 'HijackDetection',
+        component: () => import('~/views/domainManagement/views/hijackDetection'),
+        meta: { title: '劫持检测', level: 2, headerMode: HeaderMode.SUBMENU },
+      },
+      {
+        path: 'hijackDetectionCreate',
+        name: 'HijackDetectionCreate',
+        component: () => import('~/views/domainManagement/views/hijackDetection/detail/index'),
+        meta: {
+          title: '新增',
+          hidden: true,
+          level: 2,
+          breadcrumbConfig: [
+            { label: '劫持检测', name: 'HijackDetection' },
+            { label: '新增', name: 'HijackDetectionCreate' },
+          ],
+        },
+      },
+      {
+        path: 'hijackDetectionEdit',
+        name: 'HijackDetectionEdit',
+        component: () => import('~/views/domainManagement/views/hijackDetection/detail/index'),
+        meta: {
+          title: '编辑',
+          hidden: true,
+          level: 2,
+          breadcrumbConfig: [
+            { label: '劫持检测', name: 'HijackDetection' },
+            { label: '编辑', name: 'HijackDetectionEdit' },
+          ],
+        },
+      },
+      {
+        path: 'hijackDetectionView',
+        name: 'HijackDetectionView',
+        component: () => import('~/views/domainManagement/views/hijackDetection/view/index'),
+        meta: {
+          title: '查看',
+          hidden: true,
+          level: 2,
+          breadcrumbConfig: [
+            { label: '劫持检测', name: 'HijackDetection' },
+            { label: '详情', name: 'HijackDetectionView' },
+          ],
+        },
+      },
+      {
         path: 'dnsInspect',
         name: 'DnsInspect',
         component: () => import('~/views/domainManagement/views/dnsInspect'),
         meta: { title: 'DNS检测', level: 2, headerMode: HeaderMode.SUBMENU },
       },
+
       {
         path: 'dnsInspectCreate',
         name: 'DnsInspectCreate',

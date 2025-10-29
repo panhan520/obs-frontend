@@ -1,14 +1,15 @@
-import { defineComponent, ref } from 'vue'
+import { defineComponent, ref, h, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { ElButton } from 'element-plus'
 import { CommonPage } from '~/businessComponents'
-import { getListApi, createApi, editApi } from '~/api/domainManagement/sslInspect'
+import { getListApi } from '~/api/domainManagement/hijackDetection'
 import { getFields } from './fields'
 
 import type { ICommonObj } from '~/interfaces/common'
 import type { IExpose } from '~/businessComponents/commonPage'
 
 export default defineComponent({
-  name: 'SslInspect',
+  name: 'HijackDetection',
   setup() {
     const router = useRouter()
     const commonPageRef = ref<IExpose>()
@@ -18,24 +19,38 @@ export default defineComponent({
         page: params?.pagination?.page,
         pageSize: params?.pagination?.pageSize,
         search: params?.domain,
-        startDate: params?.fromTime,
-        endDate: params?.toTime,
+        inspectStatus: params?.inspectStatus,
       }
     }
+    onMounted(() => {
+      // localStorage.removeItem('hijackDetectionFilterParams')
+      // localStorage.removeItem('hijackDetectionPagePreferences')
+    })
     return () => (
       <CommonPage
         ref={commonPageRef}
         fields={fields.value}
         listApi={getListApi}
-        createApi={createApi}
-        editApi={editApi}
         formatListParams={formatListParams}
-        pageKey='sslInspect'
+        pageKey='hijackDetection'
         filterColumns={6}
         rowKey='id'
         refreshable
         needPagination
+        v-slots={{
+          setterPrefix: () =>
+            h(
+              ElButton,
+              {
+                type: 'primary',
+                onClick: () => {
+                  router.push({ name: 'HijackDetectionCreate' })
+                },
+              },
+              '新增',
+            ),
+        }}
       />
     )
-  }
+  },
 })

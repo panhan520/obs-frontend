@@ -35,18 +35,19 @@ export default defineComponent({
         refreshable
         needPagination
         v-slots={{
-          setterPrefix: () => h(
-            ElButton, 
-            {
-              type: 'primary',
-              onClick: () => {
-                router.push({ name: 'DnsInspectCreate' })
+          setterPrefix: () =>
+            h(
+              ElButton,
+              {
+                type: 'primary',
+                onClick: () => {
+                  router.push({ name: 'DnsInspectCreate' })
+                },
               },
-            }, 
-            '新增',
-          )
+              '新增',
+            ),
         }}
       />
     )
-  }
+  },
 })

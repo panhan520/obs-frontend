@@ -1,0 +1,16 @@
+.container {
+  width: 100%;
+  padding: 16px;
+  box-sizing: border-box;
+}
+.btnGroup {
+  width: 100%;
+  height: auto;
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  padding: 8px 16px;
+  box-sizing: border-box;
+  background-color: #fff;
+  z-index: 9;
+}

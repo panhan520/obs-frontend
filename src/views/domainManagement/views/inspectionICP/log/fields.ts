@@ -1,4 +1,6 @@
 import type { Column } from 'element-plus'
+import { ElText } from 'element-plus'
+import { h } from 'vue'
 
 const fields: Column[] = [
   {
@@ -12,6 +14,7 @@ const fields: Column[] = [
   {
     prop: 'result',
     label: '运行结果',
+    render: ({ rowData }) => h(ElText, {}, JSON.stringify(rowData.result)),
   } as any,
 ]
 

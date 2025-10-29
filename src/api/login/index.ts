@@ -2,13 +2,13 @@ import getReqByProxyModule from '~/config/request'
 import type { LoginParams } from './types'
 
 import { PROXY } from '~/config/constants'
-const userAxios = getReqByProxyModule({ proxyModule: PROXY.API })
-const opensearchAxios = getReqByProxyModule({ proxyModule: PROXY.OPENSEARCH })
+const userAxios = getReqByProxyModule({ proxyModule: PROXY.USER })
+const loginAxios = getReqByProxyModule({ proxyModule: PROXY.API })
 
 // 登录
 export const loginApi = (data: LoginParams) => {
   data.type = 'ACCOUNT_TYPE_USERNAME'
-  return userAxios.post('/api/v1/iam/login', data)
+  return loginAxios.post('/api/v1/iam/login', data)
   // return userAxios.post('/user/v1/login', data)
 }
 // 注册
@@ -21,7 +21,7 @@ export const sendEmail = (data: sendEmailParams) => {
 }
 // 登出
 export const loginOut = (data) => {
-  return userAxios.get('/api/v1/iam/logout', data)
+  return loginAxios.get('/api/v1/iam/logout', data)
 }
 // 密码验证
 export const checkApi = (data) => {
@@ -46,15 +46,4 @@ export const infoApi = (data) => {
 // 修改邮箱
 export const changeEmailApi = (data) => {
   return userAxios.post('/v1/email', data)
-}
-// openserch登录
-export const opensearchLoginApi = (data) => {
-  return opensearchAxios.post('auth/login?dataSourceId=', data, {
-    headers: {
-      accept: '*/*',
-      'content-type': 'application/json',
-      'osd-version': '2.19.3-SNAPSHOT',
-      'osd-xsrf': 'osd-fetch',
-    },
-  })
 }

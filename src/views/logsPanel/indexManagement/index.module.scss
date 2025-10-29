@@ -1,0 +1,45 @@
+.container {
+  width: 100%;
+  height: calc(100vh - 60px - 41px);
+  overflow: hidden;
+  background-color: #fff;
+  padding: 16px;
+
+  .customSelectWrapper {
+    display: flex;
+    align-items: center;
+    border: 1px solid #dcdfe6;
+    border-radius: 4px;
+    overflow: hidden;
+    width: 240px;
+    cursor: pointer;
+  }
+
+  .prefix {
+    padding: 0 12px;
+    line-height: 32px;
+    background-color: #f5f7fa;
+    border-right: 1px solid #dcdfe6;
+    color: #606266;
+    flex-shrink: 0;
+  }
+
+  .customSelect {
+    flex: 1;
+  }
+
+  /* 去掉下拉框自身的 border 和阴影 */
+  :global(.el-select__wrapper) {
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+  }
+
+  /* 去掉 focus/hover 的边框阴影 */
+  :global(.el-select__wrapper:hover),
+  :global(.el-select__wrapper:focus) {
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+  }
+}

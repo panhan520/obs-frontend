@@ -12,6 +12,7 @@ const getSchema = ({ formRef }): ISchema => ({
   properties: {
     inspectName: {
       type: 'string',
+      required: true,
       'x-decorator': 'FormItem',
       'x-decorator-props': {
         label: '任务名称',
@@ -25,6 +26,7 @@ const getSchema = ({ formRef }): ISchema => ({
     },
     domain: {
       type: 'string',
+      required: true,
       'x-decorator': 'FormItem',
       'x-decorator-props': {
         label: '监控对象',
@@ -36,8 +38,22 @@ const getSchema = ({ formRef }): ISchema => ({
         clearable: true,
       },
     },
+    whitelist: {
+      type: 'string',
+      'x-decorator': 'FormItem',
+      'x-decorator-props': {
+        label: '白名单',
+        labelWidth: 100,
+      },
+      'x-component': 'Input.TextArea',
+      'x-component-props': {
+        placeholder: '可填写多个白名单域名，用‘空格’隔开',
+        clearable: true,
+      },
+    },
     nodes: {
       type: 'string',
+      required: true,
       'x-decorator': 'FormItem',
       'x-decorator-props': {
         label: '监控节点',
@@ -47,69 +63,12 @@ const getSchema = ({ formRef }): ISchema => ({
       'x-component-props': {
         placeholder: '请选择',
         clearable: true,
-        fetchConfig: {
-          api: getNodesApi,
-          formatter: (list: Record<string, ILocationItem[]>[]) => {
-            try {
-              const result = list.reduce((initVal, curItem) => {
-                const formattedCurItem = (Object.entries(curItem)?.[0]?.[1] || []).map((v1: ILocationItem) => ({
-                  /** 节点id */
-                  nodeId: v1.nodeId,
-                  /** 所属地区id */
-                  regionId: v1.zone,
-                  /** 所属地区名称 */
-                  regionName: v1.zone,
-                  /** 所属省份 */
-                  subdivision: v1.zone,
-                  /** 所属城市 */
-                  city: v1.nodeName,
-                  /** 运营商唯一标识 */
-                  asn: v1.ispCode,
-                  /** 运营商 */
-                  ispName: v1.ispName,
-                  /** 用于前端友好展示的区域名称，比如：浙江杭州电信 */
-                  friendlyArea: `${v1.nodeName}`,
-                }))
-                initVal = [...initVal, ...formattedCurItem]
-                return initVal
-              }, [])
-              const nodesField = formRef.value.formRef.query('nodes')?.take() as Field
-              nodesField.setComponentProps({
-                ...(nodesField.componentProps || {}),
-                options: result || [],
-              })
-              return result
-            } catch (error: any) {
-              console.error(`【节点】数据格式转换失败，失败原因：${error}`)
-            }
-          }
-        } as IFetchConfig,
       },
       'x-reactions': '{{ fetchOptions }}',
     },
-    // project: {
-    //   type: 'string',
-    //   'x-decorator': 'FormItem',
-    //   'x-decorator-props': {
-    //     label: '归属项目',
-    //     labelWidth: 100,
-    //   },
-    //   'x-component': 'Select',
-    //   'x-component-props': {
-    //     placeholder: '请选择',
-    //     clearable: true,
-    //     fetchConfig: {
-    //       api: getProjectsApi,
-    //       formatter: (res) => (res?.data?.list || []).map((v: Record<string, string>) => ({
-    //         label: v.name,
-    //         value: v.id,
-    //       })),
-    //     }
-    //   },
-    //   'x-reactions': '{{ fetchOptions }}',
-    // },
     frequency: {
       type: 'string',
+      required: true,
       'x-decorator': 'FormItem',
       'x-decorator-props': {
         label: '任务频率',
@@ -123,6 +82,7 @@ const getSchema = ({ formRef }): ISchema => ({
     },
     noticeMode: {
       type: 'string',
+      required: true,
       'x-decorator': 'FormItem',
       'x-decorator-props': {
         label: '通知渠道',
@@ -131,11 +91,14 @@ const getSchema = ({ formRef }): ISchema => ({
       'x-component': 'Select',
       'x-component-props': {
         placeholder: '请选择',
+        disabled: true
       },
       enum: noticeChannelOptions,
+      default: 'telegram',
     },
     telegramChatId: {
       type: 'string',
+      // required: true,
       'x-decorator': 'FormItem',
       'x-decorator-props': {
         label: 'Chat ID',
@@ -148,6 +111,7 @@ const getSchema = ({ formRef }): ISchema => ({
     },
     telegramToken: {
       type: 'string',
+      // required: true,
       'x-decorator': 'FormItem',
       'x-decorator-props': {
         label: 'Token',
@@ -160,13 +124,14 @@ const getSchema = ({ formRef }): ISchema => ({
     },
     taskStatus: {
       type: 'boolean',
+      required: true,
       'x-decorator': 'FormItem',
       'x-decorator-props': {
         label: '任务状态',
         labelWidth: 100,
       },
       'x-component': 'Switch',
-      default: false,
+      default: true,
     },
   }
 })

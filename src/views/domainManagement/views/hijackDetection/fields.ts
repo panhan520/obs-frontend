@@ -1,19 +1,13 @@
 import { h } from 'vue'
-import { ElButton, ElMessage, ElMessageBox, ElTag, ElText } from 'element-plus'
-import { deleteApi, enableApi, disabledApi, getProjectsApi } from '~/api/domainManagement/sslInspect'
+import { ElButton, ElMessage, ElMessageBox, ElTag } from 'element-plus'
+import { deleteApi, enableApi, disabledApi } from '~/api/domainManagement/hijackDetection'
 import Space from '~/basicComponents/space'
-import { MODE } from '~/businessComponents/commonPage'
-import emitter from '~/utils/emitter'
-import { inspectStatusMap, frequencyOptions, frequencyMap, noticeChannelOptions } from '../../constants/common'
+import { inspectStatusMap } from '../../constants/common'
 
 import type { IField } from '~/businessComponents/commonPage'
 
 const commonAttrs = {
   link: true,
-}
-const commonProps = {
-  layout: 'vertical',
-  colon: false,
 }
 export const getFields = ({ router, commonPageRef }): IField[] => ([
   {
@@ -21,20 +15,6 @@ export const getFields = ({ router, commonPageRef }): IField[] => ([
     label: '名称',
     isColumn: true,
     columnConfig: { minWidth: 150 },
-    isEdit: true,
-    editConfig: {
-      type: 'string',
-      required: true,
-      'x-decorator': 'FormItem',
-      'x-decorator-props': {
-        ...commonProps,
-        label: '任务名称',
-      },
-      'x-component': 'Input',
-      'x-component-props': {
-        placeholder: '请输入',
-      },
-    },
   },
   {
     prop: 'domain',
@@ -46,65 +26,30 @@ export const getFields = ({ router, commonPageRef }): IField[] => ([
       type: 'void',
       'x-component': 'FormGrid.GridColumn',
       'x-component-props': {
-        gridSpan: 2,
+        gridSpan: 1,
       },
       properties: {
-        domain: {
+        'domain': {
           type: 'string',
           'x-decorator': 'FormItem',
           'x-decorator-props': {
             label: '监控对象',
             style: {
               marginBottom: '0',
-            },
+            }
           },
           'x-component': 'Input',
           'x-component-props': {
             placeholder: '请输入',
-            clearable: true,
           },
         }
       },
     },
-    isEdit: true,
-    editConfig: {
-      type: 'string',
-      required: true,
-      'x-decorator': 'FormItem',
-      'x-decorator-props': commonProps,
-      'x-component': 'Input',
-      'x-component-props': {
-        placeholder: '请输入',
-      },
-    },
   },
-  // {
-  //   prop: 'project',
-  //   label: '归属项目',
-  //   isEdit: true,
-  //   editConfig: {
-  //     type: 'string',
-  //     required: true,
-  //     'x-decorator': 'FormItem',
-  //     'x-decorator-props': commonProps,
-  //     'x-component': 'Select',
-  //     'x-component-props': {
-  //       placeholder: '请选择',
-  //       clearable: true,
-  //     },
-  //   },
-  //   fetchConfig: {
-  //     api: getProjectsApi,
-  //     formatter: (res) => (res?.data?.list || []).map((v: Record<string, string>) => ({
-  //       label: v.name,
-  //       value: v.id,
-  //     })),
-  //   }
-  // },
   {
     prop: 'execTime',
     label: '执行时间',
-    isFilter: true,
+    isFilter: false,
     filterConfig: {
       type: 'void',
       'x-component': 'FormGrid.GridColumn',
@@ -138,7 +83,6 @@ export const getFields = ({ router, commonPageRef }): IField[] => ([
                 valueFormat: 'YYYY-MM-DD HH:mm',
                 startPlaceholder: '2025-08-05 08:00',
                 endPlaceholder: '2025-08-05 21:00',
-                clearable: true,
                 style: {
                   width: '240px',
                 },
@@ -153,32 +97,17 @@ export const getFields = ({ router, commonPageRef }): IField[] => ([
     prop: 'taskStatus',
     label: '任务状态',
     isColumn: true,
-    columnConfig: { 
+    columnConfig: {
       width: 120,
-      render: ({ rowData }) => h(
-        ElTag, 
-        { type: rowData.taskStatus ? 'success' : 'danger' }, 
-        rowData.taskStatus ? '启用' : '禁用'
-      ),
-    },
-    isEdit: true,
-    editConfig: {
-      type: 'string',
-      required: true,
-      'x-decorator': 'FormItem',
-      'x-decorator-props': commonProps,
-      'x-component': 'Switch',
-      'x-component-props': {
-        placeholder: '请选择',
-      },
-      default: false,
+      render: ({ rowData }) => h(ElTag, { type: rowData.taskStatus ? 'success' : 'danger' }, rowData.taskStatus ? '启用' : '禁用')
     },
   },
   {
     prop: 'inspectStatus',
     label: '监控状态',
     isColumn: true,
-    columnConfig: { 
+    isFilter: true,
+    columnConfig: {
       width: 120,
       render: ({ rowData }) => h(
         ElTag,
@@ -186,79 +115,26 @@ export const getFields = ({ router, commonPageRef }): IField[] => ([
         inspectStatusMap[rowData.inspectStatus]?.text || 'null',
       ),
     },
+    filterConfig: {
+      type: 'string',
+      default: ' ',
+      'x-decorator': 'FormItem',
+      'x-component': 'Select',
+      'x-component-props': {
+        placeholder: '请选择',
+      },
+      enum: [
+        { label: '全部', value: ' ' },
+        { label: '正常', value: 'normal' },
+        { label: '异常', value: 'abnormal' },
+      ],
+    },
   },
   {
-    prop: 'frequency',
+    prop: 'frequencyLabel',
     label: '频率',
     isColumn: true,
-    columnConfig: { 
-      width: 120,
-      render: ({ rowData }) => h(ElText, {}, frequencyMap[rowData.frequency]),
-    },
-    isEdit: true,
-    editConfig: {
-      type: 'string',
-      required: true,
-      'x-decorator': 'FormItem',
-      'x-decorator-props': {
-        ...commonProps,
-        label: '任务频率',
-      },
-      'x-component': 'Select',
-      'x-component-props': {
-        placeholder: '请选择',
-        clearable: true,
-      },
-      enum: frequencyOptions,
-    },
-  },
-  {
-    prop: 'noticeMode',
-    label: '通知渠道',
-    isEdit: true,
-    editConfig: {
-      type: 'string',
-      required: true,
-      'x-decorator': 'FormItem',
-      'x-decorator-props': commonProps,
-      'x-component': 'Select',
-      'x-component-props': {
-        placeholder: '请选择',
-        multiple: true,
-        clearable: true,
-      },
-      enum: noticeChannelOptions,
-    },
-  },
-  {
-    prop: 'telegramChatId',
-    label: 'Chat ID',
-    isEdit: true,
-    editConfig: {
-      type: 'string',
-      required: true,
-      'x-decorator': 'FormItem',
-      'x-decorator-props': commonProps,
-      'x-component': 'Input',
-      'x-component-props': {
-        placeholder: '请输入',
-      },
-    },
-  },
-  {
-    prop: 'telegramToken',
-    label: 'Token',
-    isEdit: true,
-    editConfig: {
-      type: 'string',
-      required: true,
-      'x-decorator': 'FormItem',
-      'x-decorator-props': commonProps,
-      'x-component': 'Input',
-      'x-component-props': {
-        placeholder: '请输入',
-      },
-    },
+    columnConfig: { width: 120 },
   },
   {
     prop: 'createdBy',
@@ -323,23 +199,23 @@ export const getFields = ({ router, commonPageRef }): IField[] => ([
           h(ElButton, {
             type: 'primary',
             ...commonAttrs,
-            onClick: (e: Event) => {  
+            onClick: (e: Event) => {
               e.stopPropagation()
-              emitter.emit('openEditor', { mode: MODE.EDIT, rowData, rowIndex: 0 })
-            }
+              router.push({ name: 'HijackDetectionEdit', query: { id: rowData?.id } })
+            },
           }, '编辑'),
           h(ElButton, {
             type: 'primary',
             ...commonAttrs,
-            onClick: (e: Event) => {  
+            onClick: (e: Event) => {
               e.stopPropagation()
-              router.push({ name: 'SslDetail', query: { id: rowData.id } })
+              router.push({ name: 'HijackDetectionView', query: { id: rowData?.id } })
             }
           }, '查看'),
           h(ElButton, {
             type: isEnable ? 'warning' : 'success',
             ...commonAttrs,
-            onClick: async (e: Event) => {  
+            onClick: async (e: Event) => {
               try {
                 const text = isEnable ? commonActions.disable.text : commonActions.enable.text
                 e.stopPropagation()
@@ -360,7 +236,7 @@ export const getFields = ({ router, commonPageRef }): IField[] => ([
                 })
                 commonPageRef?.value?.query()
               } catch (error: any) {
-                console.log(`取消操作`)
+                console.log(`取消刪除`)
               }
             }
           }, isEnable ? commonActions.disable.text : commonActions.enable.text),

@@ -1,6 +1,7 @@
 import { h } from 'vue'
 import { ElText } from 'element-plus'
-import { zoneOptions, ispOptions } from './constants'
+import { getHistoryNodeListApi } from '~/api/domainManagement/dnsInspect'
+import { ispOptions } from './constants'
 
 import type { Column } from 'element-plus'
 import type { IField } from '~/interfaces/commonPage'
@@ -35,7 +36,10 @@ export const fields: IField[] = [
         placeholder: '请选择',
         clearable: true,
       },
-      enum: zoneOptions,
+    },
+    fetchConfig: {
+      api: getHistoryNodeListApi,
+      formatter: (res) => ([...new Set(res.list.map(v => v.zone))]),
     },
   },
   {

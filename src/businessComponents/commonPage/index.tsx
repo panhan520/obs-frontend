@@ -24,7 +24,7 @@ const props = {
   /** fields */
   fields: {
     type: Array as PropType<IField[] | Ref<IField[]>>,
-    default: () => ([]),
+    default: () => [],
   },
   /** 获取列表 */
   listApi: {
@@ -79,7 +79,7 @@ const props = {
   /** 选中值 */
   selected: {
     type: Array,
-    default: () => ([]),
+    default: () => [],
   },
   /** 需要分页 */
   needPagination: {
@@ -104,7 +104,7 @@ const props = {
       labelStyle: {
         width: '100px',
         margin: '0',
-      }
+      },
     }),
   },
   /** 刷新 */
@@ -129,10 +129,10 @@ export default defineComponent({
     const extraPaneRef = ref()
     const containerHeight = ref('0px')
     const commonTableRefHeight = ref('0px')
-    const { 
-      allEditFields, 
+    const {
+      allEditFields,
       fetchEffects,
-      visibleFilterFields, 
+      visibleFilterFields,
       visibleColumns,
       allVisibleFilterFields,
       allVisibleColumnFields,
@@ -163,7 +163,7 @@ export default defineComponent({
         await props.downloadApi?.()
         ElMessage({
           message: '下载成功',
-          type: 'success'
+          type: 'success',
         })
       } catch (error: any) {
         console.error(`下载失败，失败原因：${error}`)
@@ -174,9 +174,13 @@ export default defineComponent({
       containerHeight.value = containerRef.value.$el.clientHeight
       const table = '15px - 16px - 8px - 24px'
       const elDividerHeight = `${setterBarRef.value.$el.clientHeight}px`
-      commonTableRefHeight.value = `calc(${containerHeight.value}px - ${commonFilterRef.value?.getCommonFilterHeight()}px - ${extraPaneRef.value?.clientHeight || 0}px - 8px - 31px - 8px - ${elDividerHeight} - 8px - ${table})`
+      commonTableRefHeight.value = `calc(${
+        containerHeight.value
+      }px - ${commonFilterRef.value?.getCommonFilterHeight()}px - ${
+        extraPaneRef.value?.clientHeight || 0
+      }px - 8px - 31px - 8px - ${elDividerHeight} - 8px - ${table})`
     }
-    onMounted(async() => {
+    onMounted(async () => {
       emitter.on('openEditor', openEditor)
       setTimeout(() => {
         updateTableHeight()
@@ -217,40 +221,50 @@ export default defineComponent({
               updateTableHeight()
             }}
             v-slots={{
-              default: () => (
-                commonFilterRef.value?.collapsible 
-                  && <ElButton
+              default: () =>
+                commonFilterRef.value?.collapsible && (
+                  <ElButton
                     class={styles.btn}
-                    style={{ transform: `rotate(${commonFilterRef.value?.visible ? '180deg' : '0deg'})` }}
+                    style={{
+                      transform: `rotate(${commonFilterRef.value?.visible ? '180deg' : '0deg'})`,
+                    }}
                     icon={ArrowDown}
                     link
                   />
-              )
+                ),
             }}
           />
-          {slots?.extraPane && <div ref={extraPaneRef} class={styles.extraPane}>
-            {slots.extraPane()}
-          </div>}
+          {slots?.extraPane && (
+            <div ref={extraPaneRef} class={styles.extraPane}>
+              {slots.extraPane()}
+            </div>
+          )}
           <Space ref={setterBarRef} class={styles.setter} justify='end'>
             <ElSpace>
-              {props.createApi && <ElButton type='primary' icon={Plus} onClick={create}>新增</ElButton>}
+              {props.createApi && (
+                <ElButton type='primary' icon={Plus} onClick={create}>
+                  新增
+                </ElButton>
+              )}
               {slots.setterPrefix?.()}
-              {props.downloadApi && (slots.download?.(download) || <ElButton onClick={download}>下载</ElButton>)}
+              {props.downloadApi &&
+                (slots.download?.(download) || <ElButton onClick={download}>下载</ElButton>)}
             </ElSpace>
             <ElSpace class={styles.end}>
               {slots.setterSuffix?.()}
-              {props.refreshable && <ElButton icon={Refresh} link onClick={() => query({ text: '刷新' })} />}
-              {
-                props.pageKey
-                  && <CommonSetter
-                    allVisibleFilterFields={allVisibleFilterFields}
-                    allVisibleColumnFields={allVisibleColumnFields}
-                    onConfirm={setPagePreferences}
-                    v-slots={{
-                      reference: () => (<ElButton icon={Setting} link />)
-                    }}
-                  />
-              }
+              {props.refreshable && (
+                <ElButton icon={Refresh} link onClick={() => query({ text: '刷新' })} />
+              )}
+              {props.pageKey && (
+                <CommonSetter
+                  allVisibleFilterFields={allVisibleFilterFields}
+                  allVisibleColumnFields={allVisibleColumnFields}
+                  onConfirm={setPagePreferences}
+                  v-slots={{
+                    reference: () => <ElButton icon={Setting} link />,
+                  }}
+                />
+              )}
             </ElSpace>
           </Space>
           <div class={styles.tableContainer}>
@@ -264,10 +278,16 @@ export default defineComponent({
               selectOptions={props.selectOptions}
               selected={props.selected}
               formatListParams={props.formatListParams}
-              beforeFetch={({ formData }) => { keepFilter?.(formData) }}
-              onUpdate:selected={(val: any[]) => { emit('update:selected', val) }}
+              beforeFetch={({ formData }) => {
+                keepFilter?.(formData)
+              }}
+              onUpdate:selected={(val: any[]) => {
+                emit('update:selected', val)
+              }}
               needPagination={props.needPagination}
-              onRowClick={(row: any, column: any, event: Event) => { emit('rowClick', { rowData: row, column, event }) }}
+              onRowClick={(row: any, column: any, event: Event) => {
+                emit('rowClick', { rowData: row, column, event })
+              }}
             />
           </div>
         </Space>
@@ -279,9 +299,11 @@ export default defineComponent({
           layout={props.editorLayout}
           effectHooks={fetchEffects.value}
           formatEditParams={props.formatEditParams}
-          onConfirmSuccess={() => { query({ page: commonTableRef.value.pagination?.page }) }}
+          onConfirmSuccess={() => {
+            query({ page: commonTableRef.value.pagination?.page })
+          }}
         />
       </>
     )
-  }
+  },
 })

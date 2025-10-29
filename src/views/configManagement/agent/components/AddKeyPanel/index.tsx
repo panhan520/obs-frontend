@@ -4,7 +4,7 @@ import styles from './index.module.scss'
 import { useUserStore } from '@/store/modules/user'
 import type { FormInstance, FormRules } from 'element-plus'
 
-import { getKeyApi, generateKeyApi, editKeyApi, deleteKeyApi } from '~/api/logsPanel/index'
+import { getKeyApi, generateKeyApi, editKeyApi, deleteKeyApi } from '~/api/configManagement/index'
 
 import { ElMessage, ElMessageBox } from 'element-plus'
 

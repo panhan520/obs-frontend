@@ -35,6 +35,7 @@ const usePage = ({
           return initVal
         },
         { curFilterFields: {}, curEditFields: {}, curColumns: [], curFetchEffects: {} },
+
       )
       allFilterFields.value = curFilterFields
       allEditFields.value = curEditFields
@@ -46,8 +47,8 @@ const usePage = ({
   }, { immediate: true, deep: true })
   /** 上面是基础数据，后面的数据全部是基于基础数据的派生数据 */
   const {
-    visibleFilterFields, 
-    visibleColumns, 
+    visibleFilterFields,
+    visibleColumns,
     allVisibleFilterFields,
     allVisibleColumnFields,
     setPagePreferences,

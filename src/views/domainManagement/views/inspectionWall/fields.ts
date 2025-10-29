@@ -160,34 +160,34 @@ export const getFields = ({ router, commonPageRef }: IGetFieldsParams): IField[]
         ),
     },
   },
-  {
-    prop: 'project',
-    label: '归属项目',
-    isEdit: true,
-    editConfig: {
-      type: 'string',
-      'x-decorator': 'FormItem',
-      'x-decorator-props': {
-        label: '归属项目',
-        ...commonProps,
-      },
-      'x-component': 'Select',
-      'x-component-props': {
-        placeholder: '请选择',
-      },
-      enum: [],
-    },
-    fetchConfig: {
-      api: getUsersProjectApi,
-      formatter: (res) => {
-        const list = res.data.list.map((item) => ({
-          label: item.name,
-          value: item.id,
-        }))
-        return list
-      },
-    },
-  },
+  // {
+  //   prop: 'project',
+  //   label: '归属项目',
+  //   isEdit: true,
+  //   editConfig: {
+  //     type: 'string',
+  //     'x-decorator': 'FormItem',
+  //     'x-decorator-props': {
+  //       label: '归属项目',
+  //       ...commonProps,
+  //     },
+  //     'x-component': 'Select',
+  //     'x-component-props': {
+  //       placeholder: '请选择',
+  //     },
+  //     enum: [],
+  //   },
+  //   fetchConfig: {
+  //     api: getUsersProjectApi,
+  //     formatter: (res) => {
+  //       const list = res.data.list.map((item) => ({
+  //         label: item.name,
+  //         value: item.id,
+  //       }))
+  //       return list
+  //     },
+  //   },
+  // },
   {
     prop: 'frequency',
     label: '频率',

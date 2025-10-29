@@ -22,9 +22,12 @@ export const PROXY = {
   USER: import.meta.env.VITE_APP_USER_API,
   /**账户信息 */
   CORE: import.meta.env.VITE_APP_CORE_API,
-  /**opensearch */
-  OPENSEARCH: import.meta.env.VITE_APP_OPENSEARCH_API,
+  /**索引管理 */
+  INDEXMANAGEMENT: qiankunWindow.__POWERED_BY_QIANKUN__
+    ? import.meta.env.VITE_INDEXMANAGEMENT_MICRO_API
+    : import.meta.env.VITE_INDEXMANAGEMENT_API,
   /** 日志 */
   LOG: import.meta.env.VITE_APP_BASE_API_LOG,
+  /** 数据源 */
   DATASOURCE: import.meta.env.VITE_APP_BASE_API_DATASOURCE,
 }

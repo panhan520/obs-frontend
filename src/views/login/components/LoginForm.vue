@@ -3,19 +3,9 @@
     <img class="icon" src="@/assets/image/logo.png" alt="logo" />
     <!-- <h2 class="title">欢迎来到XXXX</h2> -->
   </div>
-  <el-form
-    v-if="router.currentRoute.value.path === '/login'"
-    ref="ruleFormRef"
-    :model="ruleForm"
-    :rules="rules"
-  >
+  <el-form v-if="router.currentRoute.value.path === '/login'" ref="ruleFormRef" :model="ruleForm" :rules="rules">
     <el-form-item label="" prop="username">
-      <el-input
-        v-model="ruleForm.username"
-        placeholder="请输入用户名"
-        auto-complete="on"
-        style="position: relative"
-      >
+      <el-input v-model="ruleForm.username" placeholder="请输入用户名" auto-complete="on" style="position: relative">
         <template #prefix>
           <el-icon class="el-input__icon">
             <UserFilled />
@@ -25,12 +15,7 @@
     </el-form-item>
 
     <el-form-item label="" prop="password">
-      <el-input
-        v-model="ruleForm.password"
-        placeholder="请输入密码"
-        auto-complete="on"
-        :type="passwordType"
-      >
+      <el-input v-model="ruleForm.password" placeholder="请输入密码" auto-complete="on" :type="passwordType">
         <template #prefix>
           <el-icon class="el-input__icon">
             <GoodsFilled />
@@ -44,12 +29,7 @@
       </el-input>
     </el-form-item>
     <el-form-item style="width: 100%">
-      <el-button
-        :loading="loading"
-        class="login-btn"
-        type="primary"
-        @click="submitForm(ruleFormRef)"
-      >
+      <el-button :loading="loading" class="login-btn" type="primary" @click="submitForm(ruleFormRef)">
         登录
       </el-button>
     </el-form-item>
@@ -61,12 +41,8 @@
       </div>
     </div>
   </el-form>
-  <el-form
-    v-else-if="router.currentRoute.value.path === '/register'"
-    ref="registerFormRef"
-    :model="registerForm"
-    :rules="registerRules"
-  >
+  <el-form v-else-if="router.currentRoute.value.path === '/register'" ref="registerFormRef" :model="registerForm"
+    :rules="registerRules">
     <el-form-item label="" prop="username">
       <el-input v-model="registerForm.username" placeholder="请输入用户名" auto-complete="on">
         <template #prefix>
@@ -77,12 +53,7 @@
       </el-input>
     </el-form-item>
     <el-form-item label="" prop="password">
-      <el-input
-        v-model="registerForm.password"
-        placeholder="请输入密码"
-        auto-complete="on"
-        :type="passwordType"
-      >
+      <el-input v-model="registerForm.password" placeholder="请输入密码" auto-complete="on" :type="passwordType">
         <template #prefix>
           <el-icon class="el-input__icon">
             <GoodsFilled />
@@ -96,12 +67,7 @@
       </el-input>
     </el-form-item>
     <el-form-item label="" prop="confirmPPassword">
-      <el-input
-        v-model="registerForm.confirmPPassword"
-        placeholder="请再次输入密码"
-        auto-complete="on"
-        :type="passwordType"
-      >
+      <el-input v-model="registerForm.confirmPPassword" placeholder="请再次输入密码" auto-complete="on" :type="passwordType">
         <template #prefix>
           <el-icon class="el-input__icon">
             <GoodsFilled />
@@ -137,12 +103,7 @@
     </el-row>
 
     <el-form-item style="width: 100%">
-      <el-button
-        :loading="loading"
-        class="login-btn"
-        type="primary"
-        @click="submitRegisterForm(registerFormRef)"
-      >
+      <el-button :loading="loading" class="login-btn" type="primary" @click="submitRegisterForm(registerFormRef)">
         注册
       </el-button>
     </el-form-item>
@@ -160,9 +121,6 @@ import { useRouter, onBeforeRouteLeave } from 'vue-router'
 import { getTimeStateStr } from '@/utils/index'
 import { registerUser, sendEmail, infoApi } from '@/api/login/index'
 import { useUserStore } from '@/store/modules/user'
-import { loginApi, opensearchLoginApi } from '@/api/login/index'
-import { jwtDecode } from 'jwt-decode'
-import type { JwtPayload } from 'jwt-decode'
 
 const UserStore = useUserStore()
 
@@ -277,10 +235,6 @@ const submitForm = async (formEl: FormInstance | undefined) => {
       message: '欢迎登录 ' + UserStore.userInfo.username,
       type: 'success',
       duration: 3000,
-    })
-    await opensearchLoginApi({
-      username: 'admin',
-      password: 'Hp0Odv6VeNaYjTm_DO4hB1ya',
     })
   } catch (error) {
     ElNotification({

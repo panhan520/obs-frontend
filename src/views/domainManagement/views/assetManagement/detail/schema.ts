@@ -59,16 +59,16 @@ const schema: ISchema = {
           },
           'x-component': 'Input',
         },
-        projectName: {
-          type: 'string',
-          'x-decorator': 'FormItem',
-          'x-decorator-props': {
-            label: '所属项目',
-            colon: false,
-            layout: 'vertical',
-          },
-          'x-component': 'Input',
-        },
+        // projectName: {
+        //   type: 'string',
+        //   'x-decorator': 'FormItem',
+        //   'x-decorator-props': {
+        //     label: '所属项目',
+        //     colon: false,
+        //     layout: 'vertical',
+        //   },
+        //   'x-component': 'Input',
+        // },
         service: {
           type: 'string',
           'x-decorator': 'FormItem',

@@ -16,7 +16,7 @@ const props = {
   /** columns */
   columns: {
     type: Object as PropType<Ref<Column[]>>,
-    default: () => (ref([])),
+    default: () => ref([]),
   },
   /** 获取列表 */
   listApi: {
@@ -51,7 +51,7 @@ const props = {
   /** 选中值 */
   selected: {
     type: Array,
-    default: () => ([]),
+    default: () => [],
   },
   /** 需要分页 */
   needPagination: {
@@ -80,7 +80,7 @@ export default defineComponent({
   name: 'CommonTable',
   inheritAttrs: false,
   props,
-  setup(props, { attrs, emit, expose }) {
+  setup(props, { attrs, emit, expose, slots }) {
     const tableRef = ref()
     const refreshKey = ref(0)
     const currentPage = ref(1)
@@ -89,24 +89,32 @@ export default defineComponent({
     const { data, pagination, getList } = usePagination({
       currentPage,
       commonFilterRef,
-      setSelected: (data: any[]) => setSelected({
-        tableRef,
-        selected: props.selected,
-        rowKey: props.rowKey,
-        data,
-      }),
+      setSelected: (data: any[]) =>
+        setSelected({
+          tableRef,
+          selected: props.selected,
+          rowKey: props.rowKey,
+          data,
+        }),
       listApi: props.listApi,
       formatListParams: props.formatListParams,
       beforeFetch: props.beforeFetch,
     })
-    const mergedPaginationConfig = computed(() => ({ ...defaultPaginationConfig, ...props.paginationConfig }))
+    const mergedPaginationConfig = computed(() => ({
+      ...defaultPaginationConfig,
+      ...props.paginationConfig,
+    }))
     onMounted(() => {
       /** 需要带上筛选项数据，所以等筛选项onMounted */
       getList(1, pagination?.pageSize)
     })
-    watch(() => columns.value, () => {
-      refreshKey.value = refreshKey.value === 0 ? 1 : 0
-    }, { deep: true })
+    watch(
+      () => columns.value,
+      () => {
+        refreshKey.value = refreshKey.value === 0 ? 1 : 0
+      },
+      { deep: true },
+    )
     expose({ pagination, getList })
     return () => (
       <Space class={[stylus.container, props.class]} style={props.style} direction='column'>
@@ -115,38 +123,40 @@ export default defineComponent({
           key={refreshKey.value}
           headerCellStyle={headerCellStyle}
           tableLayout='auto'
-          { ...attrs }
+          {...attrs}
           rowKey={props.rowKey}
           data={data.value}
           // 每次查询，table重新赋值后，table触发事件去清空选中值。给checkbox的column加上reserve-selection可解。
           onSelectionChange={(newSelection: any[]) => emit('update:selected', newSelection)}
+          v-slots={slots}
         >
-          {props.selectable && <ElTableColumn type='selection' fixed='left' selectable={props.selectOptions}/>}
+          {props.selectable && (
+            <ElTableColumn type='selection' fixed='left' selectable={props.selectOptions} />
+          )}
           {columns.value.map((v, i) => (
             <ElTableColumn
               {...v}
               key={i}
               v-slots={{
-                default: (scope: { row: any, column: any, $index: number }) => {
+                default: (scope: { row: any; column: any; $index: number }) => {
                   return v?.render?.({ rowData: scope.row, rowIndex: scope.$index })
                 },
               }}
             />
           ))}
         </ElTable>
-        {
-          props.needPagination
-            && <ElPagination
-                style={{ width: '100%', justifyContent: 'end' }}
-                currentPage={currentPage.value}
-                onUpdate:currentPage={getList}
-                size='small'
-                layout='total, prev, pager, next, jumper'
-                { ...mergedPaginationConfig.value }
-                total={pagination?.total}
-              />
-        }
+        {props.needPagination && (
+          <ElPagination
+            style={{ width: '100%', justifyContent: 'end' }}
+            currentPage={currentPage.value}
+            onUpdate:currentPage={getList}
+            size='small'
+            layout='total, prev, pager, next, jumper'
+            {...mergedPaginationConfig.value}
+            total={pagination?.total}
+          />
+        )}
       </Space>
     )
-  }
+  },
 })

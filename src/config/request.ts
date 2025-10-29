@@ -46,9 +46,8 @@ const getReqByProxyModule = ({
        */
       const userStore = useUserStore()
       const token: string = userStore.userInfo?.token // TODO: error
-      const notOpenSearch = config.baseURL !== PROXY.OPENSEARCH
       // 自定义请求头
-      if (token && notOpenSearch) {
+      if (token) {
         // TODO: error
         config.headers['Authorization'] = `Bearer ${token}`
       }

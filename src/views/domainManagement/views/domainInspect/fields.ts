@@ -79,29 +79,29 @@ export const getFields = ({ router, commonPageRef }): IField[] => ([
       },
     },
   },
-  {
-    prop: 'project',
-    label: '归属项目',
-    isEdit: true,
-    editConfig: {
-      type: 'string',
-      required: true,
-      'x-decorator': 'FormItem',
-      'x-decorator-props': commonProps,
-      'x-component': 'Select',
-      'x-component-props': {
-        placeholder: '请选择',
-        clearable: true,
-      },
-    },
-    fetchConfig: {
-      api: getProjectsApi,
-      formatter: (res) => (res?.data?.list || []).map((v: Record<string, string>) => ({
-        label: v.name,
-        value: v.id,
-      })),
-    }
-  },
+  // {
+  //   prop: 'project',
+  //   label: '归属项目',
+  //   isEdit: true,
+  //   editConfig: {
+  //     type: 'string',
+  //     required: true,
+  //     'x-decorator': 'FormItem',
+  //     'x-decorator-props': commonProps,
+  //     'x-component': 'Select',
+  //     'x-component-props': {
+  //       placeholder: '请选择',
+  //       clearable: true,
+  //     },
+  //   },
+  //   fetchConfig: {
+  //     api: getProjectsApi,
+  //     formatter: (res) => (res?.data?.list || []).map((v: Record<string, string>) => ({
+  //       label: v.name,
+  //       value: v.id,
+  //     })),
+  //   }
+  // },
   {
     prop: 'execTime',
     label: '执行时间',
@@ -154,11 +154,11 @@ export const getFields = ({ router, commonPageRef }): IField[] => ([
     prop: 'taskStatus',
     label: '任务状态',
     isColumn: true,
-    columnConfig: { 
+    columnConfig: {
       width: 120,
       render: ({ rowData }) => h(
-        ElTag, 
-        { type: rowData.taskStatus ? 'success' : 'danger' }, 
+        ElTag,
+        { type: rowData.taskStatus ? 'success' : 'danger' },
         rowData.taskStatus ? '启用' : '禁用'
       ),
     },
@@ -179,7 +179,7 @@ export const getFields = ({ router, commonPageRef }): IField[] => ([
     prop: 'inspectStatus',
     label: '监控状态',
     isColumn: true,
-    columnConfig: { 
+    columnConfig: {
       width: 120,
       render: ({ rowData }) => h(
         ElTag,
@@ -192,7 +192,7 @@ export const getFields = ({ router, commonPageRef }): IField[] => ([
     prop: 'frequency',
     label: '频率',
     isColumn: true,
-    columnConfig: { 
+    columnConfig: {
       width: 120,
       render: ({ rowData }) => h(ElText, {}, frequencyMap[rowData.frequency]),
     },
@@ -324,7 +324,7 @@ export const getFields = ({ router, commonPageRef }): IField[] => ([
           h(ElButton, {
             type: 'primary',
             ...commonAttrs,
-            onClick: (e: Event) => {  
+            onClick: (e: Event) => {
               e.stopPropagation()
               emitter.emit('openEditor', { mode: MODE.EDIT, rowData, rowIndex: 0 })
             }
@@ -332,7 +332,7 @@ export const getFields = ({ router, commonPageRef }): IField[] => ([
           h(ElButton, {
             type: 'primary',
             ...commonAttrs,
-            onClick: (e: Event) => {  
+            onClick: (e: Event) => {
               e.stopPropagation()
               router.push({ name: 'DomainDetail', query: { id: rowData.id } })
             }
@@ -340,7 +340,7 @@ export const getFields = ({ router, commonPageRef }): IField[] => ([
           h(ElButton, {
             type: isEnable ? 'warning' : 'success',
             ...commonAttrs,
-            onClick: async (e: Event) => {  
+            onClick: async (e: Event) => {
               try {
                 const text = isEnable ? commonActions.disable.text : commonActions.enable.text
                 e.stopPropagation()

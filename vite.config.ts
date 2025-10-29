@@ -11,77 +11,106 @@ import Components from 'unplugin-vue-components/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 import vueJsx from '@vitejs/plugin-vue-jsx'
 import qiankun from 'vite-plugin-qiankun'
-import { qiankunWindow } from 'vite-plugin-qiankun/dist/helper'
 function resolve(dir) {
   return path.join(__dirname, '.', dir)
 }
 
 const MICRO_APP_NAME = 'STARVIEW'
-const proxyPrefix = qiankunWindow.__POWERED_BY_QIANKUN__ ? `/${MICRO_APP_NAME}` : ''
 const proxy = {
-  [`${proxyPrefix}/api/v1/logging`]: {
+  [`/api/v1/logging`]: {
     target: 'https://gateway.observe.dev.eks.gainetics.io',
     changeOrigin: true,
   },
-  [`${proxyPrefix}/api/v1/iam`]: {
+  [`/api/v1/iam`]: {
     target: 'https://gateway.observe.dev.eks.gainetics.io',
     changeOrigin: true,
   },
-  [`${proxyPrefix}/config/v1`]: {
+  [`/config/v1`]: {
     target: 'https://gateway.observe.dev.eks.gainetics.io',
     changeOrigin: true,
   },
-  [`${proxyPrefix}/api/v1/iam`]: {
-    target: 'https://gateway.observe.dev.eks.gainetics.io',
-    changeOrigin: true,
-  },
-  [`${proxyPrefix}/observable/user/v1`]: {
+  [`/observable/user/v1`]: {
     target: 'https://gateway.observe.dev.eks.gainetics.io/api/user',
     changeOrigin: true,
   },
-  [`${proxyPrefix}/observable/core/v1`]: {
+  [`/observable/core/v1`]: {
     target: 'https://gateway.observe.dev.eks.gainetics.io/api/core',
     changeOrigin: true,
   },
-  [`${proxyPrefix}/api/v1`]: {
+  [`/api/v1`]: {
     target: 'https://gateway.observe.dev.gainetics.io/domain',
     changeOrigin: true,
   },
-  [`${proxyPrefix}/aiagent/v1`]: {
+  [`/aiagent/v1`]: {
     target: 'https://gateway.observe.dev.gainetics.io',
     changeOrigin: true,
   },
   /** 线路可观测 */
-  [`${proxyPrefix}/availability-proxy`]: {
+  [`/availability-proxy`]: {
     target: 'https://gateway.observe.dev.gainetics.io',
     changeOrigin: true,
-    rewrite: (path) =>
-      qiankunWindow.__POWERED_BY_QIANKUN__
-        ? path.replace(/^\/STARVIEW\/availability-proxy/, '')
-        : path.replace(/^\/availability-proxy/, ''),
+    rewrite: (path) => path.replace(/^\/availability-proxy/, ''),
   },
   /** 域名 */
-  [`${proxyPrefix}/domain-proxy`]: {
+  [`/domain-proxy`]: {
     target: 'https://gateway.observe.dev.eks.gainetics.io/domain/api/v1',
     changeOrigin: true,
-    rewrite: (path) =>
-      qiankunWindow.__POWERED_BY_QIANKUN__
-        ? path.replace(/^\/STARVIEW\/domain-proxy/, '')
-        : path.replace(/^\/domain-proxy/, ''),
+    rewrite: (path) => path.replace(/^\/domain-proxy/, ''),
   },
   /** 追踪 */
-  [`${proxyPrefix}/trace-proxy`]: {
+  [`/trace-proxy`]: {
     target: 'https://grafana-chinese.observe.dev.eks.gainetics.io',
     changeOrigin: true,
-    rewrite: (path) =>
-      qiankunWindow.__POWERED_BY_QIANKUN__
-        ? path.replace(/^\/STARVIEW\/trace-proxy/, '')
-        : path.replace(/^\/trace-proxy/, ''),
+    rewrite: (path) => path.replace(/^\/trace-proxy/, ''),
+  },
+
+  /** qiankun */
+  [`/${MICRO_APP_NAME}/observable/user/v1`]: {
+    target: 'https://gateway.observe.dev.eks.gainetics.io/api/user',
+    changeOrigin: true,
+  },
+  [`/${MICRO_APP_NAME}/observable/core/v1`]: {
+    target: 'https://gateway.observe.dev.eks.gainetics.io/api/core',
+    changeOrigin: true,
+  },
+  [`/${MICRO_APP_NAME}/api/v1`]: {
+    target: 'https://gateway.observe.dev.gainetics.io/domain',
+    changeOrigin: true,
+  },
+  [`/${MICRO_APP_NAME}/aiagent/v1`]: {
+    target: 'https://gateway.observe.dev.gainetics.io',
+    changeOrigin: true,
+  },
+  /** 线路可观测 */
+  [`/${MICRO_APP_NAME}/availability-proxy`]: {
+    target: 'https://gateway.observe.dev.gainetics.io',
+    changeOrigin: true,
+    rewrite: (path) => path.replace(/^\/STARVIEW\/availability-proxy/, ''),
+  },
+  /** 域名 */
+  [`/${MICRO_APP_NAME}/domain-proxy`]: {
+    target: 'https://gateway.observe.dev.eks.gainetics.io/domain/api/v1',
+    changeOrigin: true,
+    rewrite: (path) => path.replace(/^\/STARVIEW\/domain-proxy/, ''),
+  },
+  /** 追踪 */
+  [`/${MICRO_APP_NAME}/trace-proxy`]: {
+    target: 'https://grafana-chinese.observe.dev.eks.gainetics.io',
+    changeOrigin: true,
+    rewrite: (path) => path.replace(/^\/STARVIEW\/trace-proxy/, ''),
+  },
+  /** 索引管理 */
+  [`/${MICRO_APP_NAME}/logging-proxy`]: {
+    target: 'https://gateway.observe.dev.eks.gainetics.io',
+    changeOrigin: true,
+    rewrite: (path) => path.replace(/^\/STARVIEW\/logging-proxy/, ''),
   },
 }
 
-export default defineConfig(({ mode }: ConfigEnv): UserConfig => {
+export default defineConfig(({ command, mode }: ConfigEnv): UserConfig => {
+  const isBuild = command === 'build'
   return {
+    base: isBuild ? '/microApp/starview/' : '/',
     plugins: [
       vue(),
       vueJsx(),
@@ -105,6 +134,9 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => {
           algorithm: 'gzip',
           ext: '.gz',
         }),
+      qiankun(MICRO_APP_NAME, {
+        useDevMode: true,
+      }),
       qiankun(MICRO_APP_NAME, {
         useDevMode: true,
       }),
