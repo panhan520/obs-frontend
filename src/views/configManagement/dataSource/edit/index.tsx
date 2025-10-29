@@ -245,6 +245,7 @@ export default defineComponent({
           await createDataSource(submitData as CreateDataSourceParams)
           ElMessage.success('创建成功')
         }
+        router.push({ path: 'dataSource' })
       } catch (error) {
         console.error('提交失败:', error)
         ElMessage.error(isEdit.value ? '更新失败' : '创建失败')
@@ -419,17 +420,17 @@ export default defineComponent({
 
             <div class={styles.sectionContent}>
               <ElFormItem prop='name'>
-                <span class={styles.customLabel}>数据源名称</span>
+                <span class={[styles.customLabel, styles.required].join(' ')}>数据源名称</span>
                 <ElInput v-model={formData.name} placeholder='请输入' clearable />
               </ElFormItem>
 
               <ElFormItem prop='url'>
-                <span class={styles.customLabel}>URL</span>
+                <span class={[styles.customLabel, styles.required].join(' ')}>URL</span>
                 <ElInput v-model={formData.url} placeholder='请输入' clearable />
               </ElFormItem>
 
               <ElFormItem prop='dataType'>
-                <span class={styles.customLabel}>数据类型</span>
+                <span class={[styles.customLabel, styles.required].join(' ')}>数据类型</span>
                 <ElSelect v-model={formData.dataType} placeholder='请选择'>
                   <ElOption label='日志' value={DataType.LOG} />
                   <ElOption label='指标' value={DataType.METRICS} />
@@ -468,10 +469,12 @@ export default defineComponent({
               {formData.authType === AuthType.BASIC_AUTH && (
                 <>
                   <div class={styles.authRow}>
-                    <ElFormItem label='用户名' prop='username' class={styles.authItem}>
+                    <ElFormItem prop='username' class={styles.authItem}>
+                      <span class={[styles.customLabel, styles.required].join(' ')}>用户名</span>
                       <ElInput v-model={formData.username} placeholder='请输入' clearable />
                     </ElFormItem>
-                    <ElFormItem label='密码' prop='password' class={styles.authItem}>
+                    <ElFormItem prop='password' class={styles.authItem}>
+                      <span class={[styles.customLabel, styles.required].join(' ')}>密码</span>
                       <ElInput
                         v-model={formData.password}
                         type='password'

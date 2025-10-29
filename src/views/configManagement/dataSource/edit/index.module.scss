@@ -170,6 +170,11 @@
 .customLabel {
   display: block;
   padding-right: 12px;
+  &.required::before {
+    content: '*';
+    color: #f56c6c;
+    margin-right: 4px;
+  }
 }
 
 // 响应式设计

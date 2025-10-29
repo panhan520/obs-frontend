@@ -154,6 +154,11 @@ export interface DataSourceListResponse {
   }
 }
 
+// 数据源列表响应2
+export interface IDataSourceItem {
+  [key: string]: any
+}
+
 // 创建数据源参数
 export interface CreateDataSourceParams {
   name: string

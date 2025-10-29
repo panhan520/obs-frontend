@@ -1,8 +1,11 @@
 import getReqByProxyModule from '@/config/request'
 import { PROXY } from '@/config/constants'
+
+import type { ICommonGetListRes } from '~/interfaces/common'
 import type {
   DataSourceListParams,
   DataSourceListResponse,
+  IDataSourceItem,
   DataSourceDetail,
   CreateDataSourceParams,
   UpdateDataSourceParams,
@@ -12,10 +15,26 @@ import type {
 const request = getReqByProxyModule({ proxyModule: PROXY.DATASOURCE })
 
 // 获取数据源列表
-export const getDataSourceList = (
+export const getDataSourceList = async (
   params: DataSourceListParams,
-): Promise<DataSourceListResponse> => {
-  return request.get('/datasourceManagement/list', { params })
+): Promise<ICommonGetListRes<IDataSourceItem>> => {
+  try {
+    const res = await request.get('/datasourceManagement/list', { params })
+    return Promise.resolve({
+      list: res.data.list,
+      pagination: res.data.pagination,
+    })
+  } catch (error: any) {
+    console.error(`获取列表失败，失败原因：${error}`)
+    return {
+      list: [],
+      pagination: {
+        page: 1,
+        pageSize: 10,
+        total: 0,
+      },
+    }
+  }
 }
 
 // 创建数据源
