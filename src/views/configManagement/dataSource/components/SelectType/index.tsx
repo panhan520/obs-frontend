@@ -1,7 +1,7 @@
 import { defineComponent, ref } from 'vue'
 import { ElDialog, ElCard, ElButton } from 'element-plus'
 import styles from './index.module.scss'
-import PrometheusImg from '@/assets/image/dataSource/prometheus_img.svg'
+import PrometheusImg from '@/assets/image/dataSource/prometheus_img.png'
 import ElasticSearchImg from '@/assets/image/dataSource/elasticSearch_img.webp'
 import OpenSearchImg from '@/assets/image/dataSource/openSearch_img.png'
 
