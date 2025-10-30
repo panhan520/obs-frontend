@@ -3,7 +3,6 @@ import { defineStore } from 'pinia'
 import { ElMessage } from 'element-plus'
 import { jwtDecode } from 'jwt-decode'
 import { loginApi, loginOut } from '~/api/login/index'
-import { setToken, removeToken } from '~/api/token'
 
 import type { JwtPayload } from 'jwt-decode'
 
@@ -27,7 +26,6 @@ export const useUserStore = defineStore('userState', () => {
       const res: Record<string, any> = await loginApi(user)
       if (res.code === 200 && res.message === 'success') {
         const token = res.data.token
-        setToken(token)
         // 解析 jwt
         const decoded = jwtDecode<JwtPayload & { tenantId: string; orgId: string; username: string }>(token)
         userOrg.tenantId = decoded.tenantId
@@ -58,7 +56,6 @@ export const useUserStore = defineStore('userState', () => {
   }
   const clearInfo = () => {
     // 清空存储
-    removeToken()
     localStorage.clear()
     sessionStorage.clear()
     document.cookie = 'auth_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'

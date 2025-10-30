@@ -14,7 +14,7 @@ const configManagementRouter: IRouteRecordRaw[] = [
     children: [
       {
         path: 'agentPanel',
-        component: defineAsyncComponent(() => import('~/views/configManagement/agent/index')),
+        component: defineAsyncComponent(() => import('~/views/configManagement/agent')),
         name: 'agentPanel',
         meta: {
           title: '安装Agent',
@@ -24,7 +24,7 @@ const configManagementRouter: IRouteRecordRaw[] = [
       },
       {
         path: 'dataSource',
-        component: defineAsyncComponent(() => import('~/views/configManagement/dataSource/index')),
+        component: defineAsyncComponent(() => import('~/views/configManagement/dataSource')),
         name: 'dataSource',
         meta: {
           title: '数据源管理',
@@ -35,9 +35,7 @@ const configManagementRouter: IRouteRecordRaw[] = [
       {
         path: 'dataSourceForm',
         name: 'DataSourceForm',
-        component: defineAsyncComponent(
-          () => import('~/views/configManagement/dataSource/edit/index'),
-        ),
+        component: defineAsyncComponent(() => import('~/views/configManagement/dataSource/edit')),
         meta: { title: '数据源配置', hidden: true, level: 3 },
       },
     ],

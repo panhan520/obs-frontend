@@ -1,6 +1,7 @@
 import { h } from 'vue'
 import { ElText } from 'element-plus'
 import { getHistoryNodeListApi } from '~/api/domainManagement/dnsInspect'
+import { CommonJsonPretty } from '~/KeepUp'
 import { ispOptions } from './constants'
 
 import type { Column } from 'element-plus'
@@ -20,7 +21,7 @@ export const fields: IField[] = [
     isColumn: true,
     columnConfig: { 
       width: 100,
-      render: ({ rowData }) => h(ElText, {}, `${rowData.nodeName}${rowData.ispName}`),
+      render: ({ rowData }) => h(ElText, {}, rowData.nodeName),
     },
   },
   {
@@ -84,6 +85,13 @@ export const historyFields: Column[] = [
   {
     prop: 'result',
     label: '运行结果',
-    minWidth: 130,
+    minWidth: 500,
+    render: ({ rowData }) => h(
+      CommonJsonPretty, 
+      {
+        data: rowData.result,
+        deep: 0,
+      },
+    ),
   } as any,
 ]

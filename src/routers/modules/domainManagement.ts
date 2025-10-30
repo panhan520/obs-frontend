@@ -12,26 +12,26 @@ export default [
     redirect: '/domainManagement/assetManagement',
     meta: { title: '域名监测', icon: h(IconFont, { name: 'asset_management' }), level: 1 },
     children: [
-      {
-        path: 'assetManagement',
-        name: 'AssetManagement',
-        component: defineAsyncComponent(() => import('~/views/domainManagement/views/assetManagement')),
-        meta: { title: '资产管理', level: 2, headerMode: HeaderMode.SUBMENU },
-      },
-      {
-        path: 'detail',
-        name: 'AssetManagementDetail',
-        component: defineAsyncComponent(() => import('~/views/domainManagement/views/assetManagement/detail')),
-        meta: {
-          title: '资产详情',
-          hidden: true,
-          level: 2,
-          breadcrumbConfig: [
-            { label: '资产管理', name: 'AssetManagement' },
-            { label: '资产详情', name: 'AssetManagementDetail' },
-          ],
-        },
-      },
+      // {
+      //   path: 'assetManagement',
+      //   name: 'AssetManagement',
+      //   component: defineAsyncComponent(() => import('~/views/domainManagement/views/assetManagement')),
+      //   meta: { title: '资产管理', level: 2, headerMode: HeaderMode.SUBMENU },
+      // },
+      // {
+      //   path: 'detail',
+      //   name: 'AssetManagementDetail',
+      //   component: defineAsyncComponent(() => import('~/views/domainManagement/views/assetManagement/detail')),
+      //   meta: {
+      //     title: '资产详情',
+      //     hidden: true,
+      //     level: 2,
+      //     breadcrumbConfig: [
+      //       { label: '资产管理', name: 'AssetManagement' },
+      //       { label: '资产详情', name: 'AssetManagementDetail' },
+      //     ],
+      //   },
+      // },
       {
         path: 'checkResults',
         name: 'CheckResults',

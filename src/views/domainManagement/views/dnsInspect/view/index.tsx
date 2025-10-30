@@ -39,7 +39,7 @@ export default defineComponent({
         </div>
         <div style={{ width: '50%', height: '100%', backgroundColor: '#fff' }}>
           <CommonTable
-            height='100px'
+            height='calc(100vh - 161px)'
             ref={commonTableRef}
             columns={historyFields}
             listApi={getHistoryListApi}

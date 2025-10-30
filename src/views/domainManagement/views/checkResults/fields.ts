@@ -31,6 +31,7 @@ export const getFields = ({ commonModalRef }): IField[] => ([
       'x-component': 'Input',
       'x-component-props': {
         placeholder: '请输入域名',
+        clearable: true,
       },
     },
     isEdit: true,
@@ -93,6 +94,7 @@ export const getFields = ({ commonModalRef }): IField[] => ([
       'x-component': 'Select',
       'x-component-props': {
         placeholder: '请选择域名状态',
+        clearable: true,
       },
       enum: domainStatusOptions,
     },
@@ -118,6 +120,7 @@ export const getFields = ({ commonModalRef }): IField[] => ([
       'x-component': 'Select',
       'x-component-props': {
         placeholder: '请选择证书状态',
+        clearable: true,
       },
       enum: certStatusOptions,
     },
@@ -133,7 +136,7 @@ export const getFields = ({ commonModalRef }): IField[] => ([
   },
   {
     prop: 'isWall',
-    label: '被阻断',
+    label: '被墙',
     isColumn: true,
     columnConfig: {
       width: 100,
@@ -146,6 +149,7 @@ export const getFields = ({ commonModalRef }): IField[] => ([
       'x-component': 'Select',
       'x-component-props': {
         placeholder: '请选择是否被墙',
+        clearable: true,
       },
       enum: [
         { label: '是', value: true },
@@ -153,15 +157,15 @@ export const getFields = ({ commonModalRef }): IField[] => ([
       ],
     },
   },
-  {
-    prop: 'pageInfo',
-    label: '页面访问 http 消息',
-    isColumn: true,
-    columnConfig: { 
-      minWidth: 150,
-      render: ({ rowData }) => h(CommonJsonPretty, { data: rowData.pageInfo }),
-    },
-  },
+  // {
+  //   prop: 'pageInfo',
+  //   label: '页面访问 http 消息',
+  //   isColumn: true,
+  //   columnConfig: { 
+  //     minWidth: 150,
+  //     render: ({ rowData }) => h(CommonJsonPretty, { data: rowData.pageInfo }),
+  //   },
+  // },
   {
     prop: 'dnsInfo',
     label: 'DNS 信息',
@@ -180,36 +184,36 @@ export const getFields = ({ commonModalRef }): IField[] => ([
       render: ({ rowData }) => h(CommonJsonPretty, { data: rowData.pageInfo }),
     },
   },
-  {
-    prop: 'operation',
-    label: '操作',
-    isColumn: true,
-    columnConfig: {
-      width: 150,
-      fixed: 'right',
-      render({ rowData }) {
-        return h(Space, {
-          size: 0,
-          justify: 'start',
-        }, [
-          h(ElButton, {
-            type: 'primary',
-            ...commonAttrs,
-            onClick: (e: Event) => {  
-              e.stopPropagation()
-              curRowData.value = rowData
-              emitter.emit('openEditor', { mode: MODE.EDIT, rowData, rowIndex: 0 })
-            },
-          }, '域名替换'),
-          h(ElButton, {
-            type: 'primary',
-            ...commonAttrs,
-            onClick: async () => {
-              commonModalRef.value?.open?.()
-            },
-          }, '替换记录')
-        ])
-      }
-    }
-  },
+  // {
+  //   prop: 'operation',
+  //   label: '操作',
+  //   isColumn: true,
+  //   columnConfig: {
+  //     width: 150,
+  //     fixed: 'right',
+  //     render({ rowData }) {
+  //       return h(Space, {
+  //         size: 0,
+  //         justify: 'start',
+  //       }, [
+  //         h(ElButton, {
+  //           type: 'primary',
+  //           ...commonAttrs,
+  //           onClick: (e: Event) => {  
+  //             e.stopPropagation()
+  //             curRowData.value = rowData
+  //             emitter.emit('openEditor', { mode: MODE.EDIT, rowData, rowIndex: 0 })
+  //           },
+  //         }, '域名替换'),
+  //         h(ElButton, {
+  //           type: 'primary',
+  //           ...commonAttrs,
+  //           onClick: async () => {
+  //             commonModalRef.value?.open?.()
+  //           },
+  //         }, '替换记录')
+  //       ])
+  //     }
+  //   }
+  // },
 ])
