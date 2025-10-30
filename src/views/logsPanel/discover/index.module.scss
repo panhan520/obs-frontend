@@ -175,7 +175,7 @@
 .leftPanel {
   width: 250px;
   background: white;
-  padding: 16px;
+  padding: 10px;
   overflow-y: auto;
 
   .panelSection {
@@ -334,8 +334,8 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-  margin-left: 16px;
+  overflow: auto;
+  margin-left: 10px;
   background: #ffffff;
 
   .searchHeader {

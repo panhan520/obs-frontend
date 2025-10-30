@@ -1,5 +1,5 @@
 // LogSearchView.tsx
-import { defineComponent, ref, computed, onMounted, reactive } from 'vue'
+import { defineComponent, ref, computed, onMounted, onUnmounted, reactive } from 'vue'
 import {
   ElSelect,
   ElOption,
@@ -17,6 +17,7 @@ import {
   getLogHistogram,
   getLogList,
   setQueryConds,
+  createLogStream,
 } from '@/api/logsPanel/discover'
 import { getDatasourceUseList } from '@/api/configManagement/dataSource'
 import {
@@ -41,6 +42,7 @@ export default defineComponent({
     const searchConditions = reactive({
       // 数据源和索引
       dataSourceId: '',
+      indexId: '',
       indexName: '',
 
       // 搜索条件
@@ -48,10 +50,6 @@ export default defineComponent({
       filterConditions: [] as FilterCondition[],
 
       // 时间范围
-      timeRange: {
-        start: null as string | null,
-        end: null as string | null,
-      },
       startTimestamp: null as number | null,
       endTimestamp: null as number | null,
       searchTimeType: 1 as 1 | 2, // 1: 绝对时间, 2: 相对时间
@@ -68,12 +66,9 @@ export default defineComponent({
     const fifteenMinutesAgo = new Date(now.getTime() - 15 * 60 * 1000)
 
     // 设置初始时间范围
-    searchConditions.timeRange = {
-      start: fifteenMinutesAgo.toISOString(),
-      end: now.toISOString(),
-    }
     searchConditions.startTimestamp = fifteenMinutesAgo.getTime()
     searchConditions.endTimestamp = now.getTime()
+    searchConditions.minutesPast = 15
 
     // 其他状态
     const dataSourceList = ref([])
@@ -92,11 +87,14 @@ export default defineComponent({
 
     const loadViews = async () => {
       try {
+        openViewListLoading.value = true
         const res = await getQueryConds()
         savedViews.value = res.data.views || []
       } catch (error) {
         console.error('加载保存的视图失败:', error)
         savedViews.value = []
+      } finally {
+        openViewListLoading.value = false
       }
     }
     const resetToNewView = () => {
@@ -109,9 +107,8 @@ export default defineComponent({
       // 清空查询与时间范围但保留索引选择
       searchConditions.queryCondition = ''
       searchConditions.filterConditions = []
-      searchConditions.timeRange = { start: null, end: null }
-      searchConditions.startTimestamp = null
-      searchConditions.endTimestamp = null
+      searchConditions.startTimestamp = fifteenMinutesAgo.getTime()
+      searchConditions.endTimestamp = now.getTime()
       searchConditions.searchTimeType = 1
       searchConditions.minutesPast = undefined
     }
@@ -137,6 +134,7 @@ export default defineComponent({
         }
         saveViewLoading.value = true
         await setQueryConds(params)
+        saveViewLoading.value = true
         ElMessage.success('保存成功')
 
         // 重新加载视图列表
@@ -158,9 +156,9 @@ export default defineComponent({
       }
     }
     const handleOpen = async () => {
-      await loadViews()
       viewSearch.value = ''
       showOpenDrawer.value = true
+      await loadViews()
     }
     const filteredViews = computed(() => {
       const q = viewSearch.value.trim().toLowerCase()
@@ -179,12 +177,11 @@ export default defineComponent({
       searchConditions.minutesPast = v.minutesPast
 
       if (v.startTimestamp) {
-        searchConditions.startTimestamp = Date.parse(v.startTimestamp)
-        searchConditions.timeRange.start = new Date(v.startTimestamp).toISOString()
+        searchConditions.startTimestamp = Number(v.startTimestamp)
       }
       if (v.endTimestamp) {
-        searchConditions.endTimestamp = Date.parse(v.endTimestamp)
-        searchConditions.timeRange.end = new Date(v.endTimestamp).toISOString()
+        searchConditions.endTimestamp = Number(v.endTimestamp)
+        console.log(searchConditions.endTimestamp)
       }
 
       showOpenDrawer.value = false
@@ -194,7 +191,7 @@ export default defineComponent({
     const availableFields = ref<LogField[]>([])
 
     // 示例日志数据
-    const logDocuments = ref<LogDocument[]>([])
+    const logDocuments = ref<any[]>([])
     const logChartDatas = ref<logChartData[]>([])
 
     const currentDocument = ref(logDocuments.value[0])
@@ -206,6 +203,11 @@ export default defineComponent({
     const chartLoading = ref(false)
     const fieldsLoading = ref(false)
     const saveViewLoading = ref(false)
+    const openViewListLoading = ref(false)
+
+    // SSE连接状态
+    const isStreaming = ref(false)
+    const logStream = ref<EventSource | null>(null)
 
     // 处理分页参数变化
     const handlePaginationUpdate = (params: {
@@ -246,8 +248,9 @@ export default defineComponent({
           key = (level[0].toUpperCase() + level.slice(1).toLowerCase()) as StatusKey
         }
 
-        if (counts[key] !== undefined) counts[key]++
+        if (counts[key] !== undefined) counts[key] = counts[key] + +d.count
       })
+      console.log(counts)
       return counts
     })
 
@@ -327,7 +330,7 @@ export default defineComponent({
     }
 
     // 处理查询数据
-    const executeSearch = (queryData: any) => {
+    const executeSearch = async (queryData: any) => {
       if (!searchConditions.dataSourceId) {
         ElMessage.warning('请选择数据源')
         return
@@ -380,14 +383,14 @@ export default defineComponent({
           params.endTimestamp = searchConditions.endTimestamp
         }
       }
-      getChartData(params)
+      await getChartData(params)
       params = {
         ...params,
         page: searchConditions.page,
         pageSize: searchConditions.pageSize,
         sortOrder: searchConditions.sortOrder === 'asc' ? 'SORT_ORDER_ASC' : 'SORT_ORDER_DESC',
       }
-      getList(params)
+      await getList(params)
     }
     // 获取图表数据
     const getChartData = async (params) => {
@@ -413,7 +416,7 @@ export default defineComponent({
           const firstLog = logList[0]
           if (firstLog && firstLog.logJson) {
             const parsedFields = parseFieldsFromLogJson(firstLog.logJson)
-            availableFields.value = parsedFields
+            availableFields.value = parsedFields.filter((field) => !field.name.includes('_source.'))
           }
         }
       } finally {
@@ -492,36 +495,44 @@ export default defineComponent({
     const transformLogData = (data: LogDocument[]) => {
       return data.map((item) => {
         try {
-          // 解析 logJson 字符串
-          const logData = JSON.parse(item.logJson)
+          let logData: Record<string, any> = {}
 
-          // 创建新对象，包含 timestamp 和所有解析后的字段
-          const result = {
+          // 1️⃣ 兼容：如果存在 logJson 且是字符串，则尝试解析
+          if (item.logJson && typeof item.logJson === 'string') {
+            logData = JSON.parse(item.logJson)
+          }
+          // 2️⃣ 否则，认为 item 已经是解析后的对象
+          else if (typeof item === 'object' && item !== null) {
+            logData = { ...item }
+          }
+
+          // 3️⃣ 创建新对象，包含 timestamp 和解析结果
+          const result: Record<string, any> = {
             timestamp: item.timestamp,
             ...logData,
           }
 
-          // 如果存在 _source 字段，将其内容拍平到第一层级
+          // 4️⃣ 如果存在 _source 字段，将其拍平到第一层级
           if (logData._source && typeof logData._source === 'object') {
-            // 将 _source 中的字段添加到第一层级
-            Object.keys(logData._source).forEach((key) => {
-              result[key] = logData._source[key]
+            Object.entries(logData._source).forEach(([key, value]) => {
+              result[key] = value
             })
+            delete result._source
           }
-          delete result._source
 
           return result
         } catch (error) {
           console.error('解析 JSON 失败:', error)
-          // 如果解析失败，返回原始数据
+          // 返回原始数据并标记解析错误
           return {
             timestamp: item.timestamp,
-            logJson: item.logJson,
+            logJson: item.logJson ?? item,
             parseError: true,
           }
         }
       })
     }
+
     // 获取数据源列表
     const getDataSourceListData = async () => {
       try {
@@ -552,8 +563,117 @@ export default defineComponent({
       searchConditions.dataSourceId = selectedId
       getIndexListData(selectedId)
     }
+
+    // 启动SSE日志流
+    const startLogStream = () => {
+      if (!searchConditions.indexId) {
+        ElMessage.warning('请先选择索引')
+        return
+      }
+
+      // 如果已有连接，先关闭
+      if (logStream.value) {
+        stopLogStream()
+      }
+
+      try {
+        logStream.value = createLogStream(searchConditions.indexId)
+        isStreaming.value = true
+        // 监听自定义事件
+        // logStream.value.addEventListener('init', (event) => {
+        //   const data = JSON.parse(event.data)
+        //   console.log('🟢 init:', data)
+        // })
+
+        // logStream.value.addEventListener('heartbeat', (event) => {})
+
+        // 监听消息
+        logStream.value.onmessage = (event) => {
+          try {
+            const newLogData = JSON.parse(event.data)
+            // 将新日志数据添加到现有列表中
+            if (Array.isArray(newLogData)) {
+              const transformedLogs = transformLogData(newLogData)
+              logDocuments.value = [...logDocuments.value, ...transformedLogs]
+
+              // 更新图表数据
+              const newChartData = transformedLogs.map((log) => ({
+                time: new Date(log.timestamp).toISOString(),
+                level: (log as any).level || 'INFO',
+                count: '1',
+              }))
+              logChartDatas.value = [...logChartDatas.value, ...newChartData]
+            } else if (newLogData && typeof newLogData === 'object') {
+              // 单个日志对象
+              const transformedLog = transformLogData([newLogData])[0]
+              logDocuments.value = [...logDocuments.value, transformedLog]
+
+              // 更新图表数据
+              const newChartData = {
+                time: new Date(transformedLog.timestamp).toISOString(),
+                level: (transformedLog as any).level || 'INFO',
+                count: '1',
+              }
+              logChartDatas.value = [...logChartDatas.value, newChartData]
+            }
+          } catch (error) {
+            console.error('解析SSE日志数据失败:', error)
+          }
+        }
+
+        // 监听错误
+        logStream.value.onerror = (error) => {
+          console.error('SSE连接错误:', error)
+          ElMessage.error('日志流连接失败')
+          stopLogStream()
+        }
+
+        // 监听连接关闭
+        logStream.value.onopen = () => {
+          console.log('SSE日志流连接已建立')
+        }
+      } catch (error) {
+        console.error('创建SSE连接失败:', error)
+        ElMessage.error('启动日志流失败')
+        isStreaming.value = false
+      }
+    }
+
+    // 停止SSE日志流
+    const stopLogStream = () => {
+      if (logStream.value) {
+        logStream.value.close()
+        logStream.value = null
+      }
+      isStreaming.value = false
+      console.log('SSE日志流连接已关闭')
+    }
+
+    // 切换日志流状态
+    const toggleLogStream = async () => {
+      if (isStreaming.value) {
+        // 关闭流，然后执行一次正常查询
+        stopLogStream()
+        searchConditions.searchTimeType = 1
+        await executeSearch({})
+      } else {
+        // 开启前先执行一次正常查询（若未选索引则内部会提示并中断）
+        if (!searchConditions.indexId) {
+          ElMessage.warning('请选择索引')
+          return
+        }
+        searchConditions.searchTimeType = 2
+        await executeSearch({})
+        startLogStream()
+      }
+    }
     onMounted(() => {
       getDataSourceListData()
+    })
+
+    onUnmounted(() => {
+      // 组件卸载时清理SSE连接
+      stopLogStream()
     })
 
     return () => (
@@ -616,14 +736,19 @@ export default defineComponent({
             <div class={styles.panelSection}>
               <div class={styles.indexSelectRow}>
                 <ElSelect
-                  v-model={searchConditions.indexName}
+                  v-model={searchConditions.indexId}
                   class={styles.indexSelect}
                   placeholder='选择索引'
                   loading={indexListLoading.value}
                   disabled={indexListLoading.value}
+                  onChange={(val: string) => {
+                    const it = indexList.value.find((x) => x.indexId === val || x.indexName === val)
+                    searchConditions.indexId = it?.indexId || val || ''
+                    searchConditions.indexName = it?.indexName || val || ''
+                  }}
                 >
                   {indexList.value.map((it) => (
-                    <ElOption label={it.indexName} value={it.indexName} />
+                    <ElOption label={it.indexName} value={it.indexId || it.indexName} />
                   ))}
                 </ElSelect>
                 <ElButton
@@ -687,12 +812,13 @@ export default defineComponent({
             <SearchHeader
               searchQuery={searchConditions.queryCondition}
               availableFields={availableFields.value}
-              timeRange={searchConditions.timeRange}
               startTimestamp={searchConditions.startTimestamp}
               endTimestamp={searchConditions.endTimestamp}
               searchTimeType={searchConditions.searchTimeType}
               minutesPast={searchConditions.minutesPast}
               filterConditions={searchConditions.filterConditions}
+              isStreaming={isStreaming.value}
+              isTimePaused={searchConditions.searchTimeType === 2}
               onUpdate:searchQuery={(value) => {
                 searchConditions.queryCondition = value
               }}
@@ -700,9 +826,6 @@ export default defineComponent({
               onAddFilter={handleAddFilter}
               onRemoveFilter={(index: number) => {
                 searchConditions.filterConditions.splice(index, 1)
-              }}
-              onUpdate:timeRange={(tr: { start: string | null; end: string | null }) => {
-                searchConditions.timeRange = tr
               }}
               onUpdate:startTimestamp={(timestamp: number) => {
                 searchConditions.startTimestamp = timestamp
@@ -716,6 +839,10 @@ export default defineComponent({
               onUpdate:minutesPast={(minutes: number | undefined) => {
                 searchConditions.minutesPast = minutes
               }}
+              onUpdate:isTimePaused={(paused: boolean) => {
+                searchConditions.searchTimeType = paused ? 2 : 1
+              }}
+              onToggleLogStream={toggleLogStream}
             />
             {/* 动态柱状图 */}
             <div v-loading={chartLoading.value}>
@@ -778,7 +905,10 @@ export default defineComponent({
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
             <ElInput placeholder='搜索...' v-model={viewSearch.value} clearable />
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div
+            style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}
+            v-loading={openViewListLoading.value}
+          >
             {filteredViews.value.map((v) => (
               <div class={styles.viewItem} onClick={() => openView(v)}>
                 <ElIcon style={{ marginRight: '6px' }}>

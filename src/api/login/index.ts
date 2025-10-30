@@ -3,12 +3,10 @@ import type { LoginParams } from './types'
 
 import { PROXY } from '~/config/constants'
 const userAxios = getReqByProxyModule({ proxyModule: PROXY.USER })
-const loginAxios = getReqByProxyModule({ proxyModule: PROXY.API })
 
 // 登录
 export const loginApi = (data: LoginParams) => {
-  data.type = 'ACCOUNT_TYPE_USERNAME'
-  return loginAxios.post('/api/v1/iam/login', data)
+  return userAxios.post('/v1/login', data)
   // return userAxios.post('/user/v1/login', data)
 }
 // 注册
@@ -21,7 +19,7 @@ export const sendEmail = (data: sendEmailParams) => {
 }
 // 登出
 export const loginOut = (data) => {
-  return loginAxios.get('/api/v1/iam/logout', data)
+  return userAxios.post('/v1/logout', data)
 }
 // 密码验证
 export const checkApi = (data) => {

@@ -56,24 +56,20 @@ export default defineComponent({
         {!collapsed.value ? (
           <div class={styles.fieldList}>
             {props.fields.map((field) => (
-              <>
-                {field.name.indexOf('_source.') < 0 && (
-                  <div
-                    key={field.name}
-                    class={[styles.fieldItem, field.isSystemField ? styles.systemField : '']}
-                  >
-                    {field.name}
-                    {/* 系统字段不显示操作图标 */}
-                    {field.name !== '_source' && (
-                      <span class={styles.actionIcon} onClick={() => handleFieldClick(field)}>
-                        <ElIcon color={field.selected ? 'red' : '#1763ff'} size={18}>
-                          {field.selected ? <Close /> : <CirclePlusFilled />}
-                        </ElIcon>
-                      </span>
-                    )}
-                  </div>
+              <div
+                key={field.name}
+                class={[styles.fieldItem, field.isSystemField ? styles.systemField : '']}
+              >
+                {field.name}
+                {/* 系统字段不显示操作图标 */}
+                {field.name !== '_source' && (
+                  <span class={styles.actionIcon} onClick={() => handleFieldClick(field)}>
+                    <ElIcon color={field.selected ? 'red' : '#1763ff'} size={18}>
+                      {field.selected ? <Close /> : <CirclePlusFilled />}
+                    </ElIcon>
+                  </span>
                 )}
-              </>
+              </div>
             ))}
           </div>
         ) : null}

@@ -102,7 +102,7 @@ export default defineComponent({
       const times = data.map((item) => {
         // 格式化时间显示
         const date = new Date(item.time)
-        return `${date.getMonth() + 1}/${date.getDate()} ${date.getHours()}:00`
+        return item.time
       })
 
       const infoData = data.map((item) => item.info)

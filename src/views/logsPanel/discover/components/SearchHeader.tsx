@@ -47,10 +47,6 @@ export default defineComponent({
       type: Array as PropType<LogField[]>,
       required: true,
     },
-    timeRange: {
-      type: Object as PropType<{ start: string | null; end: string | null }>,
-      required: true,
-    },
     startTimestamp: {
       type: Number,
       required: false,
@@ -72,22 +68,46 @@ export default defineComponent({
       type: Array as PropType<FilterCondition[]>,
       default: () => [],
     },
+    isStreaming: {
+      type: Boolean,
+      default: false,
+    },
+    isTimePaused: {
+      type: Boolean,
+      default: false,
+    },
   },
   emits: [
     'update:searchQuery',
     'search',
     'addFilter',
     'removeFilter',
-    'update:timeRange',
     'update:startTimestamp',
     'update:endTimestamp',
     'update:searchTimeType',
     'update:minutesPast',
+    'update:isTimePaused',
+    'toggleLogStream',
   ],
   setup(props, { emit }) {
     const handleAddFilter = () => emit('addFilter')
     const handleRemoveFilter = (index: number) => emit('removeFilter', index)
-
+    const handleToggleLogStream = async () => {
+      emit('toggleLogStream')
+    }
+    // 切换暂停/启用状态
+    const toggleTimePause = async () => {
+      const next = !isTimePaused.value
+      emit('update:isTimePaused', next)
+      if (!next) {
+        // 如果从暂停切换到启用，清除预定义时间选择
+        selectedPredefinedTime.value = null
+        await emit('update:searchTimeType', 1) // 绝对时间
+      } else {
+        await emit('update:searchTimeType', 2) // 相对时间
+      }
+      handleSearch()
+    }
     // 处理查询按钮点击，传递查询数据给后端
     const handleSearch = () => {
       // 检查时间范围是否有效
@@ -124,28 +144,33 @@ export default defineComponent({
     const relativeUnit = ref<RelativeTimeUnit>(DEFAULT_RELATIVE_UNIT)
     const includeWeek = ref(false)
 
-    // 预定义时间选择状态
-    const isTimePaused = ref(props.searchTimeType === 2) // 根据props判断是否为相对时间
-    const selectedPredefinedTime = ref<PredefinedTimeOption | null>(null)
+    // 预定义时间选择状态（由父组件传入）
+    const isTimePaused = computed(() => props.isTimePaused)
+    const selectedPredefinedTime = ref<PredefinedTimeOption | null>({
+      label: '15m',
+      description: '过去15分钟',
+      value: 15,
+    })
 
     // 从props计算当前时间
     const startDate = computed(() => {
-      if (props.timeRange.start) {
-        return new Date(props.timeRange.start)
+      if (props.startTimestamp) {
+        return new Date(props.startTimestamp)
       }
       return null
     })
 
     const endDate = computed(() => {
-      if (props.timeRange.end) {
-        return new Date(props.timeRange.end)
+      if (props.endTimestamp) {
+        console.log(new Date(props.endTimestamp))
+        return new Date(props.endTimestamp)
       }
       return null
     })
 
     // 标记哪些时间是"现在"时间
     const isStartTimeNow = ref(false)
-    const isEndTimeNow = ref(true)
+    const isEndTimeNow = ref(false)
 
     const formatDate = (d?: Date | null) => {
       if (!d) return ''
@@ -182,17 +207,9 @@ export default defineComponent({
       if (activeTimePart.value === 'start') {
         isStartTimeNow.value = true
         emit('update:startTimestamp', now.getTime())
-        emit('update:timeRange', {
-          start: now.toISOString(),
-          end: props.timeRange.end,
-        })
       } else {
         isEndTimeNow.value = true
         emit('update:endTimestamp', now.getTime())
-        emit('update:timeRange', {
-          start: props.timeRange.start,
-          end: now.toISOString(),
-        })
       }
       timeRangeVisible.value = false
     }
@@ -286,17 +303,9 @@ export default defineComponent({
         if (activeTimePart.value === 'start') {
           isStartTimeNow.value = false // 清除"现在"标记
           emit('update:startTimestamp', calculatedTime.getTime())
-          emit('update:timeRange', {
-            start: calculatedTime.toISOString(),
-            end: props.timeRange.end,
-          })
         } else {
           isEndTimeNow.value = false // 清除"现在"标记
           emit('update:endTimestamp', calculatedTime.getTime())
-          emit('update:timeRange', {
-            start: props.timeRange.start,
-            end: calculatedTime.toISOString(),
-          })
         }
       }
     }
@@ -326,19 +335,11 @@ export default defineComponent({
         isStartTimeNow.value = false // 清除"现在"标记
         if (value) {
           emit('update:startTimestamp', value.getTime())
-          emit('update:timeRange', {
-            start: value.toISOString(),
-            end: props.timeRange.end,
-          })
         }
       } else {
         isEndTimeNow.value = false // 清除"现在"标记
         if (value) {
           emit('update:endTimestamp', value.getTime())
-          emit('update:timeRange', {
-            start: props.timeRange.start,
-            end: value.toISOString(),
-          })
         }
       }
     }
@@ -457,33 +458,9 @@ export default defineComponent({
     const handlePredefinedTimeSelect = (option: PredefinedTimeOption) => {
       selectedPredefinedTime.value = option
       timeRangeVisible.value = false // 关闭弹框
-
-      // 计算时间范围
-      const now = new Date()
-      const startTime = new Date(now.getTime() - option.value * 60 * 1000) // 转换为毫秒
-
       // 更新父组件状态
       emit('update:searchTimeType', 2) // 相对时间
       emit('update:minutesPast', option.value)
-      emit('update:startTimestamp', startTime.getTime())
-      emit('update:endTimestamp', now.getTime())
-      emit('update:timeRange', {
-        start: startTime.toISOString(),
-        end: now.toISOString(),
-      })
-    }
-
-    // 切换暂停/启用状态
-    const toggleTimePause = () => {
-      isTimePaused.value = !isTimePaused.value
-      if (!isTimePaused.value) {
-        // 如果从暂停切换到启用，清除预定义时间选择
-        selectedPredefinedTime.value = null
-        emit('update:searchTimeType', 1) // 绝对时间
-        emit('update:minutesPast', undefined)
-      } else {
-        emit('update:searchTimeType', 2) // 相对时间
-      }
     }
 
     // 监听搜索查询变化，更新光标位置
@@ -498,14 +475,7 @@ export default defineComponent({
         }
       },
     )
-    // 监听props变化，更新内部状态
-    watch(
-      () => props.searchTimeType,
-      (newType) => {
-        isTimePaused.value = newType === 2
-      },
-      { immediate: true },
-    )
+    // 父组件负责同步 isTimePaused 与 searchTimeType，无需本地watch
     return () => (
       <div class={styles.searchHeader}>
         <div class={styles.searchInputGroup}>
@@ -571,10 +541,10 @@ export default defineComponent({
                         // 启用状态：显示预定义时间选择
                         <div class={styles.predefinedTimeDisplay}>
                           <span class={styles.predefinedTimeBadge}>
-                            {selectedPredefinedTime.value?.label || '1d'}
+                            {selectedPredefinedTime.value?.label}
                           </span>
                           <span class={styles.predefinedTimeText}>
-                            {selectedPredefinedTime.value?.description || '过去一天'}
+                            {selectedPredefinedTime.value?.description}
                           </span>
                         </div>
                       ) : (
@@ -687,17 +657,9 @@ export default defineComponent({
                                       if (activeTimePart.value === 'start') {
                                         isStartTimeNow.value = false
                                         emit('update:startTimestamp', d.getTime())
-                                        emit('update:timeRange', {
-                                          start: d.toISOString(),
-                                          end: props.timeRange.end,
-                                        })
                                       } else {
                                         isEndTimeNow.value = false
                                         emit('update:endTimestamp', d.getTime())
-                                        emit('update:timeRange', {
-                                          start: props.timeRange.start,
-                                          end: d.toISOString(),
-                                        })
                                       }
                                     }}
                                   >
@@ -789,9 +751,9 @@ export default defineComponent({
               }}
             </ElPopover>
 
-            {/* 暂停/启用按钮 */}
-            <ElButton onClick={toggleTimePause} class={styles.pauseBtn}>
-              <ElIcon size={22}>{isTimePaused.value ? <VideoPause /> : <VideoPlay />}</ElIcon>
+            {/* 日志流控制按钮 */}
+            <ElButton onClick={handleToggleLogStream} class={styles.pauseBtn}>
+              <ElIcon size={22}>{props.isStreaming ? <VideoPause /> : <VideoPlay />}</ElIcon>
             </ElButton>
 
             <ElButton

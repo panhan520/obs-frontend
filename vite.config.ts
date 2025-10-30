@@ -137,9 +137,6 @@ export default defineConfig(({ command, mode }: ConfigEnv): UserConfig => {
       qiankun(MICRO_APP_NAME, {
         useDevMode: true,
       }),
-      qiankun(MICRO_APP_NAME, {
-        useDevMode: true,
-      }),
     ],
     css: {
       preprocessorOptions: {

@@ -1,5 +1,7 @@
 import getReqByProxyModule from '@/config/request'
 import { PROXY } from '@/config/constants'
+import { useUserStore } from '~/store/modules/user'
+import { EventSourcePolyfill } from 'event-source-polyfill'
 import type {
   LogHistogramParams,
   LogHistogramResponse,
@@ -37,4 +39,18 @@ export const setQueryConds = (params: LogHistogramParams): Promise<SaveCondsResp
 // 查询索引列表
 export const getIndexList = (params: IndexListParams): Promise<IndexListResponse> => {
   return request.post('/index/list', params)
+}
+
+// 创建SSE日志流连接
+export const createLogStream = (indexId: string): EventSource => {
+  const baseURL = import.meta.env.VITE_APP_BASE_API_LOG || ''
+  const url = `${baseURL}/stream?indexId=${indexId}`
+  const userStore = useUserStore()
+  const token: string = userStore.userInfo?.token // TODO: error
+  return new EventSourcePolyfill(url, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    withCredentials: true, // 如果需要携带 cookie
+  })
 }
