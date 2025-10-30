@@ -47,6 +47,7 @@ export interface LogHistogramParams {
   minutesPast?: number
   queryCondition?: string
   filterConditions?: FilterCondition[]
+  id?: number
 }
 
 // 检索日志柱状图响应
@@ -81,6 +82,7 @@ export interface LogListResponse {
 }
 // 保存的视图项
 export interface SavedView {
+  id: number
   dataSourceId?: string
   indexName: string
   searchTimeType: string
@@ -103,7 +105,9 @@ export interface QueryCondsResponse {
 }
 // 保存检索条件查询参数
 export interface SaveCondsResponse {
-  details: []
+  data: {
+    details: SavedView
+  }
 }
 // 索引列表查询参数
 export interface IndexListParams {

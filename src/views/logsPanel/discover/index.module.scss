@@ -5,6 +5,7 @@
   background-color: #f5f7fa;
   position: relative;
   flex-direction: column;
+  text-align: left;
 }
 .viewBar {
   display: flex;
@@ -694,9 +695,6 @@
 // 日志表格容器
 .logTableContainer {
   flex: 1;
-  overflow: hidden;
-  max-height: 600px; // 限制表格最大高度
-  overflow-y: auto; // 允许垂直滚动
 }
 
 // 分页容器

@@ -38,6 +38,10 @@ export default defineComponent({
         sortOrder: 'desc' as 'desc' | 'asc',
       }),
     },
+    total: {
+      type: Number,
+      required: true,
+    },
   },
   emits: ['update:pagination'],
   setup(props, { emit }) {
@@ -53,7 +57,7 @@ export default defineComponent({
     // 排序状态 - 使用父组件传入的值
     const sortOrder = ref<'desc' | 'asc'>(props.pagination.sortOrder)
 
-    // 排序后的数据
+    // 排序后的数据（如需后端排序，这里可直接返回 props.logDocuments）
     const sortedDocuments = computed(() => {
       return [...props.logDocuments].sort((a, b) => {
         const timeA = new Date(a['timestamp']).getTime()
@@ -62,15 +66,17 @@ export default defineComponent({
       })
     })
 
-    // 计算分页数据
-    const paginatedDocuments = computed(() => {
-      const start = (currentPage.value - 1) * pageSize.value
-      const end = start + pageSize.value
-      return sortedDocuments.value.slice(start, end)
-    })
-
-    // 总页数
-    const totalPages = computed(() => Math.ceil(props.logDocuments.length / pageSize.value))
+    // 同步父组件变更的分页（避免出现二次分页导致的数据错位）
+    watch(
+      () => props.pagination,
+      (val) => {
+        if (!val) return
+        currentPage.value = val.page
+        pageSize.value = val.pageSize
+        sortOrder.value = val.sortOrder
+      },
+      { deep: true },
+    )
 
     // 处理时间排序
     const handleTimeSort = (order: 'desc' | 'asc' | null) => {
@@ -204,7 +210,7 @@ export default defineComponent({
       <div class={styles.documentView}>
         <div class={styles.logTableContainer}>
           <ElTable
-            data={paginatedDocuments.value}
+            data={sortedDocuments.value}
             style='width: 100%'
             row-key='_id'
             expand-row-keys={Array.from(expandedRows.value)}
@@ -287,7 +293,7 @@ export default defineComponent({
             v-model:current-page={currentPage.value}
             v-model:page-size={pageSize.value}
             page-sizes={pageSizes}
-            total={props.logDocuments.length}
+            total={props.total}
             layout='total, sizes, prev, pager, next, jumper'
             background
           />

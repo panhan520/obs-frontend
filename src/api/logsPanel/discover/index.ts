@@ -33,7 +33,20 @@ export const getQueryConds = (): Promise<QueryCondsResponse> => {
 
 // 保存检索条件
 export const setQueryConds = (params: LogHistogramParams): Promise<SaveCondsResponse> => {
-  return request.post('/save-query', params)
+  return request.post('/log/save-query', params)
+}
+
+// 编辑检索条件（只能编辑名称）
+export const editQueryConds = (params: {
+  id: number
+  searchName: string
+}): Promise<SaveCondsResponse> => {
+  return request.post('/log/edit-query', params)
+}
+
+// 删除检索条件
+export const deleteQueryConds = (id: number) => {
+  return request.delete(`/log/delete-query/${id}`)
 }
 
 // 查询索引列表

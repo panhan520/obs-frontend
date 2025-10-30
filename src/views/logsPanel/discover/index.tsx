@@ -10,7 +10,7 @@ import {
   ElDrawer,
   ElMessage,
 } from 'element-plus'
-import { Search, Refresh } from '@element-plus/icons-vue'
+import { Search, Refresh, Edit, Delete } from '@element-plus/icons-vue'
 import {
   getIndexList,
   getQueryConds,
@@ -18,6 +18,8 @@ import {
   getLogList,
   setQueryConds,
   createLogStream,
+  editQueryConds,
+  deleteQueryConds,
 } from '@/api/logsPanel/discover'
 import { getDatasourceUseList } from '@/api/configManagement/dataSource'
 import {
@@ -60,6 +62,8 @@ export default defineComponent({
       pageSize: 50,
       sortOrder: 'desc' as 'desc' | 'asc',
     })
+    // 数据源列表总数
+    const total = ref(0)
 
     // 初始化时间范围，与子组件SearchHeader保持一致（过去15分钟到现在）
     const now = new Date()
@@ -84,6 +88,14 @@ export default defineComponent({
     const showOpenDrawer = ref(false)
     const viewSearch = ref('')
     const savedViews = ref<SavedView[]>([])
+    // 编辑/删除视图
+    const editDialogVisible = ref(false)
+    const editViewName = ref('')
+    const editTargetId = ref<number | null>(null)
+    const editLoading = ref(false)
+    const deleteDialogVisible = ref(false)
+    const deleteTargetId = ref<number | null>(null)
+    const deleteLoading = ref(false)
 
     const loadViews = async () => {
       try {
@@ -181,10 +193,64 @@ export default defineComponent({
       }
       if (v.endTimestamp) {
         searchConditions.endTimestamp = Number(v.endTimestamp)
-        console.log(searchConditions.endTimestamp)
+      }
+      if (v.dataSourceId) {
+        getIndexListData(v.dataSourceId)
       }
 
       showOpenDrawer.value = false
+    }
+
+    // 触发编辑
+    const handleEditView = (v: SavedView) => {
+      editTargetId.value = v.id
+      editViewName.value = v.searchName || ''
+      editDialogVisible.value = true
+    }
+    // 提交编辑
+    const confirmEditView = async () => {
+      if (!editTargetId.value || !editViewName.value.trim()) return
+      try {
+        editLoading.value = true
+        await editQueryConds({ id: editTargetId.value, searchName: editViewName.value.trim() })
+        await loadViews()
+        // 如果当前活动视图就是被编辑的，更新标题
+        if (activeViewId.value === activeViewTitle.value) {
+          activeViewTitle.value = editViewName.value.trim()
+        }
+        editDialogVisible.value = false
+        ElMessage.success('修改成功')
+      } catch (e) {
+        ElMessage.error('修改失败')
+      } finally {
+        editLoading.value = false
+      }
+    }
+
+    // 触发删除
+    const handleDeleteView = (v: SavedView) => {
+      deleteTargetId.value = v.id
+      deleteDialogVisible.value = true
+    }
+    // 确认删除
+    const confirmDeleteView = async () => {
+      if (!deleteTargetId.value) return
+      try {
+        deleteLoading.value = true
+        await deleteQueryConds(deleteTargetId.value)
+        await loadViews()
+        // 如果删除当前活动视图，重置
+        if (activeViewId.value && savedViews.value.every((sv) => sv.id !== deleteTargetId.value)) {
+          activeViewId.value = null
+          activeViewTitle.value = ''
+        }
+        deleteDialogVisible.value = false
+        ElMessage.success('删除成功')
+      } catch (e) {
+        ElMessage.error('删除失败')
+      } finally {
+        deleteLoading.value = false
+      }
     }
 
     // 字段数据 - 初始化为空，将从API动态获取
@@ -220,7 +286,38 @@ export default defineComponent({
       searchConditions.sortOrder = params.sortOrder
       console.log('分页参数更新:', params)
       // 这里可以触发重新查询数据
-      // executeSearch({ ...searchQuery.value, ...timeRange.value })
+      const normalizedSearchTimeType =
+        searchConditions.searchTimeType === 2
+          ? 'SEARCH_TIME_TYPE_RELATIVE'
+          : 'SEARCH_TIME_TYPE_ABSOLUTE'
+
+      let payLoad: any = {
+        dataSourceId: searchConditions.dataSourceId,
+        indexName: searchConditions.indexName,
+        filterConditions: searchConditions.filterConditions,
+        queryCondition: searchConditions.queryCondition,
+        searchTimeType: normalizedSearchTimeType,
+      }
+
+      if (normalizedSearchTimeType === 'SEARCH_TIME_TYPE_RELATIVE') {
+        if (typeof searchConditions.minutesPast !== 'undefined') {
+          payLoad.minutesPast = searchConditions.minutesPast
+        }
+      } else {
+        if (typeof searchConditions.startTimestamp !== 'undefined') {
+          payLoad.startTimestamp = searchConditions.startTimestamp
+        }
+        if (typeof searchConditions.endTimestamp !== 'undefined') {
+          payLoad.endTimestamp = searchConditions.endTimestamp
+        }
+      }
+      payLoad = {
+        ...payLoad,
+        page: searchConditions.page,
+        pageSize: searchConditions.pageSize,
+        sortOrder: searchConditions.sortOrder === 'asc' ? 'SORT_ORDER_ASC' : 'SORT_ORDER_DESC',
+      }
+      getList(payLoad)
     }
 
     // 计算属性
@@ -410,6 +507,7 @@ export default defineComponent({
         const res = await getLogList(params)
         const logList = res.data.list as LogDocument[]
         logDocuments.value = transformLogData(logList)
+        total.value = res.data.total
 
         // 从第一个日志条目的logJson动态解析字段
         if (logList && logList.length > 0) {
@@ -551,7 +649,7 @@ export default defineComponent({
     const getIndexListData = async (value?: string) => {
       try {
         indexListLoading.value = true
-        const res = await getIndexList({ dataSourceId: value })
+        const res = await getIndexList({ dataSourceId: value || searchConditions.dataSourceId })
         indexList.value = res.data.list
       } finally {
         indexListLoading.value = false
@@ -736,19 +834,19 @@ export default defineComponent({
             <div class={styles.panelSection}>
               <div class={styles.indexSelectRow}>
                 <ElSelect
-                  v-model={searchConditions.indexId}
+                  v-model={searchConditions.indexName}
                   class={styles.indexSelect}
                   placeholder='选择索引'
                   loading={indexListLoading.value}
                   disabled={indexListLoading.value}
                   onChange={(val: string) => {
-                    const it = indexList.value.find((x) => x.indexId === val || x.indexName === val)
+                    const it = indexList.value.find((x) => x.indexName === val)
                     searchConditions.indexId = it?.indexId || val || ''
                     searchConditions.indexName = it?.indexName || val || ''
                   }}
                 >
                   {indexList.value.map((it) => (
-                    <ElOption label={it.indexName} value={it.indexId || it.indexName} />
+                    <ElOption label={it.indexName} value={it.indexName} />
                   ))}
                 </ElSelect>
                 <ElButton
@@ -859,6 +957,7 @@ export default defineComponent({
                     pageSize: searchConditions.pageSize,
                     sortOrder: searchConditions.sortOrder,
                   }}
+                  total={total.value}
                   onUpdate:pagination={handlePaginationUpdate}
                 />
               </div>
@@ -910,15 +1009,76 @@ export default defineComponent({
             v-loading={openViewListLoading.value}
           >
             {filteredViews.value.map((v) => (
-              <div class={styles.viewItem} onClick={() => openView(v)}>
-                <ElIcon style={{ marginRight: '6px' }}>
-                  <Search />
-                </ElIcon>
-                <span>{v.searchName}</span>
+              <div class={styles.viewItem}>
+                <div
+                  style={{ display: 'flex', alignItems: 'center', flex: 1 }}
+                  onClick={() => openView(v)}
+                >
+                  <ElIcon style={{ marginRight: '6px' }}>
+                    <Search />
+                  </ElIcon>
+                  <span style={{ flex: 1 }}>{v.searchName}</span>
+                </div>
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  <ElButton size='small' circle onClick={() => handleEditView(v)}>
+                    <ElIcon>
+                      <Edit />
+                    </ElIcon>
+                  </ElButton>
+                  <ElButton size='small' circle type='danger' onClick={() => handleDeleteView(v)}>
+                    <ElIcon>
+                      <Delete />
+                    </ElIcon>
+                  </ElButton>
+                </div>
               </div>
             ))}
           </div>
         </ElDrawer>
+        {/* 编辑视图名 */}
+        <ElDialog
+          modelValue={editDialogVisible.value}
+          title='编辑视图名称'
+          width='420px'
+          onUpdate:modelValue={(v: boolean) => (editDialogVisible.value = v)}
+          v-slots={{
+            footer: () => (
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                <ElButton onClick={() => (editDialogVisible.value = false)}>取消</ElButton>
+                <ElButton
+                  type='primary'
+                  loading={editLoading.value}
+                  onClick={confirmEditView}
+                  disabled={!editViewName.value.trim()}
+                >
+                  确认
+                </ElButton>
+              </div>
+            ),
+          }}
+        >
+          <ElInput placeholder='请输入新的名称' v-model={editViewName.value} />
+        </ElDialog>
+
+        {/* 删除确认 */}
+        <ElDialog
+          modelValue={deleteDialogVisible.value}
+          title='删除确认'
+          width='420px'
+          onUpdate:modelValue={(v: boolean) => (deleteDialogVisible.value = v)}
+          v-slots={{
+            footer: () => (
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                <ElButton onClick={() => (deleteDialogVisible.value = false)}>取消</ElButton>
+                <ElButton type='danger' loading={deleteLoading.value} onClick={confirmDeleteView}>
+                  删除
+                </ElButton>
+              </div>
+            ),
+          }}
+        >
+          确认要删除该视图吗？删除后不可恢复。
+        </ElDialog>
         <FilterDialog
           modelValue={showFilterDialog.value}
           availableFields={availableFields.value}

@@ -116,9 +116,6 @@ export default defineComponent({
             type: 'shadow',
           },
         },
-        legend: {
-          data: ['Info', 'Error', 'Warn'],
-        },
         grid: {
           left: '3%',
           right: '4%',
@@ -132,6 +129,15 @@ export default defineComponent({
         },
         yAxis: {
           type: 'value',
+          // 添加 y 轴网格线样式
+          splitLine: {
+            show: true,
+            lineStyle: {
+              type: 'dashed', // 虚线
+              color: '#f0f0f0', // 浅灰色
+              width: 1,
+            },
+          },
         },
         series: [
           {
