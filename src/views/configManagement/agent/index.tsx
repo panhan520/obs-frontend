@@ -10,7 +10,7 @@ import type { DrawerProps } from 'element-plus'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/store/modules/user'
 import { TextType } from './constants'
-import { getAgentApi } from '~/api/configManagement/index'
+import { getAgentApi } from '~/api/configManagement/angent/index'
 import { METRICCONFIG, LOGSCONFIG } from './constants'
 export default defineComponent({
   name: 'LogsAgent',

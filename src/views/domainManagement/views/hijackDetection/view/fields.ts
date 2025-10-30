@@ -3,6 +3,8 @@ import { ElText } from 'element-plus'
 import { getHistoryNodeListApi } from '~/api/domainManagement/hijackDetection'
 import { ispOptions } from './constants'
 
+import styles from './index.module.scss'
+
 import type { IField } from '~/interfaces/commonPage'
 
 export const fields: IField[] = [
@@ -142,6 +144,7 @@ export const historyFields: IField[] = [
     prop: 'status',
     label: '结果',
     isFilter: true,
+    width: 130,
     filterConfig: {
       type: 'string',
       default: '',
@@ -151,20 +154,21 @@ export const historyFields: IField[] = [
         placeholder: '请选择',
       },
       enum: [
-        { label: '被劫持', value: 'success' },
-        { label: '正常', value: 'fail' },
+        { label: '被劫持', value: 'fail' },
+        { label: '正常', value: 'success' },
         { label: '异常', value: 'else' },
       ],
     },
     render: ({ rowData }) => h(
       'span',
-      { style: { color: rowData.status == 'fail' ? '#67C23A' : '#F56C6C' } },
+      { style: { color: rowData.status == '正常' ? '#67C23A' : '#F56C6C' } },
+      rowData.status
     )
   },
   {
     prop: 'statusCode',
     label: '状态码',
-    width: 130,
+    minWidth: 130,
   },
   {
     prop: 'jumpAddress',
@@ -174,7 +178,10 @@ export const historyFields: IField[] = [
   {
     prop: 'result',
     label: '运行结果',
-    minWidth: 130,
+    showOverflowTooltip: {
+      popperClass: styles.limitTooltip,
+    },
+    minWidth: 250,
     render: ({ rowData }) => h('span', JSON.stringify(rowData.result))
   } as any,
 ]

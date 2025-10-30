@@ -20,7 +20,9 @@ export const getDataSourceList = async (
   params: DataSourceListParams,
 ): Promise<ICommonGetListRes<IDataSourceItem>> => {
   try {
-    const res = await request.get('/datasourceManagement/list', { params })
+    const res = await request.get('/datasourceManagement/list', {
+      params: { ...params.pagination },
+    })
     return Promise.resolve({
       list: res.data.list,
       pagination: res.data.pagination,

@@ -4,7 +4,7 @@ import { QuestionFilled } from '@element-plus/icons-vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import { FormItem } from './type'
 import { Options } from '../../type'
-import { existIndexApi, createIndexApi } from '~/api/logsPanel'
+import { existIndexApi, createIndexApi } from '~/api/logsPanel/indexManagement'
 export default defineComponent({
   name: 'AddDialog',
   props: {

@@ -3,7 +3,7 @@ import { defineStore } from 'pinia'
 import { ElMessage } from 'element-plus'
 import { jwtDecode } from 'jwt-decode'
 import { loginApi, loginOut } from '~/api/login/index'
-import { setToken } from '~/api/token'
+import { setToken, removeToken } from '~/api/token'
 
 import type { JwtPayload } from 'jwt-decode'
 
@@ -32,7 +32,7 @@ export const useUserStore = defineStore('userState', () => {
         const decoded = jwtDecode<JwtPayload & { tenantId: string; orgId: string; username: string }>(token)
         userOrg.tenantId = decoded.tenantId
         userOrg.orgId = decoded.orgId
-        userOrg.userId = res.data.uid
+        userOrg.userId = res.data.userId
         userInfo.username = decoded.username
         userInfo.token = token
       } else {
@@ -57,31 +57,16 @@ export const useUserStore = defineStore('userState', () => {
     })
   }
   const clearInfo = () => {
-    // 清空状态
-    userInfo.username = ''
-    userInfo.email = ''
-    userOrg.userId = ''
-    userOrg.orgId = ''
-    userOrg.tenantId = ''
-    roles.value = []
     // 清空存储
-    localStorage.clear()
-    sessionStorage.clear()
-  }
-  const logout = async (data?: any) => {
-    const res = await loginOut(data)
-    // 清空状态
-    userInfo.username = ''
-    userInfo.email = ''
-    userOrg.userId = ''
-    userOrg.orgId = ''
-    userOrg.tenantId = ''
-    roles.value = []
-    // 清空存储
+    removeToken()
     localStorage.clear()
     sessionStorage.clear()
     document.cookie = 'auth_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
     if ((window as any).__JWT_CACHE__) delete (window as any).__JWT_CACHE__
+  }
+  const logout = async (data?: any) => {
+    const res = await loginOut(data)
+    clearInfo()
     return Promise.resolve(res)
   }
   const setUserInfo = (globalUserInfo) => {

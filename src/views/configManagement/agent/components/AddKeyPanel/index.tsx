@@ -4,7 +4,12 @@ import styles from './index.module.scss'
 import { useUserStore } from '@/store/modules/user'
 import type { FormInstance, FormRules } from 'element-plus'
 
-import { getKeyApi, generateKeyApi, editKeyApi, deleteKeyApi } from '~/api/configManagement/index'
+import {
+  getKeyApi,
+  generateKeyApi,
+  editKeyApi,
+  deleteKeyApi,
+} from '~/api/configManagement/angent/index'
 
 import { ElMessage, ElMessageBox } from 'element-plus'
 
@@ -92,7 +97,7 @@ export default defineComponent({
       if (code == 200 && message == 'success') {
         loading.value = false
         tableData.value = data.keys
-        pagination.value = data.Pagination
+        pagination.value = data.pagination
       } else {
         ElMessage.error(data)
       }

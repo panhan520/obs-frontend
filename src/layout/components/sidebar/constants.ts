@@ -26,6 +26,7 @@ export const getActions = (router, UserStore, TagsViewStore, PermissionStore) =>
             })
           }
           router.push('/login')
+          UserStore.clearInfo()
         })
         .catch((error) => {
           console.error(`退出登陆失败，失败原因：${error}`)

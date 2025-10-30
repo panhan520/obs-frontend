@@ -163,6 +163,11 @@ export interface DataSourceListParams {
   name?: string
   type?: DataSourceType
   dataType?: DataType
+  pagination?: {
+    page: number
+    pageSize: number
+    total: number
+  }
 }
 
 // 数据源列表响应

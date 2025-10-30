@@ -1,0 +1,8 @@
+.limitTooltip {
+  max-width: 600px !important;
+  /* 限制 tooltip 宽度 */
+  white-space: pre-wrap !important;
+  /* 支持换行 */
+  word-break: break-all !important;
+  /* 长字符串自动换行 */
+}

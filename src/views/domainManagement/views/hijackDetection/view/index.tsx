@@ -1,4 +1,4 @@
-import { defineComponent, ref, nextTick } from 'vue'
+import { defineComponent, ref, nextTick, onActivated } from 'vue'
 import { useRoute } from 'vue-router'
 import { isEmpty } from 'lodash'
 import { getHistoryNodeListApi, getHistoryListApi } from '~/api/domainManagement/hijackDetection'
@@ -38,6 +38,7 @@ export default defineComponent({
     /** 重置筛选条件 */
     const filterReset = () => {
       commonFilterRef.value?.reset()
+      commonPageRef.value?.updateTableHeight?.()
       query({ text: '重置' })
     }
     /**更改组件传参 */
@@ -46,9 +47,20 @@ export default defineComponent({
         ...commonFilterRef.value?.getForm().values,
         page: params?.pagination?.page,
         pageSize: params?.pagination?.pageSize,
+        ...(isEmpty(activeRowData.value)
+          ? {}
+          : { nodeName: `${activeRowData.value.nodeName}${activeRowData.value.ispName}` }),
         task: route.query?.id,
       }
     }
+    const commonPageRef = ref()
+
+    onActivated(async () => {
+      await nextTick()
+      // 主动刷新左边的 CommonPage 数据
+      commonPageRef.value?.query?.()
+    })
+
     return () => (
       <Space direction='column' fill size={1} style={{ padding: '16px', boxSizing: 'border-box' }}>
         <div
@@ -67,18 +79,18 @@ export default defineComponent({
             pageKey='hijackDetectionView'
           />
         </div>
-        <Space direction='row' fill>
+        <Space direction='row' fill style={{ flex: 1 }}>
           <div style={{ width: '30%', height: '100%' }}>
             <CommonPage
               fields={fields}
               listApi={getHistoryNodeListApi}
               filterColumns={2}
-              pageKey='hijackDetectionViewNode'
               onRowClick={rowClick}
             />
           </div>
           <div style={{ width: '70%', height: '100%', backgroundColor: '#fff' }}>
             <CommonTable
+              tableLayout='fixed'
               ref={commonTableRef}
               columns={historyFields}
               listApi={getHistoryListApi}

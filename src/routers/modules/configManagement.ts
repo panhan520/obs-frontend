@@ -24,7 +24,7 @@ const configManagementRouter: IRouteRecordRaw[] = [
       },
       {
         path: 'dataSource',
-        component: () => import('~/views/configManagement/dataSource/index'),
+        component: defineAsyncComponent(() => import('~/views/configManagement/dataSource/index')),
         name: 'dataSource',
         meta: {
           title: '数据源管理',
@@ -35,7 +35,9 @@ const configManagementRouter: IRouteRecordRaw[] = [
       {
         path: 'dataSourceForm',
         name: 'DataSourceForm',
-        component: () => import('~/views/configManagement/dataSource/edit/index'),
+        component: defineAsyncComponent(
+          () => import('~/views/configManagement/dataSource/edit/index'),
+        ),
         meta: { title: '数据源配置', hidden: true, level: 3 },
       },
     ],

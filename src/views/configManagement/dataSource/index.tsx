@@ -2,7 +2,7 @@ import { defineComponent, ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElButton } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
-import { CommonPage } from '~/KeepUp/packages/businessComponents'
+import { CommonPage } from '~/businessComponents'
 import { getDataSourceList, getDataSourceDetail } from '~/api/configManagement/dataSource'
 
 import { getFields } from './fields'
@@ -11,7 +11,7 @@ import DataSourceDetailDrawer from './components/Detail'
 import emitter from '~/utils/emitter'
 
 import type { ICommonObj } from '~/interfaces/common'
-import type { IExpose } from '~/KeepUp/packages/businessComponents/commonPage'
+import type { IExpose } from '~/businessComponents/commonPage'
 import type { DataSourceDetail } from '~/api/configManagement/dataSource/interfaces'
 
 export default defineComponent({

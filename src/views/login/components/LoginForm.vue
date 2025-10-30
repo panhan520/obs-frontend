@@ -117,7 +117,7 @@
 import { ref, reactive } from 'vue'
 import type { FormInstance } from 'element-plus'
 import { ElNotification, ElMessage } from 'element-plus'
-import { useRouter, onBeforeRouteLeave } from 'vue-router'
+import { useRouter, onBeforeRouteLeave, useRoute } from 'vue-router'
 import { getTimeStateStr } from '@/utils/index'
 import { registerUser, sendEmail, infoApi } from '@/api/login/index'
 import { useUserStore } from '@/store/modules/user'
@@ -134,6 +134,7 @@ const validateConfirmPPassword = (rule: any, value: any, callback: any) => {
   }
 }
 const router = useRouter()
+const route = useRoute()
 const ruleFormRef = ref<FormInstance>()
 const registerFormRef = ref<FormInstance>()
 const passwordType = ref('password')
@@ -225,9 +226,8 @@ const submitForm = async (formEl: FormInstance | undefined) => {
     }
     loading.value = true
     await UserStore.login(ruleForm);
-    router.push({
-      path: '/',
-    })
+    const redirect = (route.query.redirect as string) || '/'
+    router.push(redirect)
     const infoRes = await infoApi(UserStore.userOrg.userId)
     UserStore.setUserEmail(infoRes.data.email)
     ElNotification({

@@ -17,7 +17,7 @@ import {
 import { Search } from '@element-plus/icons-vue'
 import { getFields } from './fields'
 import { FormItem, Options } from './type'
-import { getIndexApi, getDatasourceApi, deleteIndexApi } from '~/api/logsPanel'
+import { getIndexApi, getDatasourceApi, deleteIndexApi } from '~/api/logsPanel/indexManagement'
 import type { ICommonObj } from '@/interfaces/common'
 export default defineComponent({
   name: 'IndexManagement',

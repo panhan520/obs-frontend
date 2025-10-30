@@ -5,7 +5,6 @@ import { qiankunWindow } from 'vite-plugin-qiankun/dist/helper'
 import { errorCodeType } from '../api/errorCodeType'
 import { PROXY } from './constants'
 import { filterEmptyParams } from './utils'
-import { removeToken } from '~/utils/auth'
 
 import type { AxiosInstance } from 'axios'
 import { useUserStore } from '~/store/modules/user'
@@ -75,11 +74,14 @@ const getReqByProxyModule = ({
         } else {
           if (res.data.code === 401 || res.data.code === 403) {
             const UserStore = useUserStore()
-            removeToken()
             UserStore.clearInfo()
             // 延迟加载 router，避免循环依赖
             import('@/routers').then(({ default: router }) => {
-              router.push('/login')
+              const redirect = window.location.pathname + window.location.search
+              router.push({
+                path: '/login',
+                query: { redirect }
+              })
             })
             // 弹出提示
             ElMessage.error('登录已过期，请重新登录')
@@ -97,19 +99,23 @@ const getReqByProxyModule = ({
 
       // 特殊处理401（未授权）
       if (status === 401 || status === 403) {
-        // const router = useRouter()
         const UserStore = useUserStore()
-        // const TagsViewStore = useTagsViewStore()
-        // const PermissionStore = usePermissionStore()
-        // TagsViewStore.clearVisitedView()
-        // PermissionStore.clearRoutes()
-        removeToken()
         UserStore.clearInfo()
-        // router.push('/login')
+        // 延迟加载 router，避免循环依赖
+        import('@/routers').then(({ default: router }) => {
+          const redirect = window.location.pathname + window.location.search
+          router.push({
+            path: '/login',
+            query: { redirect }
+          })
+        })
+        // 弹出提示
+        ElMessage.error('登录已过期，请重新登录')
+      } else {
+        const customMessage = (error?.response?.data as Record<string, any>)?.message
+        ElMessage.error(`${message} ${customMessage ? `原因：${customMessage}` : ''}`)
       }
 
-      const customMessage = (error?.response?.data as Record<string, any>)?.message
-      ElMessage.error(`${message} ${customMessage ? `原因：${customMessage}` : ''}`)
       return Promise.reject(error)
     },
   )

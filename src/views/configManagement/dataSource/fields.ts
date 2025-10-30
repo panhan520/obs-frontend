@@ -5,11 +5,11 @@ import {
   dataSourceTypeOptions,
   dataTypeOptions,
 } from '~/api/configManagement/dataSource/interfaces'
-import Space from '~/KeepUp/packages/basicComponents/space'
+import Space from '~/basicComponents/space'
 import emitter from '~/utils/emitter'
 import type { IGetFieldsParams } from '../../availabilityMonitoring/interface'
 
-import type { IField } from '~/KeepUp/packages/businessComponents/commonPage'
+import type { IField } from '~/businessComponents/commonPage'
 
 const commonAttrs = {
   link: true,

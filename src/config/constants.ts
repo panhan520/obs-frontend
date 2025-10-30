@@ -18,6 +18,9 @@ export const PROXY = {
   INDEXMANAGEMENT: import.meta.env.VITE_INDEXMANAGEMENT_API,
   /** 日志 */
   LOG: import.meta.env.VITE_APP_BASE_API_LOG,
+
+  /**账户信息 */
+  CORE: import.meta.env.VITE_APP_CORE_API,
   /** 数据源 */
   DATASOURCE: import.meta.env.VITE_APP_BASE_API_DATASOURCE,
 }
