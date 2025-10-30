@@ -21,20 +21,14 @@ const proxy = {
     target: 'https://gateway.observe.dev.eks.gainetics.io',
     changeOrigin: true,
   },
-  [`/api/v1/iam`]: {
+  // 登录、仪表盘、安装agent
+  [`/iam-proxy`]: {
     target: 'https://gateway.observe.dev.eks.gainetics.io',
     changeOrigin: true,
+    rewrite: (path) => path.replace(/^\/iam-proxy/, '/api/v1/iam'),
   },
   [`/config/v1`]: {
     target: 'https://gateway.observe.dev.eks.gainetics.io',
-    changeOrigin: true,
-  },
-  [`/observable/user/v1`]: {
-    target: 'https://gateway.observe.dev.eks.gainetics.io/api/user',
-    changeOrigin: true,
-  },
-  [`/observable/core/v1`]: {
-    target: 'https://gateway.observe.dev.eks.gainetics.io/api/core',
     changeOrigin: true,
   },
   [`/api/v1`]: {
@@ -62,6 +56,12 @@ const proxy = {
     target: 'https://grafana-chinese.observe.dev.eks.gainetics.io',
     changeOrigin: true,
     rewrite: (path) => path.replace(/^\/trace-proxy/, ''),
+  },
+  /** 索引管理 */
+  [`/logging-proxy`]: {
+    target: 'https://gateway.observe.dev.eks.gainetics.io',
+    changeOrigin: true,
+    rewrite: (path) => path.replace(/^\/logging-proxy/, ''),
   },
 
   /** qiankun */
@@ -127,13 +127,13 @@ export default defineConfig(({ command, mode }: ConfigEnv): UserConfig => {
       }),
       // gzip压缩 生产环境生成 .gz 文件
       mode === 'production' &&
-        viteCompression({
-          verbose: true,
-          disable: false,
-          threshold: 10240,
-          algorithm: 'gzip',
-          ext: '.gz',
-        }),
+      viteCompression({
+        verbose: true,
+        disable: false,
+        threshold: 10240,
+        algorithm: 'gzip',
+        ext: '.gz',
+      }),
       qiankun(MICRO_APP_NAME, {
         useDevMode: true,
       }),
@@ -170,33 +170,5 @@ export default defineConfig(({ command, mode }: ConfigEnv): UserConfig => {
       // 代理跨域（模拟示例）
       proxy,
     },
-    // 生产环境打包配置
-    //去除 console debugger
-    // esbuild: {
-    //   pure:mode==='production' ? ["console.log", "debugger"] : []
-    // },
-    build: {
-      rollupOptions: {
-        output: {
-          manualChunks: {
-            vue: ['vue', 'vue-router', 'pinia'],
-            element: ['element-plus'],
-          },
-          entryFileNames: 'assets/[name]-[hash].js',
-          chunkFileNames: 'assets/[name]-[hash].js',
-          assetFileNames: 'assets/[name]-[hash].[ext]',
-        },
-      },
-      sourcemap: true,
-      minify: false,
-    },
-    // build: {
-    //   terserOptions: {
-    //     compress: {
-    //       drop_console: true,
-    //       drop_debugger: true,
-    //     },
-    //   },
-    // },
   }
 })

@@ -1,6 +1,5 @@
-import { h } from 'vue'
+import { h, defineAsyncComponent } from 'vue'
 import { IconFont } from '~/KeepUp'
-import Layout from '~/layout'
 import { HeaderMode } from '../constants'
 
 import type { IRouteRecordRaw } from '~/interfaces/common'
@@ -9,20 +8,20 @@ export default [
   {
     path: '/availabilityMonitoring',
     name: 'AvailabilityMonitoring',
-    component: Layout,
+    component: defineAsyncComponent(() => import('~/layout')),
     redirect: 'index',
     meta: { title: '线路', icon: h(IconFont, { name: 'availability_monitoring' }), level: 1 },
     children: [
       {
         path: 'index',
         name: 'AvailabilityMonitoringIndex',
-        component: () => import('~/views/availabilityMonitoring'),
+        component: defineAsyncComponent(() => import('~/views/availabilityMonitoring')),
         meta: { title: '线路任务列表', level: 2, headerMode: HeaderMode.SUBMENU },
       },
       {
         path: 'create',
         name: 'AvailabilityMonitoringCreate',
-        component: () => import('~/views/availabilityMonitoring/detail'),
+        component: defineAsyncComponent(() => import('~/views/availabilityMonitoring/detail')),
         meta: { 
           title: '新建线路任务', 
           role: ['other'], 
@@ -37,7 +36,7 @@ export default [
       {
         path: 'edit',
         name: 'AvailabilityMonitoringEdit',
-        component: () => import('~/views/availabilityMonitoring/detail'),
+        component: defineAsyncComponent(() => import('~/views/availabilityMonitoring/detail')),
         meta: { 
           title: '编辑任务',  
           hidden: true, 
@@ -52,7 +51,7 @@ export default [
       {
         path: 'view',
         name: 'AvailabilityMonitoringView',
-        component: () => import('~/views/availabilityMonitoring/detail'),
+        component: defineAsyncComponent(() => import('~/views/availabilityMonitoring/detail')),
         meta: { 
           title: '查看任务',  
           hidden: true, 
@@ -67,7 +66,7 @@ export default [
       {
         path: 'taskHistory',
         name: 'TaskHistory',
-        component: () => import('~/views/availabilityMonitoring/taskHistory'),
+        component: defineAsyncComponent(() => import('~/views/availabilityMonitoring/taskHistory')),
         meta: { 
           title: '历史任务', 
           hidden: true, 
@@ -82,7 +81,7 @@ export default [
       {
         path: 'overviewPage',
         name: 'OverviewPage',
-        component: () => import('~/views/availabilityMonitoring/overviewPage'),
+        component: defineAsyncComponent(() => import('~/views/availabilityMonitoring/overviewPage')),
         meta: { 
           title: '任务信息总览', 
           hidden: true, 
@@ -97,7 +96,7 @@ export default [
       {
         path: 'alarm',
         name: 'Alarm',
-        component: () => import('~/views/availabilityMonitoring/alarm'),
+        component: defineAsyncComponent(() => import('~/views/availabilityMonitoring/alarm')),
         meta: { 
           title: '告警', 
           role: ['other'],
@@ -108,7 +107,7 @@ export default [
       {
         path: 'overview',
         name: 'Overview',
-        component: () => import('~/views/availabilityMonitoring/overview'),
+        component: defineAsyncComponent(() => import('~/views/availabilityMonitoring/overview')),
         meta: { 
           title: '概览', 
           role: ['other'],

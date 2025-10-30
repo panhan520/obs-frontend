@@ -1,6 +1,5 @@
-import { h } from 'vue'
+import { h, defineAsyncComponent } from 'vue'
 import { IconFont } from '~/KeepUp'
-import Layout from '~/layout'
 
 import type { IRouteRecordRaw } from '~/interfaces/common'
 
@@ -8,13 +7,13 @@ const controlPanelRouter: IRouteRecordRaw[] = [
   {
     path: '/trackPanel',
     name: 'trackPanel',
-    component: Layout,
+    component: defineAsyncComponent(() => import('~/layout')),
     redirect: '/trackPanel/tracked',
     meta: { title: '追踪', icon: h(IconFont, { name: 'track_panel' }), level: 1 },
     children: [
       {
         path: 'tracked',
-        component: () => import('@/views/controlPanel/dashBoard/index.vue'),
+        component: defineAsyncComponent(() => import('@/views/controlPanel/dashBoard/index.vue')),
         name: 'tracked',
         meta: { title: '追踪', icon: h(IconFont, { name: 'track_panel' }), level: 2 },
       },

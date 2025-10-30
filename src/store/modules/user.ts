@@ -112,10 +112,10 @@ export const useUserStore = defineStore('userState', () => {
     clearInfo,
   }
 }, {
-    // 持久化
-    persist: {
-      key: 'userState',
-      storage: window.localStorage,
-    },
-  }
+  // 持久化
+  persist: {
+    key: 'userState',
+    storage: window.localStorage,
+  },
+}
 )

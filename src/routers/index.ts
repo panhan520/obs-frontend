@@ -13,8 +13,8 @@
  * meta.affix ==> 如果设置为true将会出现在 标签栏中
  * meta.breadcrumb ==> 如果设置为false，该项将隐藏在breadcrumb中（默认值为true）
  */
+import { defineAsyncComponent } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
-import Layout from '~/layout'
 import { qiankunWindow } from 'vite-plugin-qiankun/dist/helper'
 import { MICRO_APP_ROUTE } from '~/constants/qiankun'
 import {
@@ -30,6 +30,8 @@ import {
 } from './modules'
 
 import type { IRouteRecordRaw } from '~/interfaces/common'
+
+const Layout = defineAsyncComponent(() => import('~/layout'))
 
 export const customRoutes: IRouteRecordRaw[] = [
   ...controlPanel,
@@ -47,42 +49,42 @@ export const basicRoutes: IRouteRecordRaw[] = [
   {
     path: '/404',
     name: '404',
-    component: () => import('~/config/fragments/errorPages/404.vue'),
+    component: defineAsyncComponent(() => import('~/config/fragments/errorPages/404.vue')),
     meta: { title: '404', hidden: true },
   },
   {
     path: '/403',
     name: '403',
-    component: () => import('~/config/fragments/errorPages/403.vue'),
+    component: defineAsyncComponent(() => import('~/config/fragments/errorPages/403.vue')),
     meta: { title: '403', hidden: true },
   },
   {
     path: '/login',
     name: 'Login',
-    component: () => import('~/views/login/index.vue'),
+    component: defineAsyncComponent(() => import('~/views/login/index.vue')),
     meta: { title: 'Login', hidden: true },
   },
   {
     path: '/register',
     name: 'register',
-    component: () => import('~/views/login/index.vue'),
+    component: defineAsyncComponent(() => import('~/views/login/index.vue')),
     meta: { title: 'register', hidden: true },
   },
   {
     path: '/resetPsw',
     name: 'resetPsw',
-    component: () => import('~/views/login/resetPsw.vue'),
+    component: defineAsyncComponent(() => import('~/views/login/resetPsw.vue')),
     meta: { title: 'resetPsw', hidden: true },
   },
   {
     path: '/',
     name: 'layout',
-    component: Layout,
+    component: defineAsyncComponent(() => import('~/layout')),
     redirect: '/controlPanel/dashBoard',
-    // meta: { icon: 'House', level: 1 },
     children: [],
   },
 ]
+
 export const notFoundRouter: IRouteRecordRaw = {
   path: '/:pathMatch(.*)',
   name: 'notFound',

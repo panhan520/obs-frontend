@@ -1,6 +1,5 @@
-import { h } from 'vue'
+import { h, defineAsyncComponent } from 'vue'
 import { IconFont } from '~/KeepUp'
-import Layout from '~/layout'
 import { HeaderMode } from '../constants'
 
 import type { IRouteRecordRaw } from '~/interfaces/common'
@@ -9,20 +8,20 @@ const controlPanelRouter: IRouteRecordRaw[] = [
   {
     path: '/monitor',
     name: 'Monitor',
-    component: Layout,
+    component: defineAsyncComponent(() => import('~/layout')),
     redirect: '/monitor/alert',
     meta: { title: '监控', icon: h(IconFont, { name: 'monitors_panel' }), level: 1 },
     children: [
       {
         path: 'alert',
-        component: () => import('@/views/monitor'),
+        component: defineAsyncComponent(() => import('@/views/monitor')),
         name: 'Alert',
         redirect: '/monitor/alert/alertRules',
         meta: { title: '告警管理', level: 2, headerMode: HeaderMode.SUBMENU },
         children: [
           {
             path: 'alertRules',
-            component: () => import('@/views/monitor'),
+            component: defineAsyncComponent(() => import('@/views/monitor')),
             name: 'AlertRules',
             meta: {
               title: '告警规则',
@@ -33,7 +32,7 @@ const controlPanelRouter: IRouteRecordRaw[] = [
           },
           {
             path: 'mutes',
-            component: () => import('@/views/monitor'),
+            component: defineAsyncComponent(() => import('@/views/monitor')),
             name: 'Mutes',
             meta: {
               title: '屏蔽规则',
@@ -44,7 +43,7 @@ const controlPanelRouter: IRouteRecordRaw[] = [
           },
           {
             path: 'subscribes',
-            component: () => import('@/views/monitor'),
+            component: defineAsyncComponent(() => import('@/views/monitor')),
             name: 'Subscribes',
             meta: {
               title: '订阅规则',
@@ -55,7 +54,7 @@ const controlPanelRouter: IRouteRecordRaw[] = [
           },
           {
             path: 'tpls',
-            component: () => import('@/views/monitor'),
+            component: defineAsyncComponent(() => import('@/views/monitor')),
             name: 'Tpls',
             meta: {
               title: '自愈脚本',
@@ -66,7 +65,7 @@ const controlPanelRouter: IRouteRecordRaw[] = [
           },
           {
             path: 'tasks',
-            component: () => import('@/views/monitor'),
+            component: defineAsyncComponent(() => import('@/views/monitor')),
             name: 'Tasks',
             meta: {
               title: '历史任务',
@@ -77,7 +76,7 @@ const controlPanelRouter: IRouteRecordRaw[] = [
           },
           {
             path: 'curEvents',
-            component: () => import('@/views/monitor'),
+            component: defineAsyncComponent(() => import('@/views/monitor')),
             name: 'CurEvents',
             meta: {
               title: '活跃告警',
@@ -88,7 +87,7 @@ const controlPanelRouter: IRouteRecordRaw[] = [
           },
           {
             path: 'hisEvents',
-            component: () => import('@/views/monitor'),
+            component: defineAsyncComponent(() => import('@/views/monitor')),
             name: 'HisEvents',
             meta: {
               title: '历史告警',
@@ -101,14 +100,14 @@ const controlPanelRouter: IRouteRecordRaw[] = [
       },
       {
         path: 'notification',
-        component: () => import('@/views/monitor'),
+        component: defineAsyncComponent(() => import('@/views/monitor')),
         name: 'Notification',
         redirect: '/monitor/notification/notificationRules',
         meta: { title: '通知管理', level: 2, headerMode: HeaderMode.SUBMENU },
         children: [
           {
             path: 'notificationRules',
-            component: () => import('@/views/monitor'),
+            component: defineAsyncComponent(() => import('@/views/monitor')),
             name: 'NotificationRules',
             meta: {
               title: '通知规则',
@@ -119,7 +118,7 @@ const controlPanelRouter: IRouteRecordRaw[] = [
           },
           {
             path: 'channels',
-            component: () => import('@/views/monitor'),
+            component: defineAsyncComponent(() => import('@/views/monitor')),
             name: 'Channels',
             meta: {
               title: '通知媒介',
@@ -130,7 +129,7 @@ const controlPanelRouter: IRouteRecordRaw[] = [
           },
           {
             path: 'templates',
-            component: () => import('@/views/monitor'),
+            component: defineAsyncComponent(() => import('@/views/monitor')),
             name: 'Templates',
             meta: {
               title: '消息模板',

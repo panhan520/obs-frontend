@@ -1,6 +1,5 @@
-import { h } from 'vue'
+import { h, defineAsyncComponent } from 'vue'
 import { IconFont } from '~/KeepUp'
-import Layout from '~/layout'
 import { HeaderMode } from '../constants'
 
 import type { IRouteRecordRaw } from '~/interfaces/common'
@@ -9,13 +8,13 @@ const controlPanelRouter: IRouteRecordRaw[] = [
   {
     path: '/metrics',
     name: 'Metrics',
-    component: Layout,
+    component: defineAsyncComponent(() => import('~/layout')),
     redirect: '/metrics/metricsExplorer',
     meta: { title: '指标', icon: h(IconFont, { name: 'target_panel' }), level: 1 },
     children: [
       {
         path: 'metricsExplorer',
-        component: () => import('@/views/metrics'),
+        component: defineAsyncComponent(() => import('@/views/metrics')),
         name: 'MetricsExplorer',
         meta: {
           title: '即时查询',
@@ -26,7 +25,7 @@ const controlPanelRouter: IRouteRecordRaw[] = [
       },
       {
         path: 'builtInMetrics',
-        component: () => import('@/views/metrics'),
+        component: defineAsyncComponent(() => import('@/views/metrics')),
         name: 'BuiltInMetrics',
         meta: {
           title: '指标视图',
@@ -37,7 +36,7 @@ const controlPanelRouter: IRouteRecordRaw[] = [
       },
       {
         path: 'quickView',
-        component: () => import('@/views/metrics'),
+        component: defineAsyncComponent(() => import('@/views/metrics')),
         name: 'QuickView',
         meta: {
           title: '快捷视图',

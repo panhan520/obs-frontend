@@ -1,5 +1,4 @@
 import NProgress from 'nprogress'
-import { qiankunWindow } from 'vite-plugin-qiankun/dist/helper'
 import router from '~/routers/index'
 import { useUserStore } from '~/store/modules/user'
 import { usePermissionStore } from '~/store/modules/permission'
@@ -15,6 +14,7 @@ const whiteList = [
 ] // 设置白名单
 // 记录路由
 let hasRoles = true
+// 独立部署
 const independentPermission = async (to, from, next, UserStore, PermissionStore) => {
   // 开启进度条
   NProgress.start()
@@ -52,6 +52,7 @@ const independentPermission = async (to, from, next, UserStore, PermissionStore)
     }
   }
 }
+// 微前端 
 const microAppPermission = async (to, from, next, UserStore, PermissionStore) => {
   NProgress.start()
   const isPublicPage = whiteList.indexOf(to.path) !== -1
@@ -73,17 +74,10 @@ router.beforeEach(async (to, from, next) => {
   try {
     const UserStore = useUserStore()
     const PermissionStore = usePermissionStore()
-    if (qiankunWindow.__POWERED_BY_QIANKUN__) {
-      console.log('🚀微前端')
-      microAppPermission(
-        to, from, next, UserStore, PermissionStore,
-      )
-    } else {
-      console.log('🚀独立部署')
-      await independentPermission(
-        to, from, next, UserStore, PermissionStore,
-      )
-    }
+    console.log('🚀微前端')
+    microAppPermission(
+      to, from, next, UserStore, PermissionStore,
+    )
   } catch (error: any) {
     console.error(`鉴权逻辑执行失败，失败原因：${error}`)
   }
