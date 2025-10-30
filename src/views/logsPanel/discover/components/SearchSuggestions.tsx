@@ -21,13 +21,13 @@ const SEARCH_OPERATORS = [
     operator: 'match',
     syntax: 'attribute:~value',
     description: '包含',
-    backendId: 'contains',
+    backendId: 'match',
   },
   {
-    operator: 'not match',
+    operator: 'not_match',
     syntax: '-attribute:~value',
     description: '不包含',
-    backendId: 'not_contains',
+    backendId: 'not_match',
   },
   {
     operator: 'wildcard',
@@ -36,22 +36,10 @@ const SEARCH_OPERATORS = [
     backendId: 'wildcard',
   },
   {
-    operator: 'not wildcard',
+    operator: 'not_wildcard',
     syntax: '-attribute:*value*',
     description: '反向通配',
     backendId: 'not_wildcard',
-  },
-  {
-    operator: 'exist',
-    syntax: 'attribute:*',
-    description: '存在',
-    backendId: 'exists',
-  },
-  {
-    operator: 'not exist',
-    syntax: '-attribute:*',
-    description: '不存在',
-    backendId: 'not_exists',
   },
   {
     operator: 'regexp',
@@ -60,10 +48,22 @@ const SEARCH_OPERATORS = [
     backendId: 'regexp',
   },
   {
-    operator: 'not regexp',
+    operator: 'not_regexp',
     syntax: '-attribute:/.*value.*/',
     description: '反向正则匹配',
     backendId: 'not_regexp',
+  },
+  {
+    operator: 'exist',
+    syntax: 'attribute:*',
+    description: '存在',
+    backendId: 'exist',
+  },
+  {
+    operator: 'not_exist',
+    syntax: '-attribute:*',
+    description: '不存在',
+    backendId: 'not_exist',
   },
 ]
 

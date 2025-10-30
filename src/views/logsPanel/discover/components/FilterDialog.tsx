@@ -24,7 +24,7 @@ export default defineComponent({
   setup(props, { emit }) {
     const newFilter = reactive<FilterCondition>({
       field: '',
-      operator: 'eq',
+      operator: '=',
       value: '',
     })
 
@@ -36,7 +36,7 @@ export default defineComponent({
 
         emit('addFilter', filterWithValidation)
         newFilter.field = ''
-        newFilter.operator = 'eq'
+        newFilter.operator = '='
         newFilter.value = ''
         emit('update:modelValue', false)
       }
@@ -98,18 +98,16 @@ export default defineComponent({
             </ElFormItem>
             <ElFormItem label='运算符'>
               <ElSelect v-model={newFilter.operator}>
-                <ElOption label='等于 (=)' value='eq' />
-                <ElOption label='不等于 (≠)' value='ne' />
-                <ElOption label='包含 (match)' value='contains' />
-                <ElOption label='不包含 (not match)' value='not_contains' />
+                <ElOption label='等于 (=)' value='=' />
+                <ElOption label='不等于 (≠)' value='≠' />
+                <ElOption label='包含 (match)' value='match' />
+                <ElOption label='不包含 (not_match)' value='not_match' />
                 <ElOption label='通配 (wildcard)' value='wildcard' />
-                <ElOption label='反向通配 (not wildcard)' value='not_wildcard' />
-                <ElOption label='存在 (exist)' value='exists' />
-                <ElOption label='不存在 (not exist)' value='not_exists' />
-                <ElOption label='大于 (>)' value='gt' />
-                <ElOption label='大于等于 (>=)' value='gte' />
-                <ElOption label='小于 (<)' value='lt' />
-                <ElOption label='小于等于 (<=)' value='lte' />
+                <ElOption label='反向通配 (not_wildcard)' value='not_wildcard' />
+                <ElOption label='正则匹配 (regexp)' value='regexp' />
+                <ElOption label='反向正则匹配 (not_regexp)' value='not_regexp' />
+                <ElOption label='存在 (exist)' value='exist' />
+                <ElOption label='不存在 (not_exist)' value='not_exist' />
               </ElSelect>
             </ElFormItem>
             <ElFormItem label='值'>

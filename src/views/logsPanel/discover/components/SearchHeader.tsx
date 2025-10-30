@@ -779,7 +779,7 @@ export default defineComponent({
                 >
                   {condition.isValid === false && <span class={styles.forbiddenText}>禁止</span>}
                   <span class={styles.filterText}>
-                    {condition.field}: {condition.value}
+                    {condition.field} {condition.operator} {condition.value}
                   </span>
                   <span class={styles.removeFilter} onClick={() => handleRemoveFilter(index)}>
                     ×
