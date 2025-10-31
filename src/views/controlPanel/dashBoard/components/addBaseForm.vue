@@ -152,7 +152,7 @@ import { reactive, ref, computed, toRaw, onMounted } from 'vue'
 import { dictionaryData } from '@/mock/system'
 import { useDashBoardStore } from '@/store/modules/dashBoard'
 import { listBoardsApi, createBoardApi, detailBoardsApi } from '@/api/controlPanel/index'
-import { useUserStore } from '@/store/modules/user'
+import { useUserStore } from '@/store/modules/useAuthStore'
 
 const UserStore = useUserStore()
 const dashBoardState = useDashBoardStore()

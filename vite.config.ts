@@ -46,7 +46,7 @@ const proxy = {
   },
   /** 线路可观测 */
   [`/availability-proxy`]: {
-    target: 'https://gateway.observe.dev.gainetics.io',
+    target: 'https://gateway.observe.dev.eks.gainetics.io',
     changeOrigin: true,
     rewrite: (path) => path.replace(/^\/availability-proxy/, ''),
   },
@@ -94,7 +94,7 @@ const proxy = {
   },
   /** 线路可观测 */
   [`/${MICRO_APP_NAME}/availability-proxy`]: {
-    target: 'https://gateway.observe.dev.gainetics.io',
+    target: 'https://gateway.observe.dev.eks.gainetics.io',
     changeOrigin: true,
     rewrite: (path) => path.replace(/^\/STARVIEW\/availability-proxy/, ''),
   },

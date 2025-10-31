@@ -1,41 +1,48 @@
 import { commonRemoveVisible } from '../../../utils'
-import { commonTimeout, commonToolTipContainer } from '../../commonFields'
+import { commonToolTipContainer, commonTimeout } from '../../commonFields'
+import styles from '../../../index.module.scss'
 
-import type { ISchema } from "@formily/vue"
-import type { IGetSchemaParams } from '../../../interfaces'
+import type { ISchema } from '@formily/vue'
 
-const commonStyle = {
-  textAlign: 'left',
-}
-export const getSchema = ({ isView }: IGetSchemaParams): ISchema => ({
+const getSchema = (): ISchema => ({
   type: 'void',
+  'x-decorator': 'Space',
+  'x-decorator-props': {
+    direction: 'column',
+    align: 'start',
+  },
   'x-component': 'FormTab.TabPane',
   'x-component-props': {
     label: '请求设置',
   },
   properties: {
-    timeoutBox: commonTimeout(),
-    tooltipContainer4: commonToolTipContainer({
+    messageBase64Encoded: commonToolTipContainer({
       schema: {
-        insecureSkipVerify: {
+        messageBase64Encoded: {
           type: 'boolean',
           'x-decorator': 'FormItem',
           'x-component': 'Checkbox',
           'x-component-props': {
-            label: '忽略证书错误',
+            label: '消息使用Base64编码',
           },
-        },
+        }
       },
-      tooltip: '如果 gRPC 服务启用了 TLS/SSL，但证书不合法（比如自签名证书、过期证书或域名不匹配），请求会失败。勾选这个选项后，会忽略证书验证错误，继续执行调用。',
+      tooltip: '勾选后，发送的测试消息将按 Base64 编码格式处理。一般用于发送二进制或特殊字符内容。',
     }),
-    metadata: {
+    timeout: commonTimeout(),
+    /** 请求头 */
+    requestHeaders: {
       type: 'array',
       'x-decorator': 'FormItem',
       'x-decorator-props': {
-        label: 'grpc请求元数据',
+        label: '请求头',
+        colon: false,
         layout: 'vertical',
         labelAlign: 'left',
-        labelWidth: '120',
+        labelWidth: '60',
+        style: {
+          width: '100%',
+        },
       },
       'x-component': 'ArrayItems',
       default: [{ key: '', value: '' }],
@@ -45,45 +52,34 @@ export const getSchema = ({ isView }: IGetSchemaParams): ISchema => ({
         properties: {
           space: {
             type: 'void',
-            'x-component': 'FormGrid',
+            'x-component': 'Space',
             'x-component-props': {
-              maxColumns: 16,
-              minColumns: 16,
+              size: 0,
             },
             properties: {
               /** key */
               key: {
                 type: 'string',
-                'x-decorator': 'FormGrid.GridColumn',
-                'x-decorator-props': {
-                  gridSpan: 7,
-                  style: commonStyle,
-                },
                 'x-component': 'Input',
                 'x-component-props': {
                   placeholder: '参数名称',
-                  style: commonStyle,
+                  class: styles.leftRadius,
+                  style: {
+                    width: '180px',
+                  }
                 },
               },
               /** value */
               value: {
                 type: 'string',
-                'x-decorator': 'FormGrid.GridColumn',
-                'x-decorator-props': {
-                  gridSpan: 8,
-                  style: commonStyle,
-                },
                 'x-component': 'Input',
                 'x-component-props': {
                   placeholder: '值',
+                  class: styles.rightRadius,
                 },
               },
               remove: {
                 type: 'void',
-                'x-decorator': 'FormGrid.GridColumn',
-                'x-decorator-props': {
-                  gridSpan: 1,
-                },
                 'x-component': 'ArrayItems.Remove',
                 'x-reactions': commonRemoveVisible,
               },

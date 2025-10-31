@@ -10,7 +10,12 @@ export default [
     name: 'DomainManagement',
     component: defineAsyncComponent(() => import('~/layout')),
     redirect: '/domainManagement/assetManagement',
-    meta: { title: '域名监测', icon: h(IconFont, { name: 'asset_management' }), level: 1 },
+    meta: { 
+      title: '域名监测', 
+      icon: h(IconFont, { name: 'asset_management' }), 
+      level: 1,
+      permissionCodes: ['domain:view'],
+    },
     children: [
       // {
       //   path: 'assetManagement',
@@ -36,7 +41,12 @@ export default [
         path: 'checkResults',
         name: 'CheckResults',
         component: defineAsyncComponent(() => import('~/views/domainManagement/views/checkResults')),
-        meta: { title: '检测结果', level: 2, headerMode: HeaderMode.SUBMENU },
+        meta: { 
+          title: '检测结果', 
+          level: 2, 
+          headerMode: HeaderMode.SUBMENU,
+          permissionCodes: ['domain:view'],
+        },
       },
       // {
       //   path: 'httpInspect',
@@ -48,7 +58,12 @@ export default [
         path: 'hijackDetection',
         name: 'HijackDetection',
         component: defineAsyncComponent(() => import('~/views/domainManagement/views/hijackDetection')),
-        meta: { title: '劫持检测', level: 2, headerMode: HeaderMode.SUBMENU },
+        meta: { 
+          title: '劫持检测', 
+          level: 2, 
+          headerMode: HeaderMode.SUBMENU,
+          permissionCodes: ['domain:view'],
+        },
       },
       {
         path: 'hijackDetectionCreate',
@@ -62,6 +77,7 @@ export default [
             { label: '劫持检测', name: 'HijackDetection' },
             { label: '新增', name: 'HijackDetectionCreate' },
           ],
+          permissionCodes: ['domain:view'],
         },
       },
       {
@@ -76,6 +92,7 @@ export default [
             { label: '劫持检测', name: 'HijackDetection' },
             { label: '编辑', name: 'HijackDetectionEdit' },
           ],
+          permissionCodes: ['domain:view'],
         },
       },
       {
@@ -90,15 +107,20 @@ export default [
             { label: '劫持检测', name: 'HijackDetection' },
             { label: '详情', name: 'HijackDetectionView' },
           ],
+          permissionCodes: ['domain:view'],
         },
       },
       {
         path: 'dnsInspect',
         name: 'DnsInspect',
         component: defineAsyncComponent(() => import('~/views/domainManagement/views/dnsInspect')),
-        meta: { title: 'DNS检测', level: 2, headerMode: HeaderMode.SUBMENU },
+        meta: { 
+          title: 'DNS检测', 
+          level: 2, 
+          headerMode: HeaderMode.SUBMENU,
+          permissionCodes: ['domain:view'],
+        },
       },
-
       {
         path: 'dnsInspectCreate',
         name: 'DnsInspectCreate',
@@ -111,6 +133,7 @@ export default [
             { label: 'DNS检测', name: 'DnsInspect' },
             { label: 'DNS检测-新增', name: 'DnsInspectCreate' },
           ],
+          permissionCodes: ['domain:view'],
         },
       },
       {
@@ -125,6 +148,7 @@ export default [
             { label: 'DNS检测', name: 'DnsInspect' },
             { label: 'DNS检测-编辑', name: 'DnsInspectEdit' },
           ],
+          permissionCodes: ['domain:view'],
         },
       },
       {
@@ -139,13 +163,19 @@ export default [
             { label: 'DNS检测', name: 'DnsInspect' },
             { label: 'DNS检测-巡检日志', name: 'DnsInspectView' },
           ],
+          permissionCodes: ['domain:view'],
         },
       },
       {
         path: 'domainInspect',
         name: 'DomainInspect',
         component: defineAsyncComponent(() => import('~/views/domainManagement/views/domainInspect')),
-        meta: { title: '域名检测', level: 2, headerMode: HeaderMode.SUBMENU },
+        meta: { 
+          title: '域名检测', 
+          level: 2, 
+          headerMode: HeaderMode.SUBMENU,
+          permissionCodes: ['domain:view'],
+        },
       },
       {
         path: 'domainDetail',
@@ -159,13 +189,19 @@ export default [
             { label: '域名检测', name: 'DomainInspect' },
             { label: '域名检测-巡检日志', name: 'DomainDetail' },
           ],
+          permissionCodes: ['domain:view'],
         },
       },
       {
         path: 'sslInspect',
         name: 'SslInspect',
         component: defineAsyncComponent(() => import('~/views/domainManagement/views/sslInspect')),
-        meta: { title: 'ssl检测', level: 2, headerMode: HeaderMode.SUBMENU },
+        meta: { 
+          title: 'ssl检测', 
+          level: 2, 
+          headerMode: HeaderMode.SUBMENU,
+          permissionCodes: ['domain:view'],
+        },
       },
       {
         path: 'sslDetail',
@@ -179,43 +215,74 @@ export default [
             { label: 'ssl检测', name: 'SslInspect' },
             { label: 'ssl检测-巡检日志', name: 'SslDetail' },
           ],
+          permissionCodes: ['domain:view'],
         },
       },
       {
         path: 'inspectionWall',
         name: 'InspectionWall',
         component: defineAsyncComponent(() => import('~/views/domainManagement/views/inspectionWall')),
-        meta: { title: '被墙检测', level: 2, headerMode: HeaderMode.SUBMENU },
+        meta: { 
+          title: '被墙检测', 
+          level: 2, 
+          headerMode: HeaderMode.SUBMENU, 
+          permissionCodes: ['domain:view'],
+        },
       },
       {
         path: 'inspectionWallLog',
         name: 'InspectionWallLog',
         component: defineAsyncComponent(() => import('~/views/domainManagement/views/inspectionWall/log')),
-        meta: { title: '被墙检测-历史快照', hidden: true, level: 3 },
+        meta: { 
+          title: '被墙检测-历史快照', 
+          hidden: true, 
+          level: 3,
+          permissionCodes: ['domain:view'],
+        },
       },
       {
         path: 'inspectionPollution',
         name: 'InspectionPollution',
         component: defineAsyncComponent(() => import('~/views/domainManagement/views/inspectionPollution')),
-        meta: { title: '污染检测', level: 2, headerMode: HeaderMode.SUBMENU },
+        meta: { 
+          title: '污染检测', 
+          level: 2, 
+          headerMode: HeaderMode.SUBMENU, 
+          permissionCodes: ['domain:view'],
+        },
       },
       {
         path: 'inspectionPollutionLog',
         name: 'InspectionPollutionLog',
         component: defineAsyncComponent(() => import('~/views/domainManagement/views/inspectionPollution/log')),
-        meta: { title: '污染检测-历史快照', hidden: true, level: 3 },
+        meta: { 
+          title: '污染检测-历史快照', 
+          hidden: true, 
+          level: 3,
+          permissionCodes: ['domain:view'],
+        },
       },
       {
         path: 'inspectionICP',
         name: 'InspectionICP',
         component: defineAsyncComponent(() => import('~/views/domainManagement/views/inspectionICP')),
-        meta: { title: 'ICP检测', level: 2, headerMode: HeaderMode.SUBMENU },
+        meta: { 
+          title: 'ICP检测', 
+          level: 2, 
+          headerMode: HeaderMode.SUBMENU,
+          permissionCodes: ['domain:view'],
+        },
       },
       {
         path: 'inspectionICPLog',
         name: 'InspectionICPLog',
         component: defineAsyncComponent(() => import('~/views/domainManagement/views/inspectionICP/log')),
-        meta: { title: 'ICP检测-历史快照', hidden: true, level: 3 },
+        meta: { 
+          title: 'ICP检测-历史快照', 
+          hidden: true, 
+          level: 3,
+          permissionCodes: ['domain:view'],
+        },
       },
     ],
   },

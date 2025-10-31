@@ -92,7 +92,7 @@ import { ElMessageBox, ElMessage, FormInstance } from 'element-plus'
 import { Search } from '@element-plus/icons-vue'
 import { onMounted, computed, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useUserStore } from '@/store/modules/user'
+import { useUserStore } from '@/store/modules/useAuthStore'
 const UserStore = useUserStore()
 
 import {

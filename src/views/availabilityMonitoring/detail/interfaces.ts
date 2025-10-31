@@ -323,6 +323,30 @@ export interface IDns {
   dnsServer: string
 }
 
+/** websocket身份认证配置 */
+interface IWebsocketAuth {
+  /** 用户名 */
+  username: string
+  /** 密码 */
+  password: string
+}
+
+/** websocket配置 */
+export interface IWebsocket {
+  /** 任务的目标地址 */
+  url: string
+  /** 测试消息 */
+  message: string
+  /** 超时时间 */
+  timeout: number
+  /** 请求头 */
+  requestHeaders: Record<string, string>[]
+  /** 测试消息是否采用base64格式编码 */
+  messageBase64Encoded: boolean
+  /** 身份认证 */
+  auth: IWebsocketAuth
+}
+
 /** 请求定义 */
 export interface IRequest {
   /** http配置 */
@@ -337,6 +361,8 @@ export interface IRequest {
   ssl?: ISsl
   /** dns配置 */
   dns?: IDns
+  /** websocket配置 */
+  websocket?: IWebsocket
 }
 
 /** 任务监测频率 */
@@ -578,6 +604,12 @@ export interface IResSsl extends Omit<ISsl, 'cert' | 'privateKey'> {
 /** Res DNS */
 export type IResDns = IDns
 
+/** Res WEBSOCKET */
+export type IResWebsocket = Omit<IWebsocket, 'requestHeaders'> & {
+  /** 请求头 */
+  requestHeaders: Record<string, any>
+}
+
 /** 接口请求定义 */
 export interface IResRequest {
   /** IResHttp */
@@ -592,6 +624,8 @@ export interface IResRequest {
   ssl?: IResSsl
   /** IResDns */
   dns?: IResDns
+  /** IResWebsocket */
+  websocket?: IResWebsocket
 }
 
 /** 接口返回的数据格式 */

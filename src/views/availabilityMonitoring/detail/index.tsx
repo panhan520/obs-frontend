@@ -40,9 +40,11 @@ export default defineComponent({
     const httpFormCollapse = FormCollapse.createFormCollapse() // http请求定义手风琴
     const grpcFormCollapse = FormCollapse.createFormCollapse() // grpc请求定义手风琴
     const sslFormCollapse = FormCollapse.createFormCollapse() // ssl请求定义手风琴
+    const websocketCollapse = FormCollapse.createFormCollapse() // websocket请求定义手风琴
     const httpAdvancedFormTab = FormTab.createFormTab() // HTTP高级选项tab
     const grpcBasicFormTab = FormTab.createFormTab() // grpc基础信息tab
     const grpcAdvancedFormTab = FormTab.createFormTab() // grpc高级选项tab
+    const websocketAdvancedFormTab = FormTab.createFormTab() // websocket高级选项tab
     const loading = ref(false) // 提交loading
     const { getMasterData } = useAvailabilityMasterData()
     const editorSchema = ref() // 公共编辑器jsonSchema
@@ -124,9 +126,11 @@ export default defineComponent({
             httpFormCollapse, 
             grpcFormCollapse,
             sslFormCollapse,
+            websocketCollapse,
             httpAdvancedFormTab,
             grpcBasicFormTab, 
             grpcAdvancedFormTab,
+            websocketAdvancedFormTab,
             ReqContentMode,
           }}
           components={{ 

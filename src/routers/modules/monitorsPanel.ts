@@ -10,14 +10,25 @@ const controlPanelRouter: IRouteRecordRaw[] = [
     name: 'Monitor',
     component: defineAsyncComponent(() => import('~/layout')),
     redirect: '/monitor/alert',
-    meta: { title: '监控', icon: h(IconFont, { name: 'monitors_panel' }), level: 1 },
+    meta: { 
+      title: '监控', 
+      icon: h(IconFont, { name: 'monitors_panel' }), 
+      level: 1,
+      disabledInMenu: true,
+      permissionCodes: ['monitor:view'],
+    },
     children: [
       {
         path: 'alert',
         component: defineAsyncComponent(() => import('@/views/monitor')),
         name: 'Alert',
         redirect: '/monitor/alert/alertRules',
-        meta: { title: '告警管理', level: 2, headerMode: HeaderMode.SUBMENU },
+        meta: { 
+          title: '告警管理', 
+          level: 2, 
+          headerMode: HeaderMode.SUBMENU,
+          permissionCodes: ['monitor:view'],
+        },
         children: [
           {
             path: 'alertRules',
@@ -28,6 +39,7 @@ const controlPanelRouter: IRouteRecordRaw[] = [
               level: 3,
               url: '/alert-rules',
               headerMode: HeaderMode.SUBMENU,
+              permissionCodes: ['monitor:view'],
             },
           },
           {
@@ -39,6 +51,7 @@ const controlPanelRouter: IRouteRecordRaw[] = [
               level: 3,
               url: '/alert-mutes',
               headerMode: HeaderMode.SUBMENU,
+              permissionCodes: ['monitor:view'],
             },
           },
           {
@@ -50,6 +63,7 @@ const controlPanelRouter: IRouteRecordRaw[] = [
               level: 3,
               url: '/alert-subscribes',
               headerMode: HeaderMode.SUBMENU,
+              permissionCodes: ['monitor:view'],
             },
           },
           {
@@ -61,6 +75,7 @@ const controlPanelRouter: IRouteRecordRaw[] = [
               level: 3,
               url: '/job-tpls',
               headerMode: HeaderMode.SUBMENU,
+              permissionCodes: ['monitor:view'],
             },
           },
           {
@@ -72,6 +87,7 @@ const controlPanelRouter: IRouteRecordRaw[] = [
               level: 3,
               url: '/job-tasks',
               headerMode: HeaderMode.SUBMENU,
+              permissionCodes: ['monitor:view'],
             },
           },
           {
@@ -83,6 +99,7 @@ const controlPanelRouter: IRouteRecordRaw[] = [
               level: 3,
               url: '/alert-cur-events',
               headerMode: HeaderMode.SUBMENU,
+              permissionCodes: ['monitor:view'],
             },
           },
           {
@@ -94,6 +111,7 @@ const controlPanelRouter: IRouteRecordRaw[] = [
               level: 3,
               url: '/alert-his-events',
               headerMode: HeaderMode.SUBMENU,
+              permissionCodes: ['monitor:view'],
             },
           },
         ],
@@ -103,7 +121,12 @@ const controlPanelRouter: IRouteRecordRaw[] = [
         component: defineAsyncComponent(() => import('@/views/monitor')),
         name: 'Notification',
         redirect: '/monitor/notification/notificationRules',
-        meta: { title: '通知管理', level: 2, headerMode: HeaderMode.SUBMENU },
+        meta: { 
+          title: '通知管理', 
+          level: 2, 
+          headerMode: HeaderMode.SUBMENU,
+          permissionCodes: ['monitor:view'],
+        },
         children: [
           {
             path: 'notificationRules',
@@ -114,6 +137,7 @@ const controlPanelRouter: IRouteRecordRaw[] = [
               level: 3,
               url: '/notification-rules',
               headerMode: HeaderMode.SUBMENU,
+              permissionCodes: ['monitor:view'],
             },
           },
           {
@@ -125,6 +149,7 @@ const controlPanelRouter: IRouteRecordRaw[] = [
               level: 3,
               url: '/notification-channels',
               headerMode: HeaderMode.SUBMENU,
+              permissionCodes: ['monitor:view'],
             },
           },
           {
@@ -136,6 +161,7 @@ const controlPanelRouter: IRouteRecordRaw[] = [
               level: 3,
               url: '/notification-templates',
               headerMode: HeaderMode.SUBMENU,
+              permissionCodes: ['monitor:view'],
             },
           },
         ],

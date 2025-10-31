@@ -1,4 +1,5 @@
 import { BasicTabs } from '~/views/availabilityMonitoring/detail/formSectionsSchema/defineRequest/constants'
+import { AssertionType } from '~/views/availabilityMonitoring/detail/formSectionsSchema/constants'
 
 import type { TaskType, TaskResultStatus, HttpVersion, Protocol, runningStatusMap, RunningStatus, resultStatusTextMap, ResultStatus } from './constants'
 import type { IResponse } from '~/views/availabilityMonitoring/detail/interfaces'
@@ -98,6 +99,14 @@ export interface ITaskInfo {
   tcp: ITaskItem
   /** udp任务信息 */
   udp: ITaskItem
+  /** grpc任务信息 */
+  grpc: ITaskItem
+  /** ssl任务信息 */
+  ssl: ITaskItem
+  /** dns任务信息 */
+  dns: ITaskItem
+  /** websocket任务信息 */
+  websocket: ITaskItem
   /** icon src */
   icon: string
   /** 任务列表 */
@@ -152,103 +161,115 @@ export type IHistoryTaskList = IHistoryTaskItem[]
 /** 基础信息 */
 interface IBasicData {
   /** 执行时间 */
-  execTime: string
+  execTime?: string
   /** 监测节点 */
-  monitoringNodeName: string
+  monitoringNodeName?: string
   /** 监测频率 unit: 秒 */
-  frequency: number
+  frequency?: number
   /** 执行结果 */
-  resultStatus: string
+  resultStatus?: string
   /** 总耗时 */
-  duration: string
+  duration?: string
   /** 失败原因：1:请求失败 */
-  failCode: number
+  failCode?: number
   /** URL */
-  url: string
+  url?: string
   /** 解析URL */
-  resolvedUrl: string
+  resolvedUrl?: string
   /** host */
-  host: string
+  host?: string
   /** 端口号 */
-  port: string
+  port?: string
   /** 检查类型 */
-  checkType: BasicTabs
+  checkType?: BasicTabs
   /** 服务名 */
-  serviceName: string
+  serviceName?: string
   /** 服务定义 */
-  serviceDefinitionType: string
+  serviceDefinitionType?: string
   /** 调用方法 */
-  method: string
+  method?: string
   /** 解析时间 */
-  resolveTime: string
+  resolveTime?: string
   /** 最终解析域名 */
-  resolvedDomain: string
+  resolvedDomain?: string
   /** 解析端口号 */
-  resolvedPort: string
+  resolvedPort?: string
   /** 解析地址 */
-  resolvedAddress: string
+  resolvedAddress?: string
   /** DNS服务器 */
-  dnsServer: string
+  dnsServer?: string
   /** 解析IP */
-  resolvedIpAddress: string
+  resolvedIpAddress?: string
   /** HTTP版本 */
-  httpVersion: HttpVersion
+  httpVersion?: HttpVersion
 }
 
 /** 耗时分析 */
 interface IDurationInfo {
   /** DNS解析耗时 */
-  dnsTime: number
+  dnsTime?: number
   /** 建连耗时（connection） */
-  tcpTime: number
+  tcpTime?: number
   /** SSL握手耗时 */
-  sslTime: number
+  sslTime?: number
   /** TLS握手耗时 【ssl】 */
-  tlsTime: string
+  tlsTime?: string
   /** 首字节时间（time to first byte） */
-  timeToFirstByte: number
+  timeToFirstByte?: number
   /** 下载耗时 */
-  downloadTime: number
+  downloadTime?: number
+  /** WebSocket连接建立完成时间 【新字段】 */
+  wsConnectedAt?: number
+  /** WebSocket连接建立完成时间 【新字段】 */
+  wsFirstResponseAt?: number
 }
 
 /** 任务结果判断条件 */
 export interface IResultConfig {
   /** 设置条件 */
-  condition: string
+  condition?: string
   /** 实际值 */
-  value: number
+  value?: number | string
+  /** 值类型（和断言类型一一对应） */
+  type?: AssertionType
 }
 
 /** 请求详情 */
 export interface IHistoryTaskRequest {
   /** 请求消息体 */
-  content: string
+  content?: string
   /** 元数据 */
-  metadata: Record<string, any>
+  metadata?: Record<string, any>
   /** 服务器名称 【ssl】 */
-  serverName: string
+  serverName?: string
+  /** websocket测试消息 【新字段】 */
+  message?: Record<string, string>
 }
 
 /** 响应详情 */
 export interface IHistoryTaskResponse {
   /** 状态码 */
-  code: number
+  code?: number
   /** 响应时间 */
-  duration: number
+  duration?: number
   /** tcp连接状态 【new】 */
-  tcpStatus: string
+  tcpStatus?: string
   /** 响应体 */
-  content: string
+  content?: string
   /** 元数据 【new】 */
-  metadata: Record<string, any>
+  metadata?: Record<string, any>
   /** 证书颁发对象 */
-  certSubject: Record<string, string>
+  certSubject?: Record<string, string>
   /** 证书颁发者信息 */
-  certIssuerInfo: Record<string, string> 
+  certIssuerInfo?: Record<string, string> 
   /** 证书详细信息 */
-  certDetailInfo: Record<string, string>
+  certDetailInfo?: Record<string, string>
   /** 连接信息 */
-  connectionInfo: Record<string, string>
+  connectionInfo?: Record<string, string>
+  /** ws响应内容 */
+  websocketResponse?: Record<string, string>
+  /** ws响应头 */
+  websocketResponseHeader?: string
 }
 
 /** 历史任务详情 */
@@ -264,15 +285,15 @@ export interface IHistoryTaskResult {
   /** 耗时分析 */
   durationInfo: IDurationInfo
   /** 任务结果判断条件 */
-  resultConfig: IResultConfig
+  resultConfig: IResultConfig[]
   /** 请求详情 */
   request: IHistoryTaskRequest
   /** 响应详情 */
   response: IHistoryTaskResponse
   /** 请求头 */
   requestHeader: Record<string, string>
-  /** 响应内容 TODO: 数据格式暂定 */
-  responseContent: any
+  /** 响应内容 */
+  responseContent: string
 }
 
 /** 任务基础信息 */

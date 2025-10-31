@@ -5,6 +5,8 @@ import { Promotion, CaretRight } from '@element-plus/icons-vue'
 import { ElMenuItem, ElSubMenu } from '~/basicComponents/customMenu/menu'
 import { RouterKey, routeKeyMap } from '../../../constants'
 import AppLink from '../link'
+import DisabledWrapper from '../../disabledWrapper'
+import styles from './index.module.scss'
 
 import type { PropType } from 'vue'
 import type { IRouteRecordRaw } from '~/interfaces/common'
@@ -29,8 +31,9 @@ export default defineComponent({
     const appLinkTsx = () => {
       const icon = props.item.meta?.icon
       const elMenuItem = <ElMenuItem
+        class={[props.item.meta?.disabledInMenu && ['is-disabled', styles.disabled]]}
         index={props.item[routeKeyMap[RouterKey.NAME]]}
-        onClick={() => props.item?.meta?.action?.({ router })}
+        onClick={() => !props.item.meta?.disabledInMenu && props.item?.meta?.action?.({ router })}
         v-slots={{
           title: () => (props.item.meta?.title)
         }}
@@ -40,43 +43,66 @@ export default defineComponent({
         </ElIcon>
       </ElMenuItem>
       return (
-        props.item?.meta
-          && (
-          props.item?.meta?.action
-            ? elMenuItem
-            : <AppLink to={props.item[routeKeyMap[RouterKey.NAME]]}>
-              {elMenuItem}
-            </AppLink>
-        )
+        <DisabledWrapper
+          visible={props.item.meta?.disabledInMenu}
+          v-slots={{
+            default: () => (
+              props.item?.meta
+                && (
+                props.item?.meta?.action
+                  ? elMenuItem
+                  : <AppLink
+                    {
+                      ...(
+                        props.item.meta?.disabledInMenu
+                          ? {
+                            class: [props.item.meta?.disabledInMenu && ['is-disabled', styles.disabled]]
+                          }
+                          : { 
+                            to: props.item[routeKeyMap[RouterKey.NAME]],
+                          }
+                      )
+                    }
+                  >
+                    {elMenuItem}
+                  </AppLink>
+              )
+            )
+          }}
+        />
       )
     }
     const Icon = (props.item.meta?.icon || Promotion) as typeof Promotion
-    const subMenuTsx = () => {
-      return true
-        ? (
-          <ElSubMenu 
-            index={props.item[routeKeyMap[RouterKey.NAME]]} 
-            expandOpenIcon={CaretRight}
-            expandCloseIcon={CaretRight}
-            teleported
-            v-slots={{
-              title: () => (
-                <>
-                  <ElIcon size={20}> <Icon /></ElIcon>
-                  <span>{ props.item.meta?.title }</span>
-                </>
-              )
-            }}
-          >
-            {
-              props.item.children.map(v => (
-                <subItem key={v[routeKeyMap[RouterKey.NAME]]} item={v} />
-              ))
-            }
-          </ElSubMenu>
-        )
-        : appLinkTsx()
-    }
+    const subMenuTsx = () => (
+      <DisabledWrapper
+        visible={props.item.meta?.disabledInMenu}
+        v-slots={{
+          default: () => (
+            <ElSubMenu 
+              class={[props.item.meta?.disabledInMenu && ['is-disabled', styles.disabled]]}
+              index={props.item[routeKeyMap[RouterKey.NAME]]} 
+              expandOpenIcon={CaretRight}
+              expandCloseIcon={CaretRight}
+              teleported
+              v-slots={{
+                title: () => (
+                  <>
+                    <ElIcon size={20}> <Icon /></ElIcon>
+                    <span>{ props.item.meta?.title }</span>
+                  </>
+                )
+              }}
+            >
+              {
+                props.item.children.map(v => (
+                  <subItem key={v[routeKeyMap[RouterKey.NAME]]} item={v} />
+                ))
+              }
+            </ElSubMenu>
+          )
+        }}
+      />
+    )
     return () => (
       (!props.item.meta?.hidden)
         ? (

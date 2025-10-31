@@ -14,6 +14,7 @@ import type {
   IGrpc,
   ISsl,
   IDns,
+  IWebsocket,
   IAuth,
   IBasic,
   IAws,
@@ -31,6 +32,7 @@ import type {
   IResSsl,
   IResDns,
   IResBodyContentForm,
+  IResWebsocket,
 } from './interfaces'
 
 /** 根据【请求类型】控制【定义请求格式】的类型（不同类型隐藏） */
@@ -229,6 +231,14 @@ const requestUtils = {
   [Protocol.DNS](dns: Partial<IDns> = {}, formData: IFormData) {
     return {
       dns,
+    }
+  },
+  [Protocol.WEBSOCKET](websocket: Partial<IWebsocket> = {}, formData: IFormData) {
+    return {
+      websocket: {
+        ...websocket,
+        requestHeaders: arrayItemsToObject(websocket.requestHeaders),
+      },
     }
   },
 }
@@ -513,6 +523,14 @@ const requestUtils2 = {
   [Protocol.DNS](dns: IResDns): IRequest {
     return {
       dns,
+    }
+  },
+  [Protocol.WEBSOCKET](websocket: IResWebsocket): IRequest {
+    return {
+      websocket: {
+        ...websocket,
+        requestHeaders: objectToArrayItems(websocket.requestHeaders),
+      },
     }
   },
 }

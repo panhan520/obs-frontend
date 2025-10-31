@@ -1,6 +1,6 @@
 import getReqByProxyModule from '@/config/request'
 import { PROXY } from '@/config/constants'
-import { useUserStore } from '~/store/modules/user'
+import { useUserStore } from '@/store/modules/useAuthStore'
 import { EventSourcePolyfill } from 'event-source-polyfill'
 import type {
   LogHistogramParams,

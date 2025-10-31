@@ -2,6 +2,7 @@ import { h } from 'vue'
 import { ElText } from 'element-plus'
 import { Protocol, taskResultStatusMap, taskResultStatusStyleMap } from '~/api/availabilityMonitoring/constants'
 import { BasicTabs, basicTabsMap } from '~/views/availabilityMonitoring/detail/formSectionsSchema/defineRequest/constants'
+import { AssertionTypeToResMap } from '../detail/formSectionsSchema/constants'
 import { AssertionType } from '../detail/constants'
 import { tcpTimeLabelMap } from './constants'
 
@@ -85,7 +86,7 @@ const getSchema = ({
             label: 'URL',
           },
           'x-component': 'PreviewText.Input',
-          'x-visible': protocol === Protocol.HTTP,
+          'x-visible': [Protocol.HTTP, Protocol.WEBSOCKET].includes(protocol),
         },
         /** 解析URL 【http】 */
         resolvedUrl: {
@@ -179,7 +180,7 @@ const getSchema = ({
           },
           'x-component': 'PreviewText.Input',
           'x-reactions': (field: Field) => {
-            if ([Protocol.HTTP, Protocol.SSL, Protocol.DNS].includes(protocol) || isBehavior || isHealth) {
+            if ([Protocol.HTTP, Protocol.SSL, Protocol.DNS, Protocol.WEBSOCKET].includes(protocol) || isBehavior || isHealth) {
               field.visible = true
             } else if ([Protocol.TCP, Protocol.UDP].includes(protocol) && field.value) {
               field.visible = true
@@ -217,7 +218,7 @@ const getSchema = ({
             label: '解析IP',
           },
           'x-component': 'PreviewText.Input',
-          'x-visible': [Protocol.HTTP, Protocol.TCP, Protocol.UDP, Protocol.GRPC, Protocol.SSL].includes(protocol),
+          'x-visible': [Protocol.HTTP, Protocol.TCP, Protocol.UDP, Protocol.GRPC, Protocol.SSL, Protocol.WEBSOCKET].includes(protocol),
         },
         /** 解析端口号 【ssl】 */
         resolvedPort: {
@@ -263,7 +264,7 @@ const getSchema = ({
         style: commonLabelStyle,
       },
       /** 【HTTP, TCP, UDP, GRPC, SSL】 */
-      'x-visible': [Protocol.HTTP, Protocol.TCP, Protocol.UDP, Protocol.GRPC, Protocol.SSL].includes(protocol),
+      'x-visible': [Protocol.HTTP, Protocol.TCP, Protocol.UDP, Protocol.GRPC, Protocol.SSL, Protocol.WEBSOCKET].includes(protocol),
     },
     /** 耗时分析 */
     durationInfo: {
@@ -285,7 +286,7 @@ const getSchema = ({
           'x-component': 'PreviewText.Input',
           'x-reactions': (field: Field) => {
             formatNumberToString(field, true)
-            if ([Protocol.HTTP, Protocol.SSL].includes(protocol) || isBehavior || isHealth) {
+            if ([Protocol.HTTP, Protocol.SSL, Protocol.WEBSOCKET].includes(protocol) || isBehavior || isHealth) {
               field.visible = true
             } else if ([Protocol.TCP, Protocol.UDP].includes(protocol) && field.value) {
               field.visible = true
@@ -303,7 +304,7 @@ const getSchema = ({
             labelWidth: 190,
           },
           'x-component': 'PreviewText.Input',
-          'x-visible': [Protocol.HTTP, Protocol.TCP, Protocol.SSL].includes(protocol) || isBehavior || isHealth,
+          'x-visible': [Protocol.HTTP, Protocol.TCP, Protocol.SSL, Protocol.WEBSOCKET].includes(protocol) || isBehavior || isHealth,
           'x-reactions': (field: Field) => formatNumberToString(field, true),
         },
         /** RPC耗时【grpc】 */
@@ -325,7 +326,7 @@ const getSchema = ({
             label: 'SSL握手耗时',
           },
           'x-component': 'PreviewText.Input',
-          'x-visible': protocol === Protocol.HTTP,
+          'x-visible': [Protocol.HTTP, Protocol.WEBSOCKET].includes(protocol),
           'x-reactions': (field: Field) => formatNumberToString(field, true),
         },
         /** TLS握手耗时 【ssl】 */
@@ -347,7 +348,7 @@ const getSchema = ({
             label: '首字节时间（time to first byte）',
           },
           'x-component': 'PreviewText.Input',
-          'x-visible': protocol === Protocol.HTTP,
+          'x-visible': [Protocol.HTTP, Protocol.WEBSOCKET].includes(protocol),
           'x-reactions': (field: Field) => formatNumberToString(field, true),
         },
         /** 下载耗时 【http】 */
@@ -358,7 +359,7 @@ const getSchema = ({
             label: '下载耗时',
           },
           'x-component': 'PreviewText.Input',
-          'x-visible': protocol === Protocol.HTTP,
+          'x-visible': [Protocol.HTTP, Protocol.WEBSOCKET].includes(protocol),
           'x-reactions': (field: Field) => formatNumberToString(field, true),
         },
         /** 收发UDP包耗时 【udp】 */
@@ -370,6 +371,28 @@ const getSchema = ({
           },
           'x-component': 'PreviewText.Input',
           'x-visible': protocol === Protocol.UDP,
+          'x-reactions': (field: Field) => formatNumberToString(field, true),
+        },
+        /** WebSocket连接建立完成时间 */
+        wsConnectedAt: {
+          type: 'string',
+          'x-decorator': 'FormItem',
+          'x-decorator-props': {
+            label: 'WebSocket连接建立完成时间',
+          },
+          'x-component': 'PreviewText.Input',
+          'x-visible': protocol === Protocol.WEBSOCKET,
+          'x-reactions': (field: Field) => formatNumberToString(field, true),
+        },
+        /** WebSocket首次响应接收时间 */
+        wsFirstResponseAt: {
+          type: 'string',
+          'x-decorator': 'FormItem',
+          'x-decorator-props': {
+            label: 'WebSocket首次响应接收时间',
+          },
+          'x-component': 'PreviewText.Input',
+          'x-visible': protocol === Protocol.WEBSOCKET,
           'x-reactions': (field: Field) => formatNumberToString(field, true),
         },
       },
@@ -462,7 +485,7 @@ const getSchema = ({
         colon: false,
         style: commonLabelStyle,
       },
-      'x-visible': [Protocol.SSL, Protocol.UDP].includes(protocol) || isBehavior || isHealth, 
+      'x-visible': [Protocol.SSL, Protocol.UDP, Protocol.WEBSOCKET].includes(protocol) || isBehavior || isHealth, 
     },
     /** 请求详情 */
     request: {
@@ -512,6 +535,19 @@ const getSchema = ({
           'x-component': 'CommonJsonPretty',
           'x-visible': isBehavior || isHealth,
         },
+        /** websocket测试消息 */
+        message: {
+          type: 'object',
+          'x-decorator': 'FormItem',
+          'x-decorator-props': {
+            label: '测试消息',
+            layout: 'vertical',
+            labelWidth: 160,
+            labelAlign: 'left',
+          },
+          'x-component': 'CommonJsonPretty',
+          'x-visible': [Protocol.WEBSOCKET].includes(protocol),
+        },
       },
     },
     /** 响应详情 */
@@ -523,8 +559,8 @@ const getSchema = ({
         colon: false,
         style: commonLabelStyle,
       },
-      /** 【HTTP, TCP, UDP, GRPC, SSL】 */
-      'x-visible': [Protocol.HTTP, Protocol.TCP, Protocol.UDP, Protocol.GRPC, Protocol.SSL].includes(protocol),
+      /** 【HTTP, TCP, UDP, GRPC, SSL, WEBSOCKET】 */
+      'x-visible': [Protocol.HTTP, Protocol.TCP, Protocol.UDP, Protocol.GRPC, Protocol.SSL, Protocol.WEBSOCKET].includes(protocol),
     },
     response: {
       type: 'object',
@@ -570,7 +606,7 @@ const getSchema = ({
                 label: '响应时间',
               },
               'x-component': 'PreviewText.Input',
-              'x-visible': [Protocol.HTTP, Protocol.GRPC, Protocol.TCP, Protocol.UDP].includes(protocol),
+              'x-visible': [Protocol.HTTP, Protocol.GRPC, Protocol.TCP, Protocol.UDP, Protocol.WEBSOCKET].includes(protocol),
               'x-reactions': (field: Field) => formatNumberToString(field, true),
             },
           },
@@ -708,6 +744,53 @@ const getSchema = ({
               },
               'x-component': 'CommonJsonPretty',
               'x-visible': [Protocol.SSL].includes(protocol),
+            },
+          },
+        },
+        /** websocket响应内容 */
+        gridColumn7: {
+          type: 'void',
+          'x-decorator': 'FormGrid.GridColumn',
+          'x-decorator-props': {
+            gridSpan: 3,
+          },
+          properties: {
+            /** ws响应内容 */
+            [AssertionTypeToResMap[AssertionType.WEBSOCKET_RESPONSE]]: {
+              type: 'object',
+              'x-decorator': 'FormItem',
+              'x-decorator-props': {
+                label: '响应内容',
+                layout: 'vertical',
+                labelWidth: 160,
+                labelAlign: 'left',
+              },
+              'x-component': 'CommonJsonPretty',
+              'x-visible': [Protocol.WEBSOCKET].includes(protocol),
+            },
+          },
+        },
+        /** websocket响应头 */
+        gridColumn8: {
+          type: 'void',
+          'x-decorator': 'FormGrid.GridColumn',
+          'x-decorator-props': {
+            gridSpan: 3,
+          },
+          properties: {
+            /** ws响应头 */
+            [AssertionTypeToResMap[AssertionType.WEBSOCKET_RESPONSE_HEADER]]: {
+              type: 'object',
+              'x-decorator': 'FormItem',
+              'x-decorator-props': {
+                label: '响应头',
+                layout: 'vertical',
+                labelWidth: 160,
+                labelAlign: 'left',
+              },
+              'x-component': 'PreviewText.Input',
+              'x-visible': isPassed && [Protocol.WEBSOCKET].includes(protocol),
+              'x-content': '响应头信息仅在请求失败的情况下被记录',
             },
           },
         },

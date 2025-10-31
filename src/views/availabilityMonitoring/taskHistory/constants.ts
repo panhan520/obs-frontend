@@ -36,4 +36,5 @@ export const tcpTimeLabelMap = {
   [Protocol.UDP]: '建连耗时（connection）',
   [Protocol.GRPC]: '建连耗时（TCP+TLS握手）',
   [Protocol.SSL]: '建连耗时（TCP建连）',
+  [Protocol.WEBSOCKET]: '建连耗时（TCP建连）',
 }

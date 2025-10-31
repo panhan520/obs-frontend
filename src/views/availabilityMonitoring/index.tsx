@@ -10,6 +10,7 @@ import InfoPanel from './components/InfoPanel'
 import FilterPanel from './components/FilterPanel'
 import successIcon from '~/assets/availabilityMonitoring/success.png'
 import failIcon from '~/assets/availabilityMonitoring/fail.png'
+import { hasPermission } from '~/utils/auth'
 import styles from './index.module.scss'
 
 import type { ICommonObj } from '~/interfaces/common'
@@ -93,7 +94,7 @@ export default defineComponent({
     })
     const setterPrefix = () => (
       <>
-        <el-button onClick={() => { router.push({ path: 'create' }) }}>新建任务</el-button>
+        <el-button disabled={!hasPermission(['line:post'])} onClick={() => { router.push({ path: 'create' }) }}>新建任务</el-button>
         <el-dropdown>
           {{
             default: () => (

@@ -10,7 +10,12 @@ const configManagementRouter: IRouteRecordRaw[] = [
     name: 'configMangeMent',
     component: defineAsyncComponent(() => import('~/layout')),
     redirect: '/configMangeMent/agentPanel',
-    meta: { title: '配置管理 ', icon: h(IconFont, { name: 'logs_panel' }), level: 1 },
+    meta: { 
+      title: '配置管理 ', 
+      icon: h(IconFont, { name: 'logs_panel' }), 
+      level: 1,
+      permissionCodes: ['config:view'],
+    },
     children: [
       {
         path: 'agentPanel',
@@ -20,6 +25,7 @@ const configManagementRouter: IRouteRecordRaw[] = [
           title: '安装Agent',
           level: 2,
           headerMode: HeaderMode.SUBMENU,
+          permissionCodes: ['config:view'],
         },
       },
       {
@@ -30,13 +36,19 @@ const configManagementRouter: IRouteRecordRaw[] = [
           title: '数据源管理',
           level: 2,
           headerMode: HeaderMode.SUBMENU,
+          permissionCodes: ['config:view'],
         },
       },
       {
         path: 'dataSourceForm',
         name: 'DataSourceForm',
         component: defineAsyncComponent(() => import('~/views/configManagement/dataSource/edit')),
-        meta: { title: '数据源配置', hidden: true, level: 3 },
+        meta: { 
+          title: '数据源配置', 
+          hidden: true, 
+          level: 3,
+          permissionCodes: ['config:view'],
+        },
       },
     ],
   },

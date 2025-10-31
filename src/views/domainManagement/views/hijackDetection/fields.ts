@@ -2,6 +2,7 @@ import { h } from 'vue'
 import { ElButton, ElMessage, ElMessageBox, ElTag } from 'element-plus'
 import { deleteApi, enableApi, disabledApi } from '~/api/domainManagement/hijackDetection'
 import Space from '~/basicComponents/space'
+import { hasPermission } from '~/utils/auth'
 import { inspectStatusMap } from '../../constants/common'
 
 import type { IField } from '~/businessComponents/commonPage'
@@ -174,6 +175,7 @@ export const getFields = ({ router, commonPageRef }): IField[] => ([
           h(ElButton, {
             type: 'danger',
             ...commonAttrs,
+            disabled: !hasPermission(['domain:delete']),
             onClick: async (e: Event) => {
               try {
                 e.stopPropagation()

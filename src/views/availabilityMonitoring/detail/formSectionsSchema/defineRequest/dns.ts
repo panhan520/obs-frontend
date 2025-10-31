@@ -48,8 +48,11 @@ const getSchema = ({ isView, openEditor }: IGetSchemaParams): ISchema => ({
         colon: false,
         layout: 'vertical',
         labelAlign: 'left',
-        labelWidth: 155,
-        style: { width: '100%' },
+        labelWidth: 83,
+        style: { 
+          width: '100%',
+          textAlign: 'left',
+        },
       },
       'x-component': 'Input',
       'x-component-props': {

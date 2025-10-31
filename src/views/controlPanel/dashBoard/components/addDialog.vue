@@ -17,7 +17,7 @@
 import { ref } from 'vue'
 import addBaseForm from './addBaseForm.vue'
 import { ElLoading, ElMessage } from 'element-plus'
-import { useUserStore } from '@/store/modules/user'
+import { useUserStore } from '@/store/modules/useAuthStore'
 import { useRouter } from 'vue-router'
 import { createBoardApi } from '@/api/controlPanel/index'
 import { useDashBoardStore } from '@/store/modules/dashBoard'

@@ -38,6 +38,12 @@
         transform: translate(-50%, 0);
       }
     }
+    &.disabled {
+      pointer-events: none!important;           /* 禁止鼠标事件 */
+      user-select: none!important;              /* 禁止选中文本 */
+      cursor: not-allowed !important;
+      color: #a8abb2;
+    }
   }
   .radioGroup {
     padding: 0 24px;

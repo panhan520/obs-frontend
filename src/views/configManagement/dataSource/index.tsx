@@ -64,7 +64,7 @@ export default defineComponent({
     })
 
     return () => (
-      <div>
+      <>
         <CommonPage
           ref={commonPageRef}
           fields={fields.value}
@@ -104,7 +104,7 @@ export default defineComponent({
             dataSource={selectedDataSource.value}
           />
         </div>
-      </div>
+      </>
     )
   },
 })

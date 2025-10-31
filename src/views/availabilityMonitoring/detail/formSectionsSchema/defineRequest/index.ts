@@ -5,6 +5,7 @@ import getUdpSchema from './udp'
 import getGrpcSchema from './grpc'
 import getSslSchema from './ssl'
 import getDNSSchema from './dns'
+import getWebSocketSchema from './websocket'
 
 import type { ISchema } from "@formily/vue"
 import type { IGetSchemaParams } from '../../interfaces'
@@ -26,6 +27,7 @@ const getSchema = ({ isView, form, openEditor }: IGetSchemaParams): ISchema => (
         grpc: getGrpcSchema({ isView, form, openEditor }),
         ssl: getSslSchema({ isView, form, openEditor }),
         dns: getDNSSchema({ isView, form, openEditor }),
+        websocket: getWebSocketSchema({ isView, openEditor }),
       },
     },
   },

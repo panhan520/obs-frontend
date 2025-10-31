@@ -68,7 +68,7 @@ import { ref, reactive, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { FormInstance, FormRules, ElMessage, ElNotification } from 'element-plus'
 import { checkApi, changePswApi, sendEmail, checkCodeApi, forgetPwsApi } from '@/api/login/index'
-import { useUserStore } from '@/store/modules/user'
+import { useUserStore } from '@/store/modules/useAuthStore'
 
 import { loginOut } from '@/api/login/index'
 const UserStore = useUserStore()

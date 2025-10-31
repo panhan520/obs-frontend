@@ -56,8 +56,12 @@ export type IRouteRecordRaw = RouteRecordRaw & {
     level?: number
     /** 强制作为菜单组展示 */
     alwaysShow?: boolean
+    /** 权限点列表 */
+    permissionCodes?: string[]
     /** 左侧菜单隐藏 */
     hidden?: boolean
+    /** 在左侧菜单置灰 */
+    disabledInMenu?: boolean
     /** 顶部菜单隐藏 */
     headerHidden?: boolean
     /** 缓存 */

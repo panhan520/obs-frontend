@@ -10,27 +10,38 @@ export default [
     name: 'AvailabilityMonitoring',
     component: defineAsyncComponent(() => import('~/layout')),
     redirect: 'index',
-    meta: { title: '线路', icon: h(IconFont, { name: 'availability_monitoring' }), level: 1 },
+    meta: { 
+      title: '线路',
+      icon: h(IconFont, { name: 'availability_monitoring' }),
+      level: 1,
+      permissionCodes: ['line:view'],
+    },
     children: [
       {
         path: 'index',
         name: 'AvailabilityMonitoringIndex',
         component: defineAsyncComponent(() => import('~/views/availabilityMonitoring')),
-        meta: { title: '线路任务列表', level: 2, headerMode: HeaderMode.SUBMENU },
+        meta: { 
+          title: '线路任务列表',
+          level: 2,
+          headerMode: HeaderMode.SUBMENU,
+          permissionCodes: ['line:view'],
+        },
       },
       {
         path: 'create',
         name: 'AvailabilityMonitoringCreate',
         component: defineAsyncComponent(() => import('~/views/availabilityMonitoring/detail')),
         meta: { 
-          title: '新建线路任务', 
-          role: ['other'], 
-          level: 3, 
+          title: '新建线路任务',
+          role: ['other'],
+          level: 3,
           headerHidden: true,
           breadcrumbConfig: [
-            { label: '线路任务列表', name: 'AvailabilityMonitoringIndex', },
-            { label: '新建线路任务', name: 'AvailabilityMonitoringCreate', },
+            { label: '线路任务列表', name: 'AvailabilityMonitoringIndex' },
+            { label: '新建线路任务', name: 'AvailabilityMonitoringCreate' },
           ],
+          permissionCodes: ['line:view'],
         },
       },
       {
@@ -38,14 +49,15 @@ export default [
         name: 'AvailabilityMonitoringEdit',
         component: defineAsyncComponent(() => import('~/views/availabilityMonitoring/detail')),
         meta: { 
-          title: '编辑任务',  
-          hidden: true, 
-          role: ['other'], 
+          title: '编辑任务',
+          hidden: true,
+          role: ['other'],
           level: 3,
           breadcrumbConfig: [
-            { label: '线路任务列表', name: 'AvailabilityMonitoringIndex', },
-            { label: '编辑任务', name: 'AvailabilityMonitoringEdit', },
+            { label: '线路任务列表', name: 'AvailabilityMonitoringIndex' },
+            { label: '编辑任务', name: 'AvailabilityMonitoringEdit' },
           ],
+          permissionCodes: ['line:view'],
         },
       },
       {
@@ -53,14 +65,15 @@ export default [
         name: 'AvailabilityMonitoringView',
         component: defineAsyncComponent(() => import('~/views/availabilityMonitoring/detail')),
         meta: { 
-          title: '查看任务',  
-          hidden: true, 
-          role: ['other'], 
+          title: '查看任务',
+          hidden: true,
+          role: ['other'],
           level: 3,
           breadcrumbConfig: [
-            { label: '线路任务列表', name: 'AvailabilityMonitoringIndex', },
-            { label: '查看任务', name: 'AvailabilityMonitoringView', },
+            { label: '线路任务列表', name: 'AvailabilityMonitoringIndex' },
+            { label: '查看任务', name: 'AvailabilityMonitoringView' },
           ],
+          permissionCodes: ['line:view'],
         },
       },
       {
@@ -68,14 +81,15 @@ export default [
         name: 'TaskHistory',
         component: defineAsyncComponent(() => import('~/views/availabilityMonitoring/taskHistory')),
         meta: { 
-          title: '历史任务', 
-          hidden: true, 
-          role: ['other'], 
+          title: '历史任务',
+          hidden: true,
+          role: ['other'],
           level: 3,
           breadcrumbConfig: [
-            { label: '线路任务列表', name: 'AvailabilityMonitoringIndex', },
-            { label: '历史任务', name: 'TaskHistory', },
+            { label: '线路任务列表', name: 'AvailabilityMonitoringIndex' },
+            { label: '历史任务', name: 'TaskHistory' },
           ],
+          permissionCodes: ['line:view'],
         },
       },
       {
@@ -83,14 +97,15 @@ export default [
         name: 'OverviewPage',
         component: defineAsyncComponent(() => import('~/views/availabilityMonitoring/overviewPage')),
         meta: { 
-          title: '任务信息总览', 
-          hidden: true, 
-          role: ['other'], 
+          title: '任务信息总览',
+          hidden: true,
+          role: ['other'],
           level: 3,
           breadcrumbConfig: [
-            { label: '线路任务列表', name: 'AvailabilityMonitoringIndex', },
-            { label: '任务信息总览', name: 'OverviewPage', },
+            { label: '线路任务列表', name: 'AvailabilityMonitoringIndex' },
+            { label: '任务信息总览', name: 'OverviewPage' },
           ],
+          permissionCodes: ['line:view'],
         },
       },
       {
@@ -98,10 +113,11 @@ export default [
         name: 'Alarm',
         component: defineAsyncComponent(() => import('~/views/availabilityMonitoring/alarm')),
         meta: { 
-          title: '告警', 
+          title: '告警',
           role: ['other'],
           level: 2,
           headerMode: HeaderMode.SUBMENU,
+          permissionCodes: ['line:view'],
         },
       },
       {
@@ -109,12 +125,13 @@ export default [
         name: 'Overview',
         component: defineAsyncComponent(() => import('~/views/availabilityMonitoring/overview')),
         meta: { 
-          title: '概览', 
+          title: '概览',
           role: ['other'],
           level: 2,
           headerMode: HeaderMode.SUBMENU,
+          permissionCodes: ['line:view'],
         },
       },
-    ]
+    ],
   },
 ] as IRouteRecordRaw[]

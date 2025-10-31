@@ -75,7 +75,7 @@ import { ElMessageBox, ElMessage, FormInstance, FormRules } from 'element-plus'
 import { Search } from '@element-plus/icons-vue'
 import { onMounted, reactive, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { useUserStore } from '@/store/modules/user'
+import { useUserStore } from '@/store/modules/useAuthStore'
 const UserStore = useUserStore()
 const userInfo = computed(() => ({ ...UserStore.userInfo, password: '********' }))
 const validateEmail = (rule: any, value: any, callback: any) => {

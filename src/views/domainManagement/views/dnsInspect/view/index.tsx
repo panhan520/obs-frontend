@@ -17,9 +17,9 @@ export default defineComponent({
     const commonTableRef = ref<ICommonTableExpose>()
     const activeRowData = ref<ICommonObj>({})
     const formatListParams = (params: ICommonObj) => {
-      return { 
-        ...params, 
-        ...(isEmpty(activeRowData.value) ? {} : { nodeName: `${activeRowData.value.nodeName}${activeRowData.value.ispName}` }), 
+      return {
+        ...params,
+        ...(isEmpty(activeRowData.value) ? {} : { nodeName: activeRowData.value.nodeName }),
         task: route.query?.id,
       }
     }
@@ -31,11 +31,7 @@ export default defineComponent({
     return () => (
       <Space direction='row' fill style={{ padding: '16px', boxSizing: 'border-box' }}>
         <div style={{ width: '50%', height: '100%', flexShrink: 0 }}>
-          <CommonPage
-            fields={fields}
-            listApi={getHistoryNodeListApi}
-            onRowClick={rowClick}
-          />
+          <CommonPage fields={fields} listApi={getHistoryNodeListApi} onRowClick={rowClick} />
         </div>
         <div style={{ width: '50%', height: '100%', backgroundColor: '#fff' }}>
           <CommonTable
@@ -49,5 +45,5 @@ export default defineComponent({
         </div>
       </Space>
     )
-  }
+  },
 })

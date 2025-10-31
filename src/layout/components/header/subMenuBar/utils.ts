@@ -3,6 +3,7 @@ import { ElRadioButton } from 'element-plus'
 import { RadioGroup } from '~/basicComponents/radioGroup'
 import Space from '~/basicComponents/space'
 import { ROUTER_KEY } from './constants'
+import DisabledWrapper from '../../disabledWrapper'
 import styles from './index.module.scss'
 
 import type { IRenderParams } from './interfaces'
@@ -23,17 +24,29 @@ export const tabsRender = ({
       },
     },
     (routes || [])
-      .map(v => (
-        h(
+      .map(v => {
+        const content = h(
           'div',
           {
-            class: [styles.item, (activeKey === v[ROUTER_KEY]) && styles.active],
-            style: { display: v?.meta?.hidden ? 'none' : 'block' },
+            class: [
+              styles.item, 
+              (activeKey === v[ROUTER_KEY]) && styles.active,
+              v?.meta?.disabledInMenu && styles.disabled,
+              v?.meta?.disabledInMenu && 'is-disabled',
+            ],
+            style: {
+              display: v?.meta?.hidden ? 'none' : 'block',
+            },
             onClick: () => { router.push({ name: v[ROUTER_KEY] }) }
           },
           v?.meta?.title,
         )
-      )),
+        
+        const res = v?.meta?.disabledInMenu
+          ? h(DisabledWrapper, {}, content)
+          : content
+        return res
+      }),
   )
 
 /** radioGroup渲染器 */

@@ -2,6 +2,7 @@ import { defineComponent, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { CommonPage } from '~/businessComponents'
 import { getListApi, createApi, editApi } from '~/api/domainManagement/domainInspect'
+import { hasPermission } from '~/utils/auth'
 import { getFields } from './fields'
 
 import type { ICommonObj } from '~/interfaces/common'
@@ -28,6 +29,7 @@ export default defineComponent({
         fields={fields.value}
         listApi={getListApi}
         createApi={createApi}
+        disabledAdd={!hasPermission(['domain:delete'])}
         editApi={editApi}
         formatListParams={formatListParams}
         pageKey='domainInspect'

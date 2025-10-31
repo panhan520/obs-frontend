@@ -103,3 +103,8 @@ body {
 .link-type {
   text-decoration: none;
 }
+
+.el-message {
+  left: 50%;
+  transform: translateX(-50%);
+}

@@ -10,13 +10,24 @@ export default [
     name: 'Trace',
     component: defineAsyncComponent(() => import('~/layout')),
     redirect: '/trace/index',
-    meta: { title: '追踪', icon: h(IconFont, { name: 'availability_monitoring' }), level: 1 },
+    meta: { 
+      title: '追踪', 
+      icon: h(IconFont, { name: 'availability_monitoring' }), 
+      level: 1,
+      disabledInMenu: true,
+      permissionCodes: ['trace:view'],
+    },
     children: [
       {
         path: 'index',
         name: 'TraceExplorationIndex',
         component: defineAsyncComponent(() => import('~/views/trace/traceExploration')),
-        meta: { title: '追踪查询', level: 2, headerMode: HeaderMode.SUBMENU },
+        meta: { 
+          title: '追踪查询', 
+          level: 2, 
+          headerMode: HeaderMode.SUBMENU,
+          permissionCodes: ['trace:view'],
+        },
       },
       {
         path: 'view',
@@ -30,6 +41,7 @@ export default [
             { label: '追踪查询', name: 'TraceExplorationIndex' },
             { label: '详情', name: 'TraceExplorationView' },
           ],
+          permissionCodes: ['trace:view'],
         },
       },
     ]

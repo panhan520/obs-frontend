@@ -7,7 +7,7 @@ import { PROXY } from './constants'
 import { filterEmptyParams } from './utils'
 
 import type { AxiosInstance } from 'axios'
-import { useUserStore } from '~/store/modules/user'
+import { useUserStore } from '@/store/modules/useAuthStore'
 // import { useTagsViewStore } from '~/store/modules/tagsView'
 import { usePermissionStore } from '~/store/modules/permission'
 import { loginOut } from '~/api/login'

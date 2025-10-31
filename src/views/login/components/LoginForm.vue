@@ -120,7 +120,7 @@ import { ElNotification, ElMessage } from 'element-plus'
 import { useRouter, onBeforeRouteLeave, useRoute } from 'vue-router'
 import { getTimeStateStr } from '@/utils/index'
 import { registerUser, sendEmail, infoApi } from '@/api/login/index'
-import { useUserStore } from '@/store/modules/user'
+import { useUserStore } from '@/store/modules/useAuthStore'
 
 const UserStore = useUserStore()
 

@@ -31,19 +31,16 @@ import {
 
 import type { IRouteRecordRaw } from '~/interfaces/common'
 
-const Layout = defineAsyncComponent(() => import('~/layout'))
-
 export const customRoutes: IRouteRecordRaw[] = [
-  ...controlPanel,
   ...domainManagement,
   ...availabilityMonitoring,
   ...logsPanel,
+  ...configManagement,
   ...trace,
+  ...controlPanel,
   ...system,
   ...metrics,
   ...monitorsPanel,
-  // ...nested,
-  ...configManagement
 ]
 export const basicRoutes: IRouteRecordRaw[] = [
   {

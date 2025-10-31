@@ -1,6 +1,6 @@
 import NProgress from 'nprogress'
 import router from '~/routers/index'
-import { useUserStore } from '~/store/modules/user'
+import { useUserStore } from '@/store/modules/useAuthStore'
 import { usePermissionStore } from '~/store/modules/permission'
 import { getToken } from '~/api/token'
 import 'nprogress/nprogress.css'
@@ -53,13 +53,19 @@ const independentPermission = async (to, from, next, UserStore, PermissionStore)
   }
 }
 // 微前端 
-const microAppPermission = async (to, from, next, UserStore, PermissionStore) => {
+const microAppPermission = async (
+  to, 
+  from, 
+  next, 
+  UserStore, 
+  PermissionStore,
+) => {
   NProgress.start()
   const isPublicPage = whiteList.indexOf(to.path) !== -1
   if (UserStore.userInfo || isPublicPage) {
     if (!PermissionStore.routes?.length) {
       // 获取权限列表进行接口访问 因为这里页面要切换权限
-      const accessRoutes = await PermissionStore.generateRoutes(UserStore.roles)
+      const accessRoutes = await PermissionStore.generateRoutes(UserStore.userInfo.roles)
       hasRoles = false
       accessRoutes.forEach((item) => router.addRoute(item)) // 动态添加访问路由表
       next({ ...to, replace: true }) // // 这里相当于push到一个页面 不在进入路由拦截

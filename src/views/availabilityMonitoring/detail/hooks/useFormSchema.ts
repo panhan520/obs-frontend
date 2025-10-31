@@ -19,6 +19,9 @@ const getSchema = ({ isView, isCreate, form, openEditor }: IGetSchemaParams): IS
       'x-decorator-props': {
         label: '任务名称',
         labelWidth: 75,
+        style: {
+          textAlign: 'left',
+        },
       },
       'x-component': 'Input',
       'x-component-props': {

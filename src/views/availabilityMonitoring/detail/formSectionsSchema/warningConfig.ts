@@ -40,6 +40,9 @@ const getSchema = ({ isView, form }: IGetSchemaParams): ISchema => {
         'x-component-props': {
           label: 'telegram',
           disabled: true,
+          style: {
+            width: '100%',
+          },
         },
         default: true,
       },

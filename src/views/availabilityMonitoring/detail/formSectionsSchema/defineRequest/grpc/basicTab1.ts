@@ -10,7 +10,15 @@ import type { IGetSchemaParams } from '../../../interfaces'
 export const getSchema = ({ label }: IGetSchemaParams): ISchema => ({
   type: 'void',
   'x-component': 'FormTab.TabPane',
-  'x-component-props': { label },
+  'x-component-props': {
+    label,
+    style: {
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'flex-start',
+      alignItems: 'flex-start',
+    },
+  },
   properties: {
     title: commonMessage({ message: '只支持对目标 gRPC 服务发起 单次请求-单次响应（Unary Call） 的调用' }),
     space: {
@@ -28,7 +36,7 @@ export const getSchema = ({ label }: IGetSchemaParams): ISchema => ({
             colon: false,
             layout: 'vertical',
             labelAlign: 'left',
-            labelWidth: 90,
+            labelWidth: 86,
             tooltip: () => h(
               'div',
               { style: { color: '#fff', fontSize: '12px' } },
@@ -78,6 +86,7 @@ export const getSchema = ({ label }: IGetSchemaParams): ISchema => ({
         colon: false,
         layout: 'vertical',
         labelAlign: 'left',
+        labelWidth: 68,
         style: {
           paddingRight: '0',
         },
@@ -98,6 +107,7 @@ export const getSchema = ({ label }: IGetSchemaParams): ISchema => ({
         colon: false,
         layout: 'vertical',
         labelAlign: 'left',
+        labelWidth: 82,
         style: {
           paddingRight: '0',
         },

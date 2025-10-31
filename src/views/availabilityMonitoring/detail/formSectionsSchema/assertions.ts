@@ -57,6 +57,7 @@ const getSchema = ({ isView }: IGetSchemaParams): ISchema => ({
           justifyContent: 'space-between',
           padding: '0 16px',
           boxSizing: 'borderBox',
+          gap: '8px',
         },
       },
       properties: {
@@ -89,8 +90,9 @@ const getSchema = ({ isView }: IGetSchemaParams): ISchema => ({
           'x-decorator': 'div',
           'x-decorator-props': {
             style: {
-              width: 'calc(100% - 140px)',
+              flex: 1,
               height: '20px',
+              textAlign: 'left',
             },
           },
           'x-content': '条件时，判断任务拨测结果为成功，否则任务失败将发出告警',
@@ -178,7 +180,8 @@ const getSchema = ({ isView }: IGetSchemaParams): ISchema => ({
               placeholder: '请选择',
               class: styles.straightAngle,
               style: {
-                width: '130px',
+                width: 'fit-content',
+                minWidth: '130px',
               },
             },
             'x-reactions': (field: Field) => {

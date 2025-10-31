@@ -36,6 +36,10 @@ const props = {
     type: Function as PropType<(p: ICommonObj) => Promise<void>>,
     default: undefined,
   },
+  disabledAdd: {
+    type: Boolean,
+    default: false,
+  },
   /** 编辑 */
   editApi: {
     type: Function as PropType<(p: ICommonObj) => Promise<void>>,
@@ -242,7 +246,7 @@ export default defineComponent({
           <Space ref={setterBarRef} class={styles.setter} justify='end'>
             <ElSpace>
               {props.createApi && (
-                <ElButton type='primary' icon={Plus} onClick={create}>
+                <ElButton disabled={props.disabledAdd} type='primary' icon={Plus} onClick={create}>
                   新增
                 </ElButton>
               )}

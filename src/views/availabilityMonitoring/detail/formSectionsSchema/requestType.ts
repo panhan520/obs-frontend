@@ -24,6 +24,9 @@ const getSchema = ({ isCreate }: IGetSchemaParams): ISchema => ({
         optionType: 'button',
         size: 'small',
         disabled: !isCreate,
+        style: {
+          width: '100%',
+        },
       },
       enum: protocolOptions,
       default: Protocol.HTTP,

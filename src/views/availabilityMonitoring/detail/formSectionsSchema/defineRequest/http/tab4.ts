@@ -117,6 +117,9 @@ export const getSchema = ({ isView }: IGetSchemaParams): ISchema => ({
                 'x-component-props': {
                   buttonStyle: 'solid',
                   optionType: 'button',
+                  style: {
+                    width: '100%',
+                  },
                 },
                 enum: reqContentModeOptions,
                 'x-reactions': (field: Field) => {

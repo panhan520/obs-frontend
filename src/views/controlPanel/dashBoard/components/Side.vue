@@ -61,7 +61,7 @@ import emitter from '~/utils/emitter'
 import { useDashBoardStore } from '@/store/modules/dashBoard'
 import { updateFolderApi, createBoardApi, listFolderApi, deleteFolderApi } from '@/api/controlPanel/index'
 // import { useModalStore } from '@/store/modules/dialogModal'
-import { useUserStore } from '@/store/modules/user'
+import { useUserStore } from '@/store/modules/useAuthStore'
 import  AddDialog  from "./addDialog.vue";
 const UserStore = useUserStore()
 

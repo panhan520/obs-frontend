@@ -1,3 +1,4 @@
+import { h } from 'vue'
 import { uploadApi } from '~/api/availabilityMonitoring'
 import { authOptions, Auth, oAuth2ModeOptions, authMethodOptions, OAuth2Mode } from '../../../constants'
 import { commonUpload } from '../../commonFields'
@@ -66,6 +67,7 @@ export const getSchema = ({ isView }: IGetSchemaParams): ISchema => ({
             colon: false,
             layout: 'vertical',
             labelAlign: 'left',
+            labelWidth: 97,
             style: { width: '100%' },
           },
           'x-component': 'Radio.Group',
@@ -73,6 +75,9 @@ export const getSchema = ({ isView }: IGetSchemaParams): ISchema => ({
             buttonStyle: 'solid',
             optionType: 'button',
             size: 'small',
+            style: {
+              width: '100%',
+            },
           },
           'default': Auth.BASIC,
           enum: authOptions,
@@ -136,7 +141,7 @@ export const getSchema = ({ isView }: IGetSchemaParams): ISchema => ({
                 label: 'AWS 的访问密钥 ID（AccessKeyId）',
                 colon: false,
                 labelAlign: 'left',
-                labelWidth: 330,
+                labelWidth: 255,
                 style: { width: '100%' },
               },
               'x-component': 'Input',
@@ -152,7 +157,7 @@ export const getSchema = ({ isView }: IGetSchemaParams): ISchema => ({
                 label: 'AWS 的访问密钥 Secret（Secret Access Key）',
                 colon: false,
                 labelAlign: 'left',
-                labelWidth: 330,
+                labelWidth: 325,
                 style: { width: '100%' },
               },
               'x-component': 'Input',
@@ -167,7 +172,18 @@ export const getSchema = ({ isView }: IGetSchemaParams): ISchema => ({
               'x-decorator-props': {
                 style: { width: '100%' },
               },
-              'x-content': () => '其他配置（选填）',
+              'x-content': () => h(
+                'div', 
+                { 
+                  style: 
+                  { 
+                    width: '100%',
+                    display: 'flex',
+                    justifyContent: 'flex-start',
+                  },
+                }, 
+                '其他配置（选填）',
+              ),
             },
             /** 目标 AWS 区域 */
             region: {
@@ -177,7 +193,7 @@ export const getSchema = ({ isView }: IGetSchemaParams): ISchema => ({
                 label: '目标 AWS 区域',
                 colon: false,
                 labelAlign: 'left',
-                labelWidth: 330,
+                labelWidth: 110,
                 style: { width: '100%' },
               },
               'x-component': 'Input',
@@ -193,7 +209,7 @@ export const getSchema = ({ isView }: IGetSchemaParams): ISchema => ({
                 label: 'AWS 服务名称',
                 colon: false,
                 labelAlign: 'left',
-                labelWidth: 330,
+                labelWidth: 105,
                 style: { width: '100%' },
               },
               'x-component': 'Input',
@@ -209,7 +225,7 @@ export const getSchema = ({ isView }: IGetSchemaParams): ISchema => ({
                 label: 'Session Token',
                 colon: false,
                 labelAlign: 'left',
-                labelWidth: 330,
+                labelWidth: 110,
                 style: { width: '100%' },
               },
               'x-component': 'Input',
@@ -233,10 +249,15 @@ export const getSchema = ({ isView }: IGetSchemaParams): ISchema => ({
                 colon: false,
                 layout: 'vertical',
                 labelAlign: 'left',
-                labelWidth: 75,
+                labelWidth: 65,
                 style: { width: '100%' },
               },
               'x-component': 'Radio.Group',
+              'x-component-props': {
+                style: {
+                  width: '100%',
+                },
+              },
               enum: oAuth2ModeOptions,
               default: OAuth2Mode.CLIENT,
             },

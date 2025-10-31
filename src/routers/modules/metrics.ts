@@ -10,7 +10,13 @@ const controlPanelRouter: IRouteRecordRaw[] = [
     name: 'Metrics',
     component: defineAsyncComponent(() => import('~/layout')),
     redirect: '/metrics/metricsExplorer',
-    meta: { title: '指标', icon: h(IconFont, { name: 'target_panel' }), level: 1 },
+    meta: { 
+      title: '指标', 
+      icon: h(IconFont, { name: 'target_panel' }), 
+      level: 1,
+      disabledInMenu: true,
+      permissionCodes: ['metric:view'],
+    },
     children: [
       {
         path: 'metricsExplorer',
@@ -21,6 +27,7 @@ const controlPanelRouter: IRouteRecordRaw[] = [
           level: 2,
           url: '/metric/explorer',
           headerMode: HeaderMode.SUBMENU,
+          permissionCodes: ['metric:view'],
         },
       },
       {
@@ -32,6 +39,7 @@ const controlPanelRouter: IRouteRecordRaw[] = [
           level: 2,
           url: '/metrics-built-in',
           headerMode: HeaderMode.SUBMENU,
+          permissionCodes: ['metric:view'],
         },
       },
       {
@@ -43,6 +51,7 @@ const controlPanelRouter: IRouteRecordRaw[] = [
           level: 2,
           url: '/object/explorer',
           headerMode: HeaderMode.SUBMENU,
+          permissionCodes: ['metric:view'],
         },
       },
     ],

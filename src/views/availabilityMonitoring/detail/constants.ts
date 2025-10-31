@@ -29,6 +29,7 @@ export const protocolKeyMap = {
   [Protocol.GRPC]: 'grpc',
   [Protocol.SSL]: 'ssl',
   [Protocol.DNS]: 'dns',
+  [Protocol.WEBSOCKET]: 'websocket',
 }
 
 /** 协议类型 */
@@ -39,6 +40,7 @@ export const protocolOptions = [
   { label: 'GRPC协议', value: Protocol.GRPC },
   { label: 'SSL协议', value: Protocol.SSL },
   { label: 'DNS协议', value: Protocol.DNS },
+  { label: 'WEBSOCKET协议', value: Protocol.WEBSOCKET },
 ]
 
 /** 请求类型 */

@@ -8,7 +8,11 @@ const systemRouter: IRouteRecordRaw[] = [
     name: 'System',
     component: defineAsyncComponent(() => import('~/layout')),
     redirect: '/system/basicInfo',
-    meta: { title: '账户信息', level: 1, hidden: true },
+    meta: { 
+      title: '账户信息', 
+      level: 1, 
+      hidden: true,
+    },
     children: [
       {
         path: 'basicInfo',

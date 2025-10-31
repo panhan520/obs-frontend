@@ -77,6 +77,18 @@ export enum AssertionType {
   ALL_RECORDS = 'ALL_RECORDS',
   /** 只要有一个返回记录 */
   ANY_RECORD = 'ANY_RECORD',
+  /** ws响应内容 */
+  WEBSOCKET_RESPONSE = 'WEBSOCKET_RESPONSE',
+  /** ws响应头 */
+  WEBSOCKET_RESPONSE_HEADER = 'WEBSOCKET_RESPONSE_HEADER',
+}
+
+/** 
+ * 断言类型到（历史详情页）响应详情节点内字段的映射
+ * 历史详情页的响应内容和断言类型应该一一对应，从ws协议开始意识到这一点，所以映射从ws开始做 */
+export const AssertionTypeToResMap = {
+  [AssertionType.WEBSOCKET_RESPONSE]: 'websocketResponse',
+  [AssertionType.WEBSOCKET_RESPONSE_HEADER]: 'websocketResponseHeader',
 }
 
 /** 全量断言操作符 */
@@ -184,15 +196,6 @@ export enum Connection {
 }
 
 const commonOptions1 = [
-  { label: '包含', value: AssertionOperators.INCLUDES },
-  { label: '不包含', value: AssertionOperators.NOT_INCLUDED },
-  { label: '是', value: AssertionOperators.YES },
-  { label: '不是', value: AssertionOperators.NOT },
-  { label: '正则匹配', value: AssertionOperators.REGULAR_MATCHING },
-  { label: '正则不匹配', value: AssertionOperators.REGULAR_MISMATCH },
-]
-
-const commonOptions2 = [
   { label: '包含', value: AssertionOperators.INCLUDES },
   { label: '不包含', value: AssertionOperators.NOT_INCLUDED },
   { label: '是', value: AssertionOperators.YES },
@@ -340,7 +343,7 @@ export const assertionTypeOptionsMap2: Record<string, IAssertionItem<AssertionTy
     'x-operator-component-props': {
       placeholder: '请选择',
     },
-    'x-operator-enum': commonOptions2,
+    'x-operator-enum': commonOptions1,
     'x-operator-visible': true,
     'x-value-component': 'Select',
     'x-value-component-props': {
@@ -362,7 +365,7 @@ export const assertionTypeOptionsMap2: Record<string, IAssertionItem<AssertionTy
     'x-operator-component-props': {
       placeholder: '请选择',
     },
-    'x-operator-enum': commonOptions2,
+    'x-operator-enum': commonOptions1,
     'x-operator-visible': true,
     'x-value-component': 'Input',
     'x-value-component-props': {
@@ -380,7 +383,7 @@ export const assertionTypeOptionsMap2: Record<string, IAssertionItem<AssertionTy
       placeholder: '请选择',
     },
     'x-operator-enum': [
-      ...commonOptions2,
+      ...commonOptions1,
       { label: 'jsonpath', value: AssertionOperators.JSON_PATH },
     ],
     'x-operator-visible': true,
@@ -423,7 +426,7 @@ export const assertionTypeOptionsMap2: Record<string, IAssertionItem<AssertionTy
     'x-operator-component-props': {
       placeholder: '请选择',
     },
-    'x-operator-enum': commonOptions2,
+    'x-operator-enum': commonOptions1,
     'x-operator-visible': true,
     'x-value-component': 'Input',
     'x-value-component-props': {
@@ -580,6 +583,48 @@ export const assertionTypeOptionsMap2: Record<string, IAssertionItem<AssertionTy
     },
     'x-value-visible': true,
   },
+  [AssertionType.WEBSOCKET_RESPONSE]: {
+    label: '响应内容',
+    value: AssertionType.WEBSOCKET_RESPONSE, 
+    'x-property-component': 'Select',
+    'x-property-visible': false,
+    'x-operator-component': 'Select',
+    'x-operator-component-props': {
+      placeholder: '请选择',
+    },
+    'x-operator-enum': commonOptions1,
+    'x-operator-visible': true,
+    'x-value-component': 'Input',
+    'x-value-component-props': {
+      placeholder: '请输入value',
+    },
+    'x-value-visible': true,
+  },
+  [AssertionType.WEBSOCKET_RESPONSE_HEADER]: {
+    label: '响应头',
+    value: AssertionType.WEBSOCKET_RESPONSE_HEADER, 
+    'x-property-component': 'Input',
+    'x-property-component-props': {
+      placeholder: '请输入key',
+    },
+    'x-property-visible': true,
+    'x-operator-component': 'Select',
+    'x-operator-component-props': {
+      placeholder: '请选择',
+    },
+    'x-operator-enum': [
+      ...commonOptions1,
+      { label: '不存在', value: AssertionOperators.IS_UNDEFINED },
+      { label: '小于', value: AssertionOperators.LESS_THAN },
+      { label: '小于等于', value: AssertionOperators.LESS_THAN_OR_EQUAL },
+    ],
+    'x-operator-visible': true,
+    'x-value-component': 'Input',
+    'x-value-component-props': {
+      placeholder: '请输入value',
+    },
+    'x-value-visible': true,
+  },
 }
 
 /** 
@@ -624,6 +669,11 @@ export const protocolToAssertionMap = {
     assertionTypeOptionsMap2[AssertionType.RESPONSE_TIME],
     assertionTypeOptionsMap2[AssertionType.ALL_RECORDS],
     assertionTypeOptionsMap2[AssertionType.ANY_RECORD],
+  ],
+  [Protocol.WEBSOCKET]: [
+    assertionTypeOptionsMap2[AssertionType.RESPONSE_TIME],
+    assertionTypeOptionsMap2[AssertionType.WEBSOCKET_RESPONSE],
+    assertionTypeOptionsMap2[AssertionType.WEBSOCKET_RESPONSE_HEADER],
   ],
 }
 

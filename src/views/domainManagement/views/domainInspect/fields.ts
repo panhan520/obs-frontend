@@ -5,6 +5,7 @@ import { getProjectsApi } from '~/api/domainManagement/sslInspect'
 import Space from '~/basicComponents/space'
 import { MODE } from '~/businessComponents/commonPage'
 import emitter from '~/utils/emitter'
+import { hasPermission } from '~/utils/auth'
 import { inspectStatusMap, frequencyOptions, frequencyMap, noticeChannelOptions } from '../../constants/common'
 
 import type { IField } from '~/businessComponents/commonPage'
@@ -299,6 +300,7 @@ export const getFields = ({ router, commonPageRef }): IField[] => ([
           h(ElButton, {
             type: 'danger',
             ...commonAttrs,
+            disabled: !hasPermission(['domain:delete']),
             onClick: async (e: Event) => {
               try {
                 e.stopPropagation()

@@ -47,9 +47,7 @@ export default defineComponent({
         ...commonFilterRef.value?.getForm().values,
         page: params?.pagination?.page,
         pageSize: params?.pagination?.pageSize,
-        ...(isEmpty(activeRowData.value)
-          ? {}
-          : { nodeName: `${activeRowData.value.nodeName}${activeRowData.value.ispName}` }),
+        ...(isEmpty(activeRowData.value) ? {} : { nodeName: activeRowData.value.nodeName }),
         task: route.query?.id,
       }
     }

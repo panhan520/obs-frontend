@@ -40,6 +40,9 @@ const getSchema = ({ isView }: IGetSchemaParams): ISchema => ({
         buttonStyle: 'solid',
         optionType: 'button',
         size: 'small',
+        style: {
+          width: '100%',
+        },
       },
       enum: monitoringFrequencyTypeOptions,
       default: MonitoringFrequencyType.DEFAULT,
@@ -52,6 +55,9 @@ const getSchema = ({ isView }: IGetSchemaParams): ISchema => ({
         buttonStyle: 'solid',
         optionType: 'button',
         size: 'small',
+        style: {
+          width: '100%',
+        },
       },
       enum: monitoringFrequencyOptions,
       default: MonitoringFrequency.ONE_MIN,

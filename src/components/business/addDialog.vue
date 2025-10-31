@@ -26,7 +26,7 @@
   import { useModalStore } from '@/store/modules/dialogModal'
   import { ElMessage } from 'element-plus'
   import { createBoardApi } from '@/api/controlPanel/index'
-  import { useUserStore } from '@/store/modules/user'
+  import { useUserStore } from '@/store/modules/useAuthStore'
   import { useRouter } from 'vue-router'
   import addBaseForm from '@/views/controlPanel/dashBoard/components/addBaseForm.vue'
   import { useDashBoardStore } from '@/store/modules/dashBoard'

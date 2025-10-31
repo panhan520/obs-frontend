@@ -60,7 +60,13 @@ const getSchema = ({ isView, openEditor }: IGetSchemaParams): ISchema => ({
           type: 'void',
           'x-component': 'FormCollapse.Item',
           'x-component-props': {
-            title: '高级设置'
+            title: '高级设置',
+            style: {
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'flex-start',
+              alignItems: 'flex-start',
+            },
           },
           properties: {
             allowSelfSignedCert: {
@@ -69,6 +75,9 @@ const getSchema = ({ isView, openEditor }: IGetSchemaParams): ISchema => ({
               'x-component': 'Checkbox',
               'x-component-props': {
                 label: '允许自签名证书通过检测',
+                style: {
+                  width: '100%',
+                },
               },
             },
             failOnRevokedCert: {
@@ -77,6 +86,9 @@ const getSchema = ({ isView, openEditor }: IGetSchemaParams): ISchema => ({
               'x-component': 'Checkbox',
               'x-component-props': {
                 label: '发现吊销（revoked）证书判定任务失败',
+                style: {
+                  width: '100%',
+                },
               },
             },
             failOnIncompleteChain: {
@@ -85,6 +97,9 @@ const getSchema = ({ isView, openEditor }: IGetSchemaParams): ISchema => ({
               'x-component': 'Checkbox',
               'x-component-props': {
                 label: '证书链不完整时判定任务失败',
+                style: {
+                  width: '100%',
+                },
               },
             },
             timeout: commonTimeout({
@@ -99,7 +114,10 @@ const getSchema = ({ isView, openEditor }: IGetSchemaParams): ISchema => ({
                 layout: 'vertical',
                 labelAlign: 'left',
                 labelWidth: 155,
-                style: { width: '100%' },
+                style: { 
+                  width: '100%',
+                  textAlign: 'left',
+                },
                 tooltip: '当服务器使用同一IP 托管多个域名证书时，请填写要请求的域名。',
               },
               'x-component': 'Input',
@@ -115,7 +133,7 @@ const getSchema = ({ isView, openEditor }: IGetSchemaParams): ISchema => ({
                 colon: false,
                 layout: 'vertical',
                 labelAlign: 'left',
-                labelWidth: 155,
+                labelWidth: 82,
                 style: { width: '100%' },
               },
               properties: {

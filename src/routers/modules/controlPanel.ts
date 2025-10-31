@@ -11,13 +11,24 @@ const controlPanelRouter: IRouteRecordRaw[] = [
     name: 'controlPanel',
     component: defineAsyncComponent(() => import('../../layout')),
     redirect: '/controlPanel/dashBoard',
-    meta: { title: '仪表盘', icon: h(IconFont, { name: 'control_panel' }), level: 1 },
+    meta: { 
+      title: '仪表盘', 
+      icon: h(IconFont, { name: 'control_panel' }), 
+      level: 1,
+      disabledInMenu: true,
+      permissionCodes: ['dashboard:view'],
+    },
     children: [
       {
         path: 'dashBoard',
         component: defineAsyncComponent(() => import('@/views/controlPanel/dashBoard/index.vue')),
         name: 'dashBoard',
-        meta: { title: '仪表盘详情', level: 2, headerMode: HeaderMode.SUBMENU },
+        meta: { 
+          title: '仪表盘详情', 
+          level: 2, 
+          headerMode: HeaderMode.SUBMENU,
+          permissionCodes: ['dashboard:view'],
+        },
       },
       {
         path: 'dashBoard1',
@@ -34,13 +45,20 @@ const controlPanelRouter: IRouteRecordRaw[] = [
               emitter.emit('DASHBOARD_OPEN')
             }, 500);
           },
+          permissionCodes: ['dashboard:view'],
         },
       },
       {
         path: 'importDashBoard',
         component: defineAsyncComponent(() => import('@/views/controlPanel/dashBoard/importDashBoard.vue')),
         name: 'importDashBoard',
-        meta: { title: '导入仪表盘', level: 2, hidden: true, affix: true },
+        meta: { 
+          title: '导入仪表盘', 
+          level: 2, 
+          hidden: true, 
+          affix: true,
+          permissionCodes: ['dashboard:view'],
+        },
       },
       {
         path: 'dashBoardIframe',
@@ -49,8 +67,15 @@ const controlPanelRouter: IRouteRecordRaw[] = [
         props: () => ({
           iframeUrl: sessionStorage.getItem('iframeUrl')?.trim() || ''
         }),
-        meta: { title: '仪表盘详情', level: 2, hidden: true, affix: true },
+        meta: { 
+          title: '仪表盘详情', 
+          level: 2, 
+          hidden: true, 
+          affix: true,
+          permissionCodes: ['dashboard:view'],
+        },
       },
+
     ],
   },
 ]

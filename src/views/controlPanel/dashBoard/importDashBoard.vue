@@ -11,7 +11,7 @@ import addBaseForm from './components/addBaseForm.vue'
 import { ElMessage, ElLoading } from 'element-plus'
 import { importBoardApi } from '@/api/controlPanel/index'
 import { useDashBoardStore } from '@/store/modules/dashBoard'
-import { useUserStore } from '@/store/modules/user'
+import { useUserStore } from '@/store/modules/useAuthStore'
 const UserStore = useUserStore()
 const dashBoardState = useDashBoardStore()
 

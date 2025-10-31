@@ -10,6 +10,11 @@ import type { ICommonToolTipParams, ICommonToolTipContainer, ICommonUploadParams
 export const commonMessage = ({ message }) => ({
   type: 'void',
   'x-decorator': 'FormItem',
+  'x-decorator-props': {
+    style: {
+      textAlign: 'left',
+    },
+  },
   'x-content': () => message,
 })
 

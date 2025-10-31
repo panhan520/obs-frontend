@@ -1,7 +1,7 @@
 import { defineComponent, ref, watch } from 'vue'
 import Space from '~/basicComponents/space'
 import styles from './index.module.scss'
-import { useUserStore } from '@/store/modules/user'
+import { useUserStore } from '@/store/modules/useAuthStore'
 import type { FormInstance, FormRules } from 'element-plus'
 
 import {

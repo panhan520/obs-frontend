@@ -72,6 +72,8 @@ export enum TaskMethod {
   SSL = 'ssl',
   /** DNS */
   DNS = 'dns',
+  /** WEBSOCKET */
+  WEBSOCKET = 'websocket',
 }
 
 /** 任务信息method label映射 */
@@ -82,6 +84,7 @@ export const taskMethodMap = {
   [TaskMethod.GRPC]: 'grpc任务',
   [TaskMethod.SSL]: 'ssl任务',
   [TaskMethod.DNS]: 'dns任务',
+  [TaskMethod.WEBSOCKET]: 'websocket任务',
 }
 
 /** 任务执行结果 */
@@ -139,4 +142,6 @@ export enum Protocol {
   SSL = 'SSL',
   /** DNS */
   DNS = 'DNS',
+  /** WEBSOCKET */
+  WEBSOCKET = 'WEBSOCKET',
 }

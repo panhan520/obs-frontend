@@ -3,6 +3,7 @@ import { useRouter } from 'vue-router'
 import { ElButton } from 'element-plus'
 import { CommonPage } from '~/businessComponents'
 import { getListApi } from '~/api/domainManagement/dnsInspect'
+import { hasPermission } from '~/utils/auth'
 import { getFields } from './fields'
 
 import type { ICommonObj } from '~/interfaces/common'
@@ -40,6 +41,7 @@ export default defineComponent({
               ElButton,
               {
                 type: 'primary',
+                disabled: !hasPermission(['domain:delete']),
                 onClick: () => {
                   router.push({ name: 'DnsInspectCreate' })
                 },

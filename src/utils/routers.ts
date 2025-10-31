@@ -9,8 +9,8 @@ import type { IRouteRecordRaw } from '~/interfaces/common'
  * @param route
  */
 export const hasPermission = (roles: string[], route: IRouteRecordRaw) => (
-  route?.meta?.roles
-    ? roles.some((role) => (route.meta.roles as string[]).includes(role))
+  route?.meta?.permissionCodes
+    ? roles.some((role) => (route.meta.permissionCodes as string[]).includes(role))
     : false
 )
 

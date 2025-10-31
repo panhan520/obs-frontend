@@ -9,6 +9,7 @@ import {
 import Space from '~/basicComponents/space'
 import { MODE } from '~/businessComponents/commonPage'
 import emitter from '~/utils/emitter'
+import { hasPermission } from '~/utils/auth'
 import { frequencyOptions, telegramOptions } from './constants'
 import { inspectStatusMap, frequencyMap } from '../../constants/common'
 import type { IGetFieldsParams } from '../../../availabilityMonitoring/interface'
@@ -291,6 +292,7 @@ export const getFields = ({ router, commonPageRef }: IGetFieldsParams): IField[]
               {
                 type: 'danger',
                 ...commonAttrs,
+                disabled: !hasPermission(['domain:delete']),
                 onClick: async (e: Event) => {
                   try {
                     await ElMessageBox.confirm('确认删除当前任务?', {

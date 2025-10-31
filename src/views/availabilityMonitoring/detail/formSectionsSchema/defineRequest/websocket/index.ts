@@ -1,13 +1,9 @@
 import { h } from 'vue'
 import { changeVisible } from '../../../utils'
-import { methodOptions, Protocol } from '../../../constants' 
+import { Protocol } from '../../../constants'
 import { commonToolTip } from '../../commonFields'
 import getTab1Schema from './tab1'
 import getTab2Schema from './tab2'
-import getTab3Schema from './tab3'
-import getTab4Schema from './tab4'
-import getTab5Schema from './tab5'
-import getTab6Schema from './tab6'
 import styles from '../../../index.module.scss'
 
 import type { Field } from '@formily/core'
@@ -20,71 +16,51 @@ const getSchema = ({ isView, openEditor }: IGetSchemaParams): ISchema => ({
   'x-component-props': {
     direction: 'column',
     fill: true,
-    align: 'start',
     style: {
       width: '100%',
-    }
+    },
   },
   'x-reactions': (field: Field) => {
-    changeVisible(field, Protocol.HTTP)
+    changeVisible(field, Protocol.WEBSOCKET)
   },
   properties: {
-    grid: {
+    urlConfig: {
       type: 'void',
       'x-decorator': 'FormItem',
       'x-decorator-props': {
-        label: 'URL',
-        colon: false,
+        style: {  width: '100%' },
         labelWidth: 40,
+        label: 'URL',
+        labelAlign: 'left',
+        colon: false,
       },
-      'x-component': 'FormGrid',
+      'x-component': 'Space',
       'x-component-props': {
-        maxColumns: 16,
-        minColumns: 16,
-        columnGap: 0,
+        size: 12,
       },
       properties: {
-        /** 请求类型 */
-        method: {
-          type: 'string',
-          'x-decorator': 'FormGrid.GridColumn',
-          'x-decorator-props': {
-            gridSpan: 2,
-          },
-          'x-component': 'Select',
-          'x-component-props': {
-            class: styles.leftRadius,
-          },
-          enum: methodOptions,
-        },
-        /** 请求url */
         url: {
           type: 'string',
-          'x-decorator': 'FormGrid.GridColumn',
+          'x-decorator': 'FormItem',
           'x-decorator-props': {
-            gridSpan: 11,
+            style: {
+              padding: 0,
+              flex: 1,
+              textAlign: 'left',
+            }
           },
           'x-component': 'Input',
           'x-component-props': {
-            class: styles.straightAngle,
-            style: {
-              height: '32px',
-            },
-            placeholder: '请输入有效URL地址，例如：https://www.baidu.com',
+            placeholder: '请以ws://或wss://开头',
           },
         },
         btn: {
           type: 'void',
-          'x-decorator': 'FormGrid.GridColumn',
-          'x-decorator-props': {
-            gridSpan: 2,
-          },
           'x-component': 'ElButton',
           'x-component-props': {
             type: 'primary',
             style: {
-              width: '100%',
-              borderRadius: '0 4px 4px 0',
+              width: 'fit-content',
             },
             onClick: () => {
               openEditor()
@@ -96,7 +72,7 @@ const getSchema = ({ isView, openEditor }: IGetSchemaParams): ISchema => ({
           'x-visible': !isView,
         },
         ...commonToolTip({ content: '定义好请求格式且添加结果判断条件后，即可测试链接，（测试与选择节点无关）', visible: !isView }),
-      }
+      },
     },
     collapse: {
       type: 'void',
@@ -105,14 +81,13 @@ const getSchema = ({ isView, openEditor }: IGetSchemaParams): ISchema => ({
         class: 'inner-FormCollapse',
         style: {
           width: 'calc(100% - 32px)',
-          marginLeft: '16px',
           paddingLeft: '40px',
           boxSizing: 'border-box',
         },
       },
       'x-component': 'FormCollapse',
       'x-component-props': {
-        formCollapse: '{{httpFormCollapse}}',
+        formCollapse: '{{websocketCollapse}}',
         style: {
           width: '100%',
           padding: '0 36px',
@@ -135,22 +110,37 @@ const getSchema = ({ isView, openEditor }: IGetSchemaParams): ISchema => ({
               type: 'void',
               'x-component': 'FormTab',
               'x-component-props': {
-                httpAdvancedFormTab: '{{httpAdvancedFormTab}}',
+                httpAdvancedFormTab: '{{websocketAdvancedFormTab}}',
               },
               properties: {
-                tab1: getTab1Schema({ isView }),
-                tab2: getTab2Schema({ isView }),
-                tab3: getTab3Schema({ isView }),
-                tab4: getTab4Schema({ isView }),
-                tab5: getTab5Schema({ isView }),
-                tab6: getTab6Schema({ isView }),
+                tab1: getTab1Schema(),
+                tab2: getTab2Schema(),
               },
             },
           },
-        }
-      }
+        },
+      },
     },
-  }
+    message: {
+      type: 'string',
+      'x-decorator': 'FormItem',
+      'x-decorator-props': {
+        style: { 
+          width: '100%',
+          textAlign: 'left',
+        },
+        labelWidth: 70,
+        label: '测试消息',
+        labelAlign: 'left',
+        layout: 'vertical',
+        colon: false,
+      },
+      'x-component': 'Input.TextArea',
+      'x-component-props': {
+        placeholder: '连接建立后将自动发送该消息，用于验证服务响应是否正常，支持JSON或文本格式。',
+      },
+    },
+  },
 })
 
 export default getSchema

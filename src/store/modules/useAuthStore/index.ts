@@ -3,14 +3,24 @@ import { defineStore } from 'pinia'
 import { ElMessage } from 'element-plus'
 import { jwtDecode } from 'jwt-decode'
 import { loginApi, loginOut } from '~/api/login/index'
+import { AccountType } from './constants'
 
 import type { JwtPayload } from 'jwt-decode'
+import type { IUserInfo } from './interfaces'
 
 export const useUserStore = defineStore('userState', () => {
-  const userInfo = reactive({
+  const userInfo = reactive<IUserInfo>({
+    // username: '',
+    // email: '',
+    // token: '',
     username: '',
-    email: '',
+    userId: '',
     token: '',
+    email: '',
+    roles: [],
+    accountType: AccountType.SUB,
+    orgId: '',
+    tenantId: '',
   })
   const userOrg = reactive({
     userId: '',

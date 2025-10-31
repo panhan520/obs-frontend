@@ -2,6 +2,7 @@ import { h } from 'vue'
 import { ElButton, ElMessage, ElTag, ElMessageBox } from 'element-plus'
 import { ResultStatus, RunningStatus } from '~/api/availabilityMonitoring/constants'
 import Space from '~/basicComponents/space'
+import { hasPermission } from '~/utils/auth'
 import { actionMap, Action } from './constants'
 
 import type { IField } from '~/businessComponents/commonPage'
@@ -137,6 +138,7 @@ export const getFields = ({ router, commonPageRef }: IGetFieldsParams): IField[]
           h(ElButton, {
             type: isPaused ? 'success' : 'warning',
             ...commonAttrs,
+            disabled: !hasPermission(['line:enable']),
             onClick: async (e: Event) => {  
               commonAction(e, isPaused ? actionMap[Action.ENABLE] : actionMap[Action.PAUSE])
             }
@@ -144,6 +146,7 @@ export const getFields = ({ router, commonPageRef }: IGetFieldsParams): IField[]
           h(ElButton, {
             type: 'danger',
             ...commonAttrs,
+            disabled: !hasPermission(['line:delete']),
             onClick: async (e: Event) => {
               try {
                 e.stopPropagation()
