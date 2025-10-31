@@ -44,7 +44,7 @@ export default defineComponent({
     const searchConditions = reactive({
       // 数据源和索引
       dataSourceId: '',
-      indexId: '',
+      indexId: null,
       indexName: '',
 
       // 搜索条件
@@ -508,18 +508,20 @@ export default defineComponent({
         const logList = res.data.list as LogDocument[]
         logDocuments.value = transformLogData(logList)
         total.value = res.data.total
-
-        // 从第一个日志条目的logJson动态解析字段
-        if (logList && logList.length > 0) {
-          const firstLog = logList[0]
-          if (firstLog && firstLog.logJson) {
-            const parsedFields = parseFieldsFromLogJson(firstLog.logJson)
-            availableFields.value = parsedFields.filter((field) => !field.name.includes('_source.'))
-          }
-        }
+        getAvailableFields(logList)
       } finally {
         loading.value = false
         fieldsLoading.value = false
+      }
+    }
+    // 从第一个日志条目的logJson动态解析字段
+    const getAvailableFields = (logList) => {
+      if (logList && logList.length > 0) {
+        const firstLog = logList[0]
+        if (firstLog && firstLog.logJson) {
+          const parsedFields = parseFieldsFromLogJson(firstLog.logJson)
+          availableFields.value = parsedFields.filter((field) => !field.name.includes('_source.'))
+        }
       }
     }
 
@@ -637,7 +639,7 @@ export default defineComponent({
         dataSourceLoading.value = true
         const res = await getDatasourceUseList()
         dataSourceList.value = res.data.list
-        if (res.data.list.length) {
+        if (res.data.list.length && !searchConditions.dataSourceId) {
           searchConditions.dataSourceId = res.data.list[0].id
           getIndexListData(res.data.list[0].id)
         }
@@ -647,10 +649,16 @@ export default defineComponent({
     }
     // 获取索引列表数据
     const getIndexListData = async (value?: string) => {
+      if (!value && !searchConditions.dataSourceId) {
+        ElMessage.warning('请先选择数据源')
+        return
+      }
       try {
         indexListLoading.value = true
         const res = await getIndexList({ dataSourceId: value || searchConditions.dataSourceId })
         indexList.value = res.data.list
+        searchConditions.indexId = null
+        searchConditions.indexName = ''
       } finally {
         indexListLoading.value = false
       }
@@ -677,42 +685,25 @@ export default defineComponent({
       try {
         logStream.value = createLogStream(searchConditions.indexId)
         isStreaming.value = true
-        // 监听自定义事件
-        // logStream.value.addEventListener('init', (event) => {
-        //   const data = JSON.parse(event.data)
-        //   console.log('🟢 init:', data)
-        // })
-
-        // logStream.value.addEventListener('heartbeat', (event) => {})
-
         // 监听消息
         logStream.value.onmessage = (event) => {
           try {
-            const newLogData = JSON.parse(event.data)
-            // 将新日志数据添加到现有列表中
+            const newLogData = JSON.parse(event.data).list
             if (Array.isArray(newLogData)) {
+              // 将新日志数据添加到现有列表中
               const transformedLogs = transformLogData(newLogData)
-              logDocuments.value = [...logDocuments.value, ...transformedLogs]
+              if (logDocuments.value.length <= 0) {
+                getAvailableFields(newLogData)
+              }
+              logDocuments.value = [...transformedLogs, ...logDocuments.value]
 
               // 更新图表数据
               const newChartData = transformedLogs.map((log) => ({
-                time: new Date(log.timestamp).toISOString(),
+                time: log.timestamp,
                 level: (log as any).level || 'INFO',
                 count: '1',
               }))
               logChartDatas.value = [...logChartDatas.value, ...newChartData]
-            } else if (newLogData && typeof newLogData === 'object') {
-              // 单个日志对象
-              const transformedLog = transformLogData([newLogData])[0]
-              logDocuments.value = [...logDocuments.value, transformedLog]
-
-              // 更新图表数据
-              const newChartData = {
-                time: new Date(transformedLog.timestamp).toISOString(),
-                level: (transformedLog as any).level || 'INFO',
-                count: '1',
-              }
-              logChartDatas.value = [...logChartDatas.value, newChartData]
             }
           } catch (error) {
             console.error('解析SSE日志数据失败:', error)
@@ -809,6 +800,7 @@ export default defineComponent({
                   loading={dataSourceLoading.value}
                   disabled={dataSourceLoading.value}
                   onChange={handleDataSourceChange} // 添加 change 事件
+                  clearable
                 >
                   {dataSourceList.value.map((it) => (
                     <ElOption label={it.name} value={it.id} />
@@ -844,6 +836,7 @@ export default defineComponent({
                     searchConditions.indexId = it?.indexId || val || ''
                     searchConditions.indexName = it?.indexName || val || ''
                   }}
+                  clearable
                 >
                   {indexList.value.map((it) => (
                     <ElOption label={it.indexName} value={it.indexName} />
