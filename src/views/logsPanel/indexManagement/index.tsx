@@ -6,6 +6,7 @@ import { IExpose } from '~/businessComponents/commonPage/interfaces'
 import type { ICommonTableExpose } from '~/businessComponents/commonTable'
 import AddIndex from './component/addIndex'
 import styles from './index.module.scss'
+import { hasPermission } from '~/utils/auth'
 import {
   ElMessage,
   ElSelect,
@@ -75,6 +76,7 @@ export default defineComponent({
                 {
                   type: 'danger',
                   link: true,
+                  disabled: !hasPermission(['log:delete']),
                   onClick: async (e: Event) => {
                     try {
                       e.stopPropagation()
@@ -96,19 +98,19 @@ export default defineComponent({
                 },
                 '删除',
               ),
-              h(
-                ElButton,
-                {
-                  type: 'primary',
-                  link: true,
-                  disabled: true,
-                  onClick: (e: Event) => {
-                    e.stopPropagation()
-                    dialogRef.value?.showDialog(rowData)
-                  },
-                },
-                '编辑',
-              ),
+              // h(
+              //   ElButton,
+              //   {
+              //     type: 'primary',
+              //     link: true,
+              //     disabled: !hasPermission(['log:put']),
+              //     onClick: (e: Event) => {
+              //       e.stopPropagation()
+              //       dialogRef.value?.showDialog(rowData)
+              //     },
+              //   },
+              //   '编辑',
+              // ),
             ],
           )
         },
@@ -142,7 +144,11 @@ export default defineComponent({
             />
           </Space>
           <Space direction='row' fill size={0} justify='end' style={{ padding: '16px 0' }}>
-            <el-button type='primary' onClick={() => dialogRef.value?.showDialog()}>
+            <el-button
+              type='primary'
+              onClick={() => dialogRef.value?.showDialog()}
+              disabled={!hasPermission(['log:post'])}
+            >
               新增索引
             </el-button>
           </Space>

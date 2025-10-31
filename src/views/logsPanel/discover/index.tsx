@@ -21,6 +21,7 @@ import {
   editQueryConds,
   deleteQueryConds,
 } from '@/api/logsPanel/discover'
+import { hasPermission } from '~/utils/auth'
 import { getDatasourceUseList } from '@/api/configManagement/dataSource'
 import {
   LogField,
@@ -776,13 +777,18 @@ export default defineComponent({
             ) : null}
           </div>
           <div class={styles.viewActions}>
-            <ElButton size='small' onClick={handleNew}>
+            <ElButton size='small' onClick={handleNew} disabled={!hasPermission(['log:get'])}>
               新建
             </ElButton>
-            <ElButton size='small' type='primary' onClick={handleSave}>
+            <ElButton
+              size='small'
+              type='primary'
+              onClick={handleSave}
+              disabled={!hasPermission(['log:get'])}
+            >
               保存
             </ElButton>
-            <ElButton size='small' onClick={handleOpen}>
+            <ElButton size='small' onClick={handleOpen} disabled={!hasPermission(['log:get'])}>
               打开
             </ElButton>
           </div>
