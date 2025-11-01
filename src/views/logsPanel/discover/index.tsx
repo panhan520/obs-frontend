@@ -923,6 +923,7 @@ export default defineComponent({
             <StatusFilter
               modelValue={statusChecked.value}
               counts={statusCounts.value}
+              isStreaming={isStreaming.value}
               onUpdate:modelValue={(v: StatusKey[]) => {
                 statusChecked.value = v
               }}

@@ -20,6 +20,8 @@ export default defineComponent({
     allSelected: { type: Boolean, default: false },
     collapsible: { type: Boolean, default: true },
     defaultCollapsed: { type: Boolean, default: false },
+    /** 是否正在日志流模式 */
+    isStreaming: { type: Boolean, default: false },
   },
   emits: ['update:modelValue', 'change'],
   setup(props, { emit }) {
@@ -27,6 +29,10 @@ export default defineComponent({
     const hoveredStatus = ref<StatusKey | null>(null)
 
     const toggle = (key: StatusKey, checked: boolean) => {
+      // 如果正在日志流模式，禁止切换
+      if (props.isStreaming) {
+        return
+      }
       const next = new Set(props.modelValue)
       if (checked) next.add(key)
       else next.delete(key)
@@ -37,12 +43,20 @@ export default defineComponent({
 
     // 处理Only点击：只选中当前状态
     const handleOnlyClick = (key: StatusKey) => {
+      // 如果正在日志流模式，禁止操作
+      if (props.isStreaming) {
+        return
+      }
       emit('update:modelValue', [key])
       emit('change', [key])
     }
 
     // 处理All点击：全选所有状态
     const handleAllClick = () => {
+      // 如果正在日志流模式，禁止操作
+      if (props.isStreaming) {
+        return
+      }
       const allStatuses: StatusKey[] = ['Error', 'Warn', 'Info', 'Fatal', 'Debug']
       emit('update:modelValue', allStatuses)
       emit('change', allStatuses)
@@ -83,6 +97,10 @@ export default defineComponent({
                 onMouseenter={() => (hoveredStatus.value = k)}
                 onMouseleave={() => (hoveredStatus.value = null)}
                 onClick={(e) => {
+                  // 如果正在日志流模式，禁止点击
+                  if (props.isStreaming) {
+                    return
+                  }
                   // 如果点击的是复选框，不处理整行点击
                   if ((e.target as HTMLElement).closest('.el-checkbox')) {
                     return
@@ -98,6 +116,7 @@ export default defineComponent({
               >
                 <ElCheckbox
                   modelValue={props.modelValue.includes(k)}
+                  disabled={props.isStreaming}
                   onChange={(val: boolean) => toggle(k, val)}
                 />
                 <span class={[styles.statusDot, styles[`dot${k}`]]}></span>

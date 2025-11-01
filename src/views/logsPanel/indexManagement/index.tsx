@@ -27,6 +27,7 @@ export default defineComponent({
       getDatasource()
     })
     const router = useRouter()
+    const options = ref<Array<Options>>([])
     const getDatasource = async () => {
       const res = await getDatasourceApi()
       options.value = res.data.list
@@ -36,7 +37,6 @@ export default defineComponent({
       dataSourceId: '',
       keyword: '',
     })
-    const options = ref<Array<Options>>([])
     /**table传参自定义参数源 */
 
     const formatListParamsRight = (params: ICommonObj) => {
