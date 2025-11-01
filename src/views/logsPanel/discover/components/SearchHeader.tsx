@@ -493,6 +493,7 @@ export default defineComponent({
               onClick={handleInputClick}
               onKeydown={handleInputKeydown}
               clearable
+              disabled={isTimePaused.value}
             >
               {{
                 prepend: () => (
@@ -778,7 +779,7 @@ export default defineComponent({
               icon={SearchIcon}
               onClick={handleSearch}
               class={styles.refreshBtn}
-              disabled={!isTimeRangeValid.value}
+              disabled={!isTimeRangeValid.value || isTimePaused.value}
             >
               查询
             </ElButton>
@@ -807,12 +808,14 @@ export default defineComponent({
             </div>
           )}
 
-          <div class={styles.addFilterBtn} onclick={handleAddFilter}>
-            <el-icon>
-              <CirclePlus />
-            </el-icon>
-            添加过滤条件
-          </div>
+          {!isTimePaused.value && (
+            <div class={styles.addFilterBtn} onclick={handleAddFilter}>
+              <el-icon>
+                <CirclePlus />
+              </el-icon>
+              添加过滤条件
+            </div>
+          )}
         </div>
       </div>
     )
