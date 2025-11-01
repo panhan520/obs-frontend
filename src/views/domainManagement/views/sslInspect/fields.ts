@@ -61,7 +61,7 @@ export const getFields = ({ router, commonPageRef }): IField[] => ([
           },
           'x-component': 'Input',
           'x-component-props': {
-            placeholder: '请输入',
+            placeholder: '请输入baidu.com的域名格式',
             clearable: true,
           },
         }
@@ -75,7 +75,7 @@ export const getFields = ({ router, commonPageRef }): IField[] => ([
       'x-decorator-props': commonProps,
       'x-component': 'Input',
       'x-component-props': {
-        placeholder: '请输入',
+        placeholder: '请输入baidu.com的域名格式',
       },
     },
   },
@@ -154,11 +154,11 @@ export const getFields = ({ router, commonPageRef }): IField[] => ([
     prop: 'taskStatus',
     label: '任务状态',
     isColumn: true,
-    columnConfig: { 
+    columnConfig: {
       width: 120,
       render: ({ rowData }) => h(
-        ElTag, 
-        { type: rowData.taskStatus ? 'success' : 'danger' }, 
+        ElTag,
+        { type: rowData.taskStatus ? 'success' : 'danger' },
         rowData.taskStatus ? '启用' : '禁用'
       ),
     },
@@ -179,7 +179,7 @@ export const getFields = ({ router, commonPageRef }): IField[] => ([
     prop: 'inspectStatus',
     label: '监控状态',
     isColumn: true,
-    columnConfig: { 
+    columnConfig: {
       width: 120,
       render: ({ rowData }) => h(
         ElTag,
@@ -192,7 +192,7 @@ export const getFields = ({ router, commonPageRef }): IField[] => ([
     prop: 'frequency',
     label: '频率',
     isColumn: true,
-    columnConfig: { 
+    columnConfig: {
       width: 120,
       render: ({ rowData }) => h(ElText, {}, frequencyMap[rowData.frequency]),
     },
@@ -219,7 +219,6 @@ export const getFields = ({ router, commonPageRef }): IField[] => ([
     isEdit: true,
     editConfig: {
       type: 'string',
-      required: true,
       'x-decorator': 'FormItem',
       'x-decorator-props': commonProps,
       'x-component': 'Select',
@@ -237,7 +236,6 @@ export const getFields = ({ router, commonPageRef }): IField[] => ([
     isEdit: true,
     editConfig: {
       type: 'string',
-      required: true,
       'x-decorator': 'FormItem',
       'x-decorator-props': commonProps,
       'x-component': 'Input',
@@ -252,7 +250,6 @@ export const getFields = ({ router, commonPageRef }): IField[] => ([
     isEdit: true,
     editConfig: {
       type: 'string',
-      required: true,
       'x-decorator': 'FormItem',
       'x-decorator-props': commonProps,
       'x-component': 'Input',
@@ -325,7 +322,8 @@ export const getFields = ({ router, commonPageRef }): IField[] => ([
           h(ElButton, {
             type: 'primary',
             ...commonAttrs,
-            onClick: (e: Event) => {  
+            disabled: !hasPermission(['domain:put']),
+            onClick: (e: Event) => {
               e.stopPropagation()
               emitter.emit('openEditor', { mode: MODE.EDIT, rowData, rowIndex: 0 })
             }
@@ -333,7 +331,7 @@ export const getFields = ({ router, commonPageRef }): IField[] => ([
           h(ElButton, {
             type: 'primary',
             ...commonAttrs,
-            onClick: (e: Event) => {  
+            onClick: (e: Event) => {
               e.stopPropagation()
               router.push({ name: 'SslDetail', query: { id: rowData.id } })
             }
@@ -341,7 +339,8 @@ export const getFields = ({ router, commonPageRef }): IField[] => ([
           h(ElButton, {
             type: isEnable ? 'warning' : 'success',
             ...commonAttrs,
-            onClick: async (e: Event) => {  
+            disabled: !hasPermission(['domain:enable']),
+            onClick: async (e: Event) => {
               try {
                 const text = isEnable ? commonActions.disable.text : commonActions.enable.text
                 e.stopPropagation()

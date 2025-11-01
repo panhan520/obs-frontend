@@ -31,15 +31,15 @@ export const tabsSchema: ISchema[] = [
     },
     'x-component': Detail,
   },
-  {
-    title: '任务运行统计',
-    name: Tabs.RunningStatistics,
-    'x-decorator': ElTabPane,
-    'x-decorator-props': {
-      commonAttrs,
-    },
-    'x-component': TaskRunningPanel,
-  },
+  // {
+  //   title: '任务运行统计',
+  //   name: Tabs.RunningStatistics,
+  //   'x-decorator': ElTabPane,
+  //   'x-decorator-props': {
+  //     commonAttrs,
+  //   },
+  //   'x-component': TaskRunningPanel,
+  // },
   {
     title: '任务运行历史',
     name: Tabs.TaskHistory,

@@ -51,7 +51,8 @@ export const getDetailApi = async (params: ICommonObj) => {
 }
 
 /** 删除 */
-export const deleteApi = ({ id }: Record<'id', string>): Promise<Record<'status', boolean>> => { // 与真实的返回体不同，因为真实的数据类型太lowb
+export const deleteApi = ({ id }: Record<'id', string>): Promise<Record<'status', boolean>> => {
+  // 与真实的返回体不同，因为真实的数据类型太lowb
   return request.delete(`/inspect/domain-expiry/${id}/`)
 }
 
@@ -66,7 +67,9 @@ export const disabledApi = ({ id }: Record<'id', string>) => {
 }
 
 /** 获取历史快照 */
-export const getHistoryListApi = async (params: ICommonObj): Promise<ICommonGetListRes<IListItem[]>> => {
+export const getHistoryListApi = async (
+  params: ICommonObj,
+): Promise<ICommonGetListRes<IListItem[]>> => {
   try {
     const sendData = {
       ...params,
@@ -74,9 +77,11 @@ export const getHistoryListApi = async (params: ICommonObj): Promise<ICommonGetL
       pageSize: params.pagination?.pageSize,
     }
     delete sendData.pagination // TODO
-    const res: ICommonObj = await request.get('/inspect/domain-expiry-record/', { params: sendData })
+    const res: ICommonObj = await request.get('/inspect/domain-expiry-record/', {
+      params: sendData,
+    })
     return Promise.resolve({
-      list: res.data.list,
+      list: res.data.data,
       pagination: res.data.pagination,
     })
   } catch (error: any) {

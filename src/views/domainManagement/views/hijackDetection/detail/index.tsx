@@ -14,6 +14,7 @@ import FormilyForm from '~/basicComponents/formilyCmps/formilyForm'
 import CommonLocations from '~/businessComponents/commonLocations'
 import getSchema from './schema'
 import styles from './index.module.scss'
+import { hasPermission } from '~/utils/auth'
 
 import type { IFormilyFormExpose } from '~/basicComponents/formilyCmps/formilyForm'
 
@@ -117,7 +118,7 @@ export default defineComponent({
           >
             取消
           </ElButton>
-          <ElButton type='primary' onClick={confirm}>
+          <ElButton type='primary' onClick={confirm} disabled={!hasPermission(['domain:post'])}>
             保存
           </ElButton>
         </Space>

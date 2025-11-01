@@ -32,7 +32,7 @@ const getSchema = ({ formRef }): ISchema => ({
       },
       'x-component': 'Input',
       'x-component-props': {
-        placeholder: '请输入监控对象',
+        placeholder: '请输入baidu.com的域名格式',
         clearable: true,
       },
     },
@@ -131,6 +131,7 @@ const getSchema = ({ formRef }): ISchema => ({
       'x-component': 'Select',
       'x-component-props': {
         placeholder: '请选择',
+        clearable: true,
       },
       enum: noticeChannelOptions,
     },

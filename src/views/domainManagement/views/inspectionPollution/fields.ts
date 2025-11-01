@@ -129,7 +129,7 @@ export const getFields = ({ router, commonPageRef }: IGetFieldsParams): IField[]
       'x-decorator-props': commonProps,
       'x-component': 'Input',
       'x-component-props': {
-        placeholder: '请输入',
+        placeholder: '请输入baidu.com的域名格式',
       },
     },
   },
@@ -223,8 +223,6 @@ export const getFields = ({ router, commonPageRef }: IGetFieldsParams): IField[]
       properties: {
         noticeMode: {
           type: 'string',
-          required: true,
-          default: 'telegram',
           'x-decorator': 'FormItem',
           'x-decorator-props': {
             label: '通知渠道',
@@ -235,6 +233,7 @@ export const getFields = ({ router, commonPageRef }: IGetFieldsParams): IField[]
           'x-component': 'Select',
           'x-component-props': {
             placeholder: '请选择',
+            clearable: true,
           },
           enum: telegramOptions,
         },
@@ -254,7 +253,6 @@ export const getFields = ({ router, commonPageRef }: IGetFieldsParams): IField[]
       properties: {
         telegramChatId: {
           type: 'string',
-          required: true,
           'x-decorator': 'FormItem',
           'x-decorator-props': {
             label: 'Chat ID',
@@ -318,6 +316,7 @@ export const getFields = ({ router, commonPageRef }: IGetFieldsParams): IField[]
               {
                 type: 'primary',
                 ...commonAttrs,
+                disabled: !hasPermission(['domain:put']),
                 onClick: async (e: Event) => {
                   e.stopPropagation()
                   const res = await getDetailApi(rowData)
@@ -347,6 +346,7 @@ export const getFields = ({ router, commonPageRef }: IGetFieldsParams): IField[]
               {
                 type: isEnable ? 'warning' : 'success',
                 ...commonAttrs,
+                disabled: !hasPermission(['domain:enable']),
                 onClick: async () => {
                   try {
                     await ElMessageBox.confirm(
@@ -381,7 +381,6 @@ export const getFields = ({ router, commonPageRef }: IGetFieldsParams): IField[]
       properties: {
         telegramToken: {
           type: 'string',
-          required: true,
           'x-decorator': 'FormItem',
           'x-decorator-props': {
             label: 'Token',

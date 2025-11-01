@@ -77,7 +77,7 @@ export const basicRoutes: IRouteRecordRaw[] = [
     path: '/',
     name: 'layout',
     component: defineAsyncComponent(() => import('~/layout')),
-    redirect: '/controlPanel/dashBoard',
+    redirect: '/domainManagement/checkResults',
     children: [],
   },
 ]

@@ -41,7 +41,7 @@ export default defineComponent({
               ElButton,
               {
                 type: 'primary',
-                disabled: !hasPermission(['domain:delete']),
+                disabled: !hasPermission(['domain:post']),
                 onClick: () => {
                   router.push({ name: 'DnsInspectCreate' })
                 },

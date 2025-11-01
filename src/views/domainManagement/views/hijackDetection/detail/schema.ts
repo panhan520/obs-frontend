@@ -34,7 +34,7 @@ const getSchema = ({ formRef }): ISchema => ({
       },
       'x-component': 'Input',
       'x-component-props': {
-        placeholder: '请输入监控对象',
+        placeholder: '请输入baidu.com的域名格式',
         clearable: true,
       },
     },
@@ -82,7 +82,6 @@ const getSchema = ({ formRef }): ISchema => ({
     },
     noticeMode: {
       type: 'string',
-      required: true,
       'x-decorator': 'FormItem',
       'x-decorator-props': {
         label: '通知渠道',
@@ -91,10 +90,9 @@ const getSchema = ({ formRef }): ISchema => ({
       'x-component': 'Select',
       'x-component-props': {
         placeholder: '请选择',
-        disabled: true
+        clearable: true,
       },
       enum: noticeChannelOptions,
-      default: 'telegram',
     },
     telegramChatId: {
       type: 'string',

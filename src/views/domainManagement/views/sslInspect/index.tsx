@@ -29,7 +29,7 @@ export default defineComponent({
         fields={fields.value}
         listApi={getListApi}
         createApi={createApi}
-        disabledAdd={!hasPermission(['domain:delete'])}
+        disabledAdd={!hasPermission(['domain:post'])}
         editApi={editApi}
         formatListParams={formatListParams}
         pageKey='sslInspect'
@@ -39,5 +39,5 @@ export default defineComponent({
         needPagination
       />
     )
-  }
+  },
 })

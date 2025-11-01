@@ -41,7 +41,7 @@ export const getFields = ({ router, commonPageRef }): IField[] => ([
           },
           'x-component': 'Input',
           'x-component-props': {
-            placeholder: '请输入',
+            placeholder: '请输入baidu.com的域名格式',
           },
         }
       },
@@ -201,6 +201,7 @@ export const getFields = ({ router, commonPageRef }): IField[] => ([
           h(ElButton, {
             type: 'primary',
             ...commonAttrs,
+            disabled: !hasPermission(['domain:put']),
             onClick: (e: Event) => {
               e.stopPropagation()
               router.push({ name: 'HijackDetectionEdit', query: { id: rowData?.id } })
@@ -217,6 +218,7 @@ export const getFields = ({ router, commonPageRef }): IField[] => ([
           h(ElButton, {
             type: isEnable ? 'warning' : 'success',
             ...commonAttrs,
+            disabled: !hasPermission(['domain:enable']),
             onClick: async (e: Event) => {
               try {
                 const text = isEnable ? commonActions.disable.text : commonActions.enable.text

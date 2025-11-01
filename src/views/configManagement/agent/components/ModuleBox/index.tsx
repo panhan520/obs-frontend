@@ -62,7 +62,7 @@ export default defineComponent({
                       <div>
                         <svg-icon
                           iconClass={item.svgName}
-                          style='font-size: 70px; cursor: pointer'
+                          style='font-size: 70px; cursor: pointer; width: 70px;'
                         />
                       </div>
                     )}

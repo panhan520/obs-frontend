@@ -1,5 +1,6 @@
 import { h } from 'vue'
 import { ElTag, ElLink } from 'element-plus'
+import { MICRO_APP_ROUTE } from '~/constants/qiankun'
 import { execTimeFilterOptions, ExecTimeFilter } from '../taskHistory/constants'
 import { Tabs } from '../overviewPage/constants'
 import { subTypeOptions } from './constants'
@@ -227,7 +228,7 @@ export const getFields = (): IField[] => ([
               ElLink, 
               {
                 type: 'primary',
-                href: `/availabilityMonitoring/overviewPage?testId=${rowData?.testId}&requestType=${rowData?.subType}&activeKey=${Tabs.TaskHistory}`, 
+                href: `/${MICRO_APP_ROUTE}/availabilityMonitoring/overviewPage?testId=${rowData?.testId}&requestType=${rowData?.subType}&activeKey=${Tabs.TaskHistory}`, 
                 target: '_blank',
               }, 
               '查看全量实例',

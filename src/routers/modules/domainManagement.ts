@@ -238,6 +238,10 @@ export default [
           hidden: true, 
           level: 3,
           permissionCodes: ['domain:view'],
+          breadcrumbConfig: [
+            { label: '被墙检测', name: 'InspectionWall' },
+            { label: '被墙检测-历史快照', name: 'InspectionWallLog' },
+          ],
         },
       },
       {
@@ -260,6 +264,10 @@ export default [
           hidden: true, 
           level: 3,
           permissionCodes: ['domain:view'],
+          breadcrumbConfig: [
+            { label: '污染检测', name: 'InspectionPollution' },
+            { label: '污染检测-历史快照', name: 'InspectionPollutionLog' },
+          ],
         },
       },
       {
@@ -282,6 +290,10 @@ export default [
           hidden: true, 
           level: 3,
           permissionCodes: ['domain:view'],
+          breadcrumbConfig: [
+            { label: 'ICP检测', name: 'InspectionICP' },
+            { label: 'ICP检测-历史快照', name: 'InspectionICPLog' },
+          ],
         },
       },
     ],

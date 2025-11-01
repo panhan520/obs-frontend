@@ -90,7 +90,12 @@ export default defineComponent({
     const handlGetTableList = async () => {
       loading.value = true
       const response = await getKeyApi<MyResponse>(
-        { type: 1, id: userStore.userOrg.tenantId },
+        {
+          type: 1,
+          id:
+            userStore.userOrg.tenantId ||
+            JSON.parse(localStorage.getItem('userInfo'))?.userInfo?.tenantId,
+        },
         { ...pagination.value, name: name.value },
       )
       const { code, message, data } = response

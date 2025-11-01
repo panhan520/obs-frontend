@@ -4,7 +4,7 @@ const fields: Column[] = [
   {
     prop: 'createdAt',
     label: '时间',
-    width: 130,
+    width: 200,
   },
   {
     prop: 'status',

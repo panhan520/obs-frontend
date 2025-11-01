@@ -17,7 +17,6 @@ export default defineComponent({
         chatVisible.value = false
       })
     })
-
     onBeforeUnmount(() => {
       emitter.off('openChat')
       emitter.off('closeChat')

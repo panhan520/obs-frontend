@@ -5,6 +5,7 @@ import Space from '~/basicComponents/space'
 import { inspectStatusMap } from './constants'
 
 import type { IField } from '~/businessComponents/commonPage'
+import { hasPermission } from '~/utils/auth'
 
 const commonAttrs = {
   link: true,
@@ -40,7 +41,7 @@ export const getFields = (): IField[] => ([
           },
           'x-component': 'Input',
           'x-component-props': {
-            placeholder: '请输入',
+            placeholder: '请输入baidu.com的域名格式',
           },
         }
       },
@@ -97,7 +98,7 @@ export const getFields = (): IField[] => ([
     prop: 'taskStatus',
     label: '任务状态',
     isColumn: true,
-    columnConfig: { 
+    columnConfig: {
       width: 120,
       render: ({ rowData }) => h(ElTag, { type: rowData.taskStatus ? 'success' : 'danger' }, rowData.taskStatus ? '启用' : '禁用')
     },
@@ -106,7 +107,7 @@ export const getFields = (): IField[] => ([
     prop: 'inspectStatus',
     label: '监控状态',
     isColumn: true,
-    columnConfig: { 
+    columnConfig: {
       width: 120,
       render: ({ rowData }) => h(
         ElTag,
@@ -159,6 +160,7 @@ export const getFields = (): IField[] => ([
           h(ElButton, {
             type: 'danger',
             ...commonAttrs,
+            disabled: !hasPermission(['domain:delete']),
             onClick: async (e: Event) => {
               try {
                 e.stopPropagation()
@@ -183,21 +185,23 @@ export const getFields = (): IField[] => ([
           h(ElButton, {
             type: 'primary',
             ...commonAttrs,
-            onClick: (e: Event) => {  
+            onClick: (e: Event) => {
               e.stopPropagation()
             }
           }, '编辑'),
           h(ElButton, {
             type: 'primary',
             ...commonAttrs,
-            onClick: (e: Event) => {  
+            disabled: !hasPermission(['domain:put']),
+            onClick: (e: Event) => {
               e.stopPropagation()
             }
           }, '查看'),
           h(ElButton, {
             type: isEnable ? 'warning' : 'success',
             ...commonAttrs,
-            onClick: async (e: Event) => {  
+            disabled: !hasPermission(['domain:enable']),
+            onClick: async (e: Event) => {
               try {
                 const text = isEnable ? commonActions.disable.text : commonActions.enable.text
                 e.stopPropagation()

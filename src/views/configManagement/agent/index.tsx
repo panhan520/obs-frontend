@@ -107,7 +107,11 @@ export default defineComponent({
     }
     const getAgetList = async () => {
       const response = await getAgentApi<MyResponse>(
-        { tenantId: userStore.userOrg.tenantId },
+        {
+          tenantId:
+            userStore.userOrg.tenantId ||
+            JSON.parse(localStorage.getItem('userInfo'))?.userInfo?.tenantId,
+        },
         pagination.value,
       )
       const { code, message, data } = response

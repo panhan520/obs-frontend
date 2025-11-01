@@ -9,6 +9,7 @@ import emitter from '~/utils/emitter'
 import { isActiveOptions, statusOptions, statusMap, domainTypeOptions } from './constants'
 
 import type { IField } from '~/businessComponents/commonPage'
+import { hasPermission } from '~/utils/auth'
 
 const commonAttrs = {
   link: true,
@@ -278,7 +279,8 @@ export const getFields = ({ router, commonPageRef }): IField[] => ([
           h(ElButton, {
             type: 'primary',
             ...commonAttrs,
-            onClick: async (e: Event) => {  
+            disabled: !hasPermission(['domain:delete']),
+            onClick: async (e: Event) => {
               try {
                 await ElMessageBox.confirm(
                   '删除后无法恢复，确认删除吗?',
@@ -303,7 +305,8 @@ export const getFields = ({ router, commonPageRef }): IField[] => ([
           h(ElButton, {
             type: 'primary',
             ...commonAttrs,
-            onClick: (e: Event) => {  
+            disabled: !hasPermission(['domain:put']),
+            onClick: (e: Event) => {
               e.stopPropagation()
               emitter.emit('openEditor', { mode: MODE.EDIT, rowData, rowIndex: 0 })
             }

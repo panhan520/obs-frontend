@@ -23,7 +23,7 @@ export const getTabsToConfig = ({ route }) => ([
       style: {
         height: '100%',
       },
-      formatListParams: (params: ICommonObj) => ({ id: route?.query?.id, ...params }),
+      formatListParams: (params: ICommonObj) => ({ task: route?.query?.id, ...params }),
       needPagination: true,
     },
   },
