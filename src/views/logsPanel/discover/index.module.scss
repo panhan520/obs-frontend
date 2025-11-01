@@ -289,6 +289,12 @@
     .dotInfo {
       background-color: #67c1ff;
     }
+    .dotFatal {
+      background-color: #8b0000; /* 深红色，表示严重错误 */
+    }
+    .dotDebug {
+      background-color: #722ed1; /* 紫色，表示调试信息 */
+    }
 
     .statusLabel {
       flex: 1;
@@ -384,6 +390,9 @@
         &:hover {
           border-color: #c0c4cc;
         }
+      }
+      .timeRangeText {
+        cursor: auto;
       }
 
       .calendarIcon {

@@ -3,7 +3,7 @@ import { ElCheckbox, ElIcon } from 'element-plus'
 import styles from '../index.module.scss'
 import { ArrowDown, ArrowRight } from '@element-plus/icons-vue'
 
-export type StatusKey = 'Error' | 'Warn' | 'Info'
+export type StatusKey = 'Error' | 'Warn' | 'Info' | 'Fatal' | 'Debug'
 
 export default defineComponent({
   name: 'StatusFilter',
@@ -43,7 +43,7 @@ export default defineComponent({
 
     // 处理All点击：全选所有状态
     const handleAllClick = () => {
-      const allStatuses: StatusKey[] = ['Error', 'Warn', 'Info']
+      const allStatuses: StatusKey[] = ['Error', 'Warn', 'Info', 'Fatal', 'Debug']
       emit('update:modelValue', allStatuses)
       emit('change', allStatuses)
     }
@@ -76,7 +76,7 @@ export default defineComponent({
         </div>
         {!collapsed.value ? (
           <div class={styles.statusList}>
-            {(['Error', 'Warn', 'Info'] as StatusKey[]).map((k) => (
+            {(['Fatal', 'Error', 'Warn', 'Debug', 'Info'] as StatusKey[]).map((k) => (
               <div
                 class={styles.statusRow}
                 key={k}

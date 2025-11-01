@@ -51,6 +51,7 @@ export default defineComponent({
       // 搜索条件
       queryCondition: '',
       filterConditions: [] as FilterCondition[],
+      levels: [] as string[], // 日志级别筛选
 
       // 时间范围
       startTimestamp: null as number | null,
@@ -326,10 +327,32 @@ export default defineComponent({
       availableFields.value.filter((field) => field.selected).map((field) => field.name),
     )
     // Status counts based on example data. In real use, compute from response.
-    const statusChecked = ref<StatusKey[]>(['Error', 'Warn', 'Info'])
+    const statusChecked = ref<StatusKey[]>(['Error', 'Warn', 'Info', 'Fatal', 'Debug'])
+
+    // 初始化levels
+    searchConditions.levels = statusChecked.value.map((key) => key.toUpperCase())
+
+    // 将StatusKey转换为后端需要的格式（如'Error' -> 'ERROR'）
+    const statusKeyToLevel = (key: StatusKey): string => {
+      return key.toUpperCase()
+    }
+
+    // 处理状态改变，调用executeSearch
+    const handleStatusChange = async (newStatuses: StatusKey[]) => {
+      // 更新状态选中值
+      statusChecked.value = newStatuses
+
+      // 转换为后端需要的levels格式
+      searchConditions.levels = newStatuses.map(statusKeyToLevel)
+
+      // 如果已选择数据源和索引，则调用查询
+      if (searchConditions.dataSourceId && searchConditions.indexName) {
+        await executeSearch({})
+      }
+    }
     const statusCounts = computed<Record<StatusKey, number>>(() => {
       // 假计数：可根据 logDocuments 实际字段统计，比如 level 或 status
-      const counts: Record<StatusKey, number> = { Error: 0, Warn: 0, Info: 0 }
+      const counts: Record<StatusKey, number> = { Error: 0, Warn: 0, Info: 0, Fatal: 0, Debug: 0 }
       logChartDatas.value.forEach((d) => {
         const level = (d as any).level as string | undefined
         if (!level) return
@@ -341,6 +364,8 @@ export default defineComponent({
         if (normalizedLevel === 'ERROR') key = 'Error'
         else if (normalizedLevel === 'WARN') key = 'Warn'
         else if (normalizedLevel === 'INFO') key = 'Info'
+        else if (normalizedLevel === 'FATAL') key = 'Fatal'
+        else if (normalizedLevel === 'DEBUG') key = 'Debug'
         else {
           // 如果不是标准格式，尝试首字母大写
           key = (level[0].toUpperCase() + level.slice(1).toLowerCase()) as StatusKey
@@ -350,27 +375,6 @@ export default defineComponent({
       })
       console.log(counts)
       return counts
-    })
-
-    const filteredDocuments = computed(() => {
-      // 根据勾选的状态过滤日志文档
-      return logChartDatas.value.filter((d) => {
-        const level = (d as any).level as string | undefined
-        if (!level) return true
-
-        // 处理后端返回的全大写格式
-        const normalizedLevel = level.toUpperCase()
-        let key: StatusKey
-
-        if (normalizedLevel === 'ERROR') key = 'Error'
-        else if (normalizedLevel === 'WARN') key = 'Warn'
-        else if (normalizedLevel === 'INFO') key = 'Info'
-        else {
-          key = (level[0].toUpperCase() + level.slice(1).toLowerCase()) as StatusKey
-        }
-
-        return statusChecked.value.includes(key)
-      })
     })
 
     const selectedFieldObjects = computed(() => {
@@ -467,6 +471,11 @@ export default defineComponent({
         filterConditions: searchConditions.filterConditions,
         queryCondition: searchConditions.queryCondition,
         searchTimeType: normalizedSearchTimeType,
+      }
+
+      // 添加levels参数（如果有选中的状态）
+      if (searchConditions.levels && searchConditions.levels.length > 0) {
+        params.levels = searchConditions.levels
       }
 
       if (normalizedSearchTimeType === 'SEARCH_TIME_TYPE_RELATIVE') {
@@ -892,7 +901,10 @@ export default defineComponent({
             <StatusFilter
               modelValue={statusChecked.value}
               counts={statusCounts.value}
-              onUpdate:modelValue={(v: StatusKey[]) => (statusChecked.value = v)}
+              onUpdate:modelValue={(v: StatusKey[]) => {
+                statusChecked.value = v
+              }}
+              onChange={handleStatusChange}
             />
             {/* 可选字段 */}
             <div v-loading={fieldsLoading.value}>
@@ -957,6 +969,11 @@ export default defineComponent({
                     sortOrder: searchConditions.sortOrder,
                   }}
                   total={total.value}
+                  searchKey={
+                    searchConditions.queryCondition
+                      ? searchConditions.queryCondition.split(' ')[0] || ''
+                      : ''
+                  }
                   onUpdate:pagination={handlePaginationUpdate}
                 />
               </div>

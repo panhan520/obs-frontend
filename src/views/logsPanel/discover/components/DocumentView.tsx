@@ -40,6 +40,10 @@ export default defineComponent({
       type: Number,
       required: true,
     },
+    searchKey: {
+      type: String,
+      default: '',
+    },
   },
   emits: ['update:pagination'],
   setup(props, { emit }) {
@@ -85,6 +89,35 @@ export default defineComponent({
       return text.length <= maxLength ? text : text.substring(0, maxLength) + '...'
     }
 
+    // 高亮显示搜索关键字
+    const highlightText = (text: string, searchKey: string) => {
+      if (!searchKey || !text) {
+        return text || ''
+      }
+
+      const keyStr = String(searchKey)
+      const textStr = String(text)
+
+      // 使用正则表达式进行全局替换（不区分大小写）
+      const regex = new RegExp(`(${keyStr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi')
+      const parts = textStr.split(regex)
+
+      return (
+        <>
+          {parts.map((part, index) => {
+            if (part.toLowerCase() === keyStr.toLowerCase()) {
+              return (
+                <span key={index} style={{ backgroundColor: '#ffff00', fontWeight: 'bold' }}>
+                  {part}
+                </span>
+              )
+            }
+            return <span key={index}>{part}</span>
+          })}
+        </>
+      )
+    }
+
     const renderSourceJson = (data: any) => {
       if (!data || typeof data !== 'object') {
         return <span class={styles.dashCell}>-</span>
@@ -94,9 +127,11 @@ export default defineComponent({
         <div class={styles.sourceJsonContainer}>
           {entries.map(([key, value], index) => (
             <span key={key} class={styles.sourceJsonItem}>
-              <span class={styles.sourceJsonKey}>{key}:</span>
+              <span class={styles.sourceJsonKey}>{highlightText(key, props.searchKey)}:</span>
               <span class={styles.sourceJsonValue}>
-                {typeof value === 'object' ? JSON.stringify(value) : String(value)}
+                {typeof value === 'object'
+                  ? highlightText(JSON.stringify(value), props.searchKey)
+                  : highlightText(String(value), props.searchKey)}
               </span>
               {index < entries.length - 1 && <span class={styles.sourceJsonSeparator}> </span>}
             </span>
@@ -219,13 +254,21 @@ export default defineComponent({
                       if (field.name === '_source') return renderSourceJson(row)
                       if (value === undefined || value === null)
                         return <span class={styles.dashCell}>-</span>
-                      if (typeof value === 'object')
+                      if (typeof value === 'object') {
+                        const jsonStr = JSON.stringify(value)
+                        const truncated = truncateText(jsonStr, 100)
                         return (
                           <span class={styles.messageCell}>
-                            {truncateText(JSON.stringify(value), 100)}
+                            {highlightText(truncated, props.searchKey)}
                           </span>
                         )
-                      return <span class={styles.textCell}>{truncateText(String(value), 100)}</span>
+                      }
+                      const textValue = truncateText(String(value), 100)
+                      return (
+                        <span class={styles.textCell}>
+                          {highlightText(textValue, props.searchKey)}
+                        </span>
+                      )
                     },
                   }}
                 />

@@ -14,6 +14,8 @@ interface ChartDataPoint {
   info: number
   error: number
   warn: number
+  fatal: number
+  debug: number
 }
 
 export default defineComponent({
@@ -27,7 +29,7 @@ export default defineComponent({
     selectedStatuses: {
       type: Array as PropType<StatusKey[]>,
       required: true,
-      default: () => ['Info', 'Error', 'Warn'],
+      default: () => ['Info', 'Error', 'Warn', 'Fatal', 'Debug'],
     },
   },
   setup(props) {
@@ -41,7 +43,10 @@ export default defineComponent({
         return []
       }
 
-      const timeMap = new Map<string, { info: number; error: number; warn: number }>()
+      const timeMap = new Map<
+        string,
+        { info: number; error: number; warn: number; fatal: number; debug: number }
+      >()
 
       data.forEach((item) => {
         const level = item.level?.toLowerCase()
@@ -52,16 +57,11 @@ export default defineComponent({
         // 转换为 StatusKey 格式
         const statusKey = (level.charAt(0).toUpperCase() + level.slice(1)) as StatusKey
 
-        // 检查是否在选中的状态中
-        if (props.selectedStatuses.length > 0 && !props.selectedStatuses.includes(statusKey)) {
-          return
-        }
-
         // 使用时间作为键
         const timeKey = item.time
 
         if (!timeMap.has(timeKey)) {
-          timeMap.set(timeKey, { info: 0, error: 0, warn: 0 })
+          timeMap.set(timeKey, { info: 0, error: 0, warn: 0, fatal: 0, debug: 0 })
         }
 
         const counts = timeMap.get(timeKey)!
@@ -69,6 +69,8 @@ export default defineComponent({
         if (statusKey === 'Info') counts.info += count
         else if (statusKey === 'Error') counts.error += count
         else if (statusKey === 'Warn') counts.warn += count
+        else if (statusKey === 'Fatal') counts.fatal += count
+        else if (statusKey === 'Debug') counts.debug += count
       })
 
       // 转换为数组并按时间排序
@@ -108,6 +110,8 @@ export default defineComponent({
       const infoData = data.map((item) => item.info)
       const errorData = data.map((item) => item.error)
       const warnData = data.map((item) => item.warn)
+      const fatalData = data.map((item) => item.fatal)
+      const debugData = data.map((item) => item.debug)
 
       return {
         tooltip: {
@@ -143,29 +147,47 @@ export default defineComponent({
           {
             name: 'Info',
             type: 'bar',
+            stack: 'logLevels',
             data: infoData,
             itemStyle: {
               color: '#67c1ff',
             },
-            barWidth: '20%',
           },
           {
             name: 'Error',
             type: 'bar',
+            stack: 'logLevels',
             data: errorData,
             itemStyle: {
               color: '#ff4d4f',
             },
-            barWidth: '20%',
           },
           {
             name: 'Warn',
             type: 'bar',
+            stack: 'logLevels',
             data: warnData,
             itemStyle: {
               color: '#ffb020',
             },
-            barWidth: '20%',
+          },
+          {
+            name: 'Fatal',
+            type: 'bar',
+            stack: 'logLevels',
+            data: fatalData,
+            itemStyle: {
+              color: '#8b0000',
+            },
+          },
+          {
+            name: 'Debug',
+            type: 'bar',
+            stack: 'logLevels',
+            data: debugData,
+            itemStyle: {
+              color: '#722ed1',
+            },
           },
         ],
       }
