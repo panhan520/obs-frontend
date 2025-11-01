@@ -46,6 +46,7 @@ export default defineComponent({
       try {
         testLoading.value = true
         const testData: CreateDataSourceParams = {
+          id: props.dataSource.id,
           name: props.dataSource.name,
           type: props.dataSource.type,
           dataType: props.dataSource.dataType,

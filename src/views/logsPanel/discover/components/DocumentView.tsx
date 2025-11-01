@@ -44,6 +44,10 @@ export default defineComponent({
       type: String,
       default: '',
     },
+    isStreaming: {
+      type: Boolean,
+      default: false,
+    },
   },
   emits: ['update:pagination'],
   setup(props, { emit }) {
@@ -129,9 +133,7 @@ export default defineComponent({
             <span key={key} class={styles.sourceJsonItem}>
               <span class={styles.sourceJsonKey}>{highlightText(key, props.searchKey)}:</span>
               <span class={styles.sourceJsonValue}>
-                {typeof value === 'object'
-                  ? highlightText(JSON.stringify(value), props.searchKey)
-                  : highlightText(String(value), props.searchKey)}
+                {typeof value === 'object' ? JSON.stringify(value) : String(value)}
               </span>
               {index < entries.length - 1 && <span class={styles.sourceJsonSeparator}> </span>}
             </span>
@@ -147,7 +149,7 @@ export default defineComponent({
             <div class={styles.documentTable}>
               {Object.entries(row).map(([key, value]) => (
                 <div key={key} class={styles.documentRow}>
-                  <div class={styles.documentKey}>{key}</div>
+                  <div class={styles.documentKey}>{highlightText(key, props.searchKey)}</div>
                   <div class={styles.documentValue}>
                     {typeof value === 'object' ? JSON.stringify(value) : String(value)}
                   </div>
@@ -257,18 +259,10 @@ export default defineComponent({
                       if (typeof value === 'object') {
                         const jsonStr = JSON.stringify(value)
                         const truncated = truncateText(jsonStr, 100)
-                        return (
-                          <span class={styles.messageCell}>
-                            {highlightText(truncated, props.searchKey)}
-                          </span>
-                        )
+                        return <span class={styles.messageCell}>{truncated}</span>
                       }
                       const textValue = truncateText(String(value), 100)
-                      return (
-                        <span class={styles.textCell}>
-                          {highlightText(textValue, props.searchKey)}
-                        </span>
-                      )
+                      return <span class={styles.textCell}>{textValue}</span>
                     },
                   }}
                 />
@@ -277,16 +271,18 @@ export default defineComponent({
           </ElTable>
         </div>
 
-        <div class={styles.paginationContainer}>
-          <ElPagination
-            v-model:current-page={currentPage.value}
-            v-model:page-size={pageSize.value}
-            page-sizes={pageSizes}
-            total={props.total}
-            layout='total, sizes, prev, pager, next, jumper'
-            background
-          />
-        </div>
+        {!props.isStreaming && (
+          <div class={styles.paginationContainer}>
+            <ElPagination
+              v-model:current-page={currentPage.value}
+              v-model:page-size={pageSize.value}
+              page-sizes={pageSizes}
+              total={props.total}
+              layout='total, sizes, prev, pager, next, jumper'
+              background
+            />
+          </div>
+        )}
       </div>
     )
   },

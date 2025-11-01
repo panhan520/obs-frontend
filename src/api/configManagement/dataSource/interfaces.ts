@@ -192,6 +192,7 @@ export interface IDataSourceItem {
 
 // 创建数据源参数
 export interface CreateDataSourceParams {
+  id?: string
   name: string
   type: DataSourceType
   dataType: DataType

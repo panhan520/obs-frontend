@@ -277,6 +277,9 @@ export default defineComponent({
     const isStreaming = ref(false)
     const logStream = ref<EventSource | null>(null)
 
+    // 搜索关键字（只在查询后生效）
+    const searchKey = ref('')
+
     // 处理分页参数变化
     const handlePaginationUpdate = (params: {
       page: number
@@ -473,8 +476,12 @@ export default defineComponent({
         searchTimeType: normalizedSearchTimeType,
       }
 
-      // 添加levels参数（如果有选中的状态）
-      if (searchConditions.levels && searchConditions.levels.length > 0) {
+      // 添加levels参数（如果有选中的状态，且不是全选5个状态）
+      if (
+        searchConditions.levels &&
+        searchConditions.levels.length > 0 &&
+        searchConditions.levels.length < 5
+      ) {
         params.levels = searchConditions.levels
       }
 
@@ -490,7 +497,7 @@ export default defineComponent({
           params.endTimestamp = searchConditions.endTimestamp
         }
       }
-      await getChartData(params)
+      getChartData(params)
       params = {
         ...params,
         page: searchConditions.page,
@@ -498,6 +505,11 @@ export default defineComponent({
         sortOrder: searchConditions.sortOrder === 'asc' ? 'SORT_ORDER_ASC' : 'SORT_ORDER_DESC',
       }
       await getList(params)
+
+      // 查询后更新searchKey
+      searchKey.value = searchConditions.queryCondition
+        ? searchConditions.queryCondition.split(' ')[0] || ''
+        : ''
     }
     // 获取图表数据
     const getChartData = async (params) => {
@@ -761,6 +773,16 @@ export default defineComponent({
           ElMessage.warning('请选择索引')
           return
         }
+        // 只清空 queryCondition、filterConditions、levels 三个字段
+        searchConditions.queryCondition = ''
+        searchConditions.filterConditions = []
+        // 重置 levels 为全选状态（默认值）
+        statusChecked.value = ['Error', 'Warn', 'Info', 'Fatal', 'Debug']
+        searchConditions.levels = statusChecked.value.map((key) => key.toUpperCase())
+
+        // 清除搜索关键字
+        searchKey.value = ''
+
         searchConditions.searchTimeType = 2
         await executeSearch({})
         startLogStream()
@@ -969,11 +991,8 @@ export default defineComponent({
                     sortOrder: searchConditions.sortOrder,
                   }}
                   total={total.value}
-                  searchKey={
-                    searchConditions.queryCondition
-                      ? searchConditions.queryCondition.split(' ')[0] || ''
-                      : ''
-                  }
+                  searchKey={searchKey.value}
+                  isStreaming={isStreaming.value}
                   onUpdate:pagination={handlePaginationUpdate}
                 />
               </div>

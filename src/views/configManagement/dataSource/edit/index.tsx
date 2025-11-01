@@ -271,6 +271,9 @@ export default defineComponent({
           dataType: formData.dataType,
           description: formData.description,
         }
+        if (isEdit.value) {
+          testData.id = route.query.id as string // 如果是编辑模式，添加id字段
+        }
 
         // 根据数据源类型添加特定配置
         switch (formData.type) {
