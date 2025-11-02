@@ -1,5 +1,6 @@
 import { defineComponent, ref, onMounted, onUnmounted, nextTick, provide } from 'vue'
-import { ElDivider, ElButton, ElSpace } from 'element-plus'
+import { isEmpty } from 'lodash'
+import { ElDivider, ElButton, ElSpace, ElEmpty } from 'element-plus'
 import { ArrowDown, Refresh, Setting, Plus } from '@element-plus/icons-vue'
 import Space from '../../basicComponents/space'
 import emitter from '../../__builtins__/emitter'
@@ -246,22 +247,26 @@ export default defineComponent({
             </Space>
           </Space>
           <div class={styles.tableContainer}>
-            <CommonTable
-              ref={commonTableRef}
-              rowKey={props.rowKey}
-              height={commonTableRefHeight.value}
-              columns={visibleColumns}
-              listApi={props.listApi}
-              formatListParams={props.formatListParams}
-              beforeFetch={({ formData }) => { commonFilterRef.value?.keepFilter?.(formData) }}
-              selectable={props.selectable}
-              selectOptions={props.selectOptions}
-              selected={props.selected}
-              expandedRowRender={props.expandedRowRender}
-              onUpdate:selected={(val: any[]) => { emit('update:selected', val) }}
-              needPagination={props.needPagination}
-              onRowClick={(row: any, column: any, event: Event) => { emit('rowClick', { rowData: row, column, event }) }}
-            />
+            {
+              isEmpty(visibleColumns.value)
+                ? <ElEmpty description='哎呀，至少留一列吧，不然表格都没法看啦～' />
+                : <CommonTable
+                    ref={commonTableRef}
+                    rowKey={props.rowKey}
+                    height={commonTableRefHeight.value}
+                    columns={visibleColumns}
+                    listApi={props.listApi}
+                    formatListParams={props.formatListParams}
+                    beforeFetch={({ formData }) => { commonFilterRef.value?.keepFilter?.(formData) }}
+                    selectable={props.selectable}
+                    selectOptions={props.selectOptions}
+                    selected={props.selected}
+                    expandedRowRender={props.expandedRowRender}
+                    onUpdate:selected={(val: any[]) => { emit('update:selected', val) }}
+                    needPagination={props.needPagination}
+                    onRowClick={(row: any, column: any, event: Event) => { emit('rowClick', { rowData: row, column, event }) }}
+                  />
+            }
           </div>
         </Space>
         <CommonEditor

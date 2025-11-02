@@ -35,7 +35,7 @@ const usePagePreferences = ({
     /** basicVisibleFields改变，则更新本地存储中的数据 */
     watch(() => basicVisibleFields.value, () => {
       pagePreferences.value = basicVisibleFields.value
-    }, { immediate: true, deep: true })
+    }, { deep: true })
     /** 页面偏好key-用于渲染的筛选项 */
     const allVisibleFilterFieldKeys = computed<string[]>(() => pagePreferences.value[FILTER_KEY].filter(v => v.selected).map(v => v.key))
     /** 页面偏好key-用于渲染的表格列 */

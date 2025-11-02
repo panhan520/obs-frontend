@@ -19,7 +19,7 @@ export default defineComponent({
   name: 'CommonTable',
   inheritAttrs: false,
   props: props as typeof props & { key: any },
-  setup(props, { attrs, emit, expose, slots }) {
+  setup(props, { attrs, emit, expose }) {
     const tableRef = ref()
     const refreshKey = ref(0)
     const currentPage = ref(1)
@@ -66,7 +66,6 @@ export default defineComponent({
           data={data.value}
           // 每次查询，table重新赋值后，table触发事件去清空选中值。给checkbox的column加上reserve-selection可解。
           onSelectionChange={(newSelection: any[]) => emit('update:selected', newSelection)}
-          v-slots={slots}
         >
           {props.selectable && <ElTableColumn type='selection' fixed='left' selectable={props.selectOptions}/>}
           {expandedRowTsx()}

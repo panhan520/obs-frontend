@@ -28,5 +28,17 @@ export interface ICommonGetListRes<L> {
   }
 }
 
+/** 获取列表入参 */
+export interface ICommonGetListParams {
+  /** 页码 */
+  page: number
+  /** 每页展示条数 */
+  pageSize: number
+  /** 总条目 */
+  total: number
+  /** 业务参数 */
+  [key: string]: any
+}
+
 /** 获取列表 */
 export type IListApi = (p?: ICommonObj) => Promise<ICommonGetListRes<any[]>>

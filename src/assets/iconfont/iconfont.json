@@ -6,6 +6,13 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "11420362",
+      "name": "un-config-o",
+      "font_class": "un-config-o",
+      "unicode": "e6b4",
+      "unicode_decimal": 59060
+    },
+    {
       "icon_id": "18285352",
       "name": "trace",
       "font_class": "trace",

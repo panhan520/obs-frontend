@@ -1,4 +1,5 @@
 import { defineComponent, ref, watch } from 'vue'
+import { cloneDeep } from 'lodash'
 import { ElPopover, ElButton } from 'element-plus'
 import Space from '../../basicComponents/space'
 import { pagePreferencesToKeyMap, Common_Page_Preferences_Type } from './constants'
@@ -28,16 +29,26 @@ export default defineComponent({
   emits: ['confirm'],
   setup(props, { slots, emit }) {
     const popoverRef = ref()
+    /** 从props派生一个镜像数据，用于CommonSetter临时勾选和排序 */
     const basicFields = ref({
       [pagePreferencesToKeyMap[Common_Page_Preferences_Type.FILTER]]: props.allVisibleFilterFields,
       [pagePreferencesToKeyMap[Common_Page_Preferences_Type.COLUMN]]: props.allVisibleColumnFields,
     })
+    /** 数据源改变，则更新镜像数据 */
     watch(() => [props.allVisibleFilterFields, props.allVisibleColumnFields], ([v1, v2]) => {
       basicFields.value = {
         [pagePreferencesToKeyMap[Common_Page_Preferences_Type.FILTER]]: v1,
         [pagePreferencesToKeyMap[Common_Page_Preferences_Type.COLUMN]]: v2,
       }
     }, { immediate: true, deep: true })
+    /** 关闭弹窗时，重置镜像数据为props数据源 */
+    const close = () => {
+      popoverRef.value?.hide?.()
+      basicFields.value = {
+        [pagePreferencesToKeyMap[Common_Page_Preferences_Type.FILTER]]: props.allVisibleFilterFields,
+        [pagePreferencesToKeyMap[Common_Page_Preferences_Type.COLUMN]]: props.allVisibleColumnFields,
+      }
+    }
     return () => {
       const defaultTsx = () => (
         <Space direction='column' size={0}>  
@@ -56,12 +67,13 @@ export default defineComponent({
             />
           </Space>
           <Space justify='center' fill size={0} style={{ padding: '16px 0 0 0' }}>
-            <ElButton onClick={() => { popoverRef.value?.hide?.() }}>取消</ElButton>
+            <ElButton onClick={close}>取消</ElButton>
             <ElButton
               type='primary'
               onClick={() => {
                 popoverRef.value?.hide?.()
-                emit('confirm', basicFields.value)
+                /** cloneDeep，防止本组件镜像数据和useStorage中数据串联 */
+                emit('confirm', cloneDeep(basicFields.value))
               }}
             >确认</ElButton>
           </Space>

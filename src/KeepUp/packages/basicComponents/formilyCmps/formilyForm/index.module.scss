@@ -9,5 +9,13 @@
   :global(.el-collapse-item__header) {
     box-sizing: border-box;
   }
-  
+  /** 让FormStep正常显示 */
+  :global(.el-step__icon) {
+    position: absolute;
+    left: 0;
+  }
+  :global(.el-step__title) {
+    margin-top: 30px;
+  }
+  /** 让FormStep正常显示 */
 }

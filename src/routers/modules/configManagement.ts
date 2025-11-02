@@ -12,7 +12,7 @@ const configManagementRouter: IRouteRecordRaw[] = [
     redirect: '/configMangeMent/agentPanel',
     meta: { 
       title: '配置管理 ', 
-      icon: h(IconFont, { name: 'logs_panel' }), 
+      icon: h(IconFont, { name: 'un-config-o' }), 
       level: 1,
       permissionCodes: ['config:view'],
     },

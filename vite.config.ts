@@ -26,6 +26,7 @@ const proxy = {
     target: 'https://gateway.observe.dev.eks.gainetics.io',
     changeOrigin: true,
     rewrite: (path) => path.replace(/^\/iam-proxy/, '/api/v1/iam'),
+
   },
   [`/core-proxy`]: {
     target: 'https://gateway.observe.dev.eks.gainetics.io/api/core',
@@ -76,13 +77,16 @@ const proxy = {
   },
 
   /** qiankun */
-  [`/${MICRO_APP_NAME}/observable/user/v1`]: {
-    target: 'https://gateway.observe.dev.eks.gainetics.io/api/user',
+  [`/${MICRO_APP_NAME}/iam-proxy`]: {
+    target: 'https://gateway.observe.dev.eks.gainetics.io',
     changeOrigin: true,
+    rewrite: (path) => path.replace(/^\/STARVIEW\/iam-proxy/, '/api/v1/iam'),
+
   },
-  [`/${MICRO_APP_NAME}/observable/core/v1`]: {
+  [`/${MICRO_APP_NAME}/core-proxy`]: {
     target: 'https://gateway.observe.dev.eks.gainetics.io/api/core',
     changeOrigin: true,
+    rewrite: (path) => path.replace(/^\/STARVIEW\/core-proxy/, '/observable/core/v1'),
   },
   [`/${MICRO_APP_NAME}/api/v1`]: {
     target: 'https://gateway.observe.dev.gainetics.io/domain',
