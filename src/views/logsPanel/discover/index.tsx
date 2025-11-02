@@ -838,6 +838,7 @@ export default defineComponent({
                   disabled={dataSourceLoading.value}
                   onChange={handleDataSourceChange} // 添加 change 事件
                   clearable
+                  filterable
                 >
                   {dataSourceList.value.map((it) => (
                     <ElOption label={it.name} value={it.id} />
@@ -874,6 +875,7 @@ export default defineComponent({
                     searchConditions.indexName = it?.indexName || val || ''
                   }}
                   clearable
+                  filterable
                 >
                   {indexList.value.map((it) => (
                     <ElOption label={it.indexName} value={it.indexName} />

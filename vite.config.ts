@@ -21,21 +21,20 @@ const proxy = {
     target: 'https://gateway.observe.dev.eks.gainetics.io',
     changeOrigin: true,
   },
+  [`/config/v1`]: {
+    target: 'https://gateway.observe.dev.eks.gainetics.io',
+    changeOrigin: true,
+  },
   // 登录、仪表盘、安装agent
   [`/iam-proxy`]: {
     target: 'https://gateway.observe.dev.eks.gainetics.io',
     changeOrigin: true,
     rewrite: (path) => path.replace(/^\/iam-proxy/, '/api/v1/iam'),
-
   },
   [`/core-proxy`]: {
     target: 'https://gateway.observe.dev.eks.gainetics.io/api/core',
     changeOrigin: true,
     rewrite: (path) => path.replace(/^\/core-proxy/, '/observable/core/v1'),
-  },
-  [`/config/v1`]: {
-    target: 'https://gateway.observe.dev.eks.gainetics.io',
-    changeOrigin: true,
   },
   [`/api/v1`]: {
     target: 'https://gateway.observe.dev.gainetics.io/domain',
@@ -69,10 +68,10 @@ const proxy = {
     changeOrigin: true,
     rewrite: (path) => path.replace(/^\/logging-proxy/, ''),
     bypass(req, res, options) {
-      console.log("req", req.url);
-      const realUrl = options.target + (options.rewrite ? options.rewrite(req.url) : '');
-      console.log(realUrl);
-      res.setHeader('A-realurl', realUrl); // 添加响应标头,A-realurl为自定义命名，在浏览器中显示
+      console.log('req', req.url)
+      const realUrl = options.target + (options.rewrite ? options.rewrite(req.url) : '')
+      console.log(realUrl)
+      res.setHeader('A-realurl', realUrl) // 添加响应标头,A-realurl为自定义命名，在浏览器中显示
     },
   },
 
@@ -81,7 +80,6 @@ const proxy = {
     target: 'https://gateway.observe.dev.eks.gainetics.io',
     changeOrigin: true,
     rewrite: (path) => path.replace(/^\/STARVIEW\/iam-proxy/, '/api/v1/iam'),
-
   },
   [`/${MICRO_APP_NAME}/core-proxy`]: {
     target: 'https://gateway.observe.dev.eks.gainetics.io/api/core',
@@ -142,13 +140,13 @@ export default defineConfig(({ command, mode }: ConfigEnv): UserConfig => {
       }),
       // gzip压缩 生产环境生成 .gz 文件
       mode === 'production' &&
-      viteCompression({
-        verbose: true,
-        disable: false,
-        threshold: 10240,
-        algorithm: 'gzip',
-        ext: '.gz',
-      }),
+        viteCompression({
+          verbose: true,
+          disable: false,
+          threshold: 10240,
+          algorithm: 'gzip',
+          ext: '.gz',
+        }),
       qiankun(MICRO_APP_NAME, {
         useDevMode: true,
       }),
