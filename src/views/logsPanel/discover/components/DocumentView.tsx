@@ -221,7 +221,6 @@ export default defineComponent({
             <ElTableColumn
               prop='timestamp'
               label='Time'
-              width={200}
               sortable={false}
               v-slots={{
                 header: () => (

@@ -76,6 +76,16 @@ const proxy = {
   },
 
   /** qiankun */
+  [`/${MICRO_APP_NAME}/api/v1/logging`]: {
+    target: 'https://gateway.observe.dev.eks.gainetics.io',
+    changeOrigin: true,
+    rewrite: (path) => path.replace(/^\/STARVIEW\/api\/v1\/logging/, '/api/v1/logging'),
+  },
+  [`/${MICRO_APP_NAME}/config/v1`]: {
+    target: 'https://gateway.observe.dev.eks.gainetics.io',
+    changeOrigin: true,
+    rewrite: (path) => path.replace(/^\/STARVIEW\/config\/v1/, '/config/v1'),
+  },
   [`/${MICRO_APP_NAME}/iam-proxy`]: {
     target: 'https://gateway.observe.dev.eks.gainetics.io',
     changeOrigin: true,

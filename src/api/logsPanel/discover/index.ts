@@ -67,3 +67,8 @@ export const createLogStream = (indexId: string): EventSource => {
     withCredentials: true, // 如果需要携带 cookie
   })
 }
+
+// 选择索引后初始检索列表
+export const getIndexLogList = (params: LogListParams): Promise<LogListResponse> => {
+  return request.post('/log/init-list', params)
+}

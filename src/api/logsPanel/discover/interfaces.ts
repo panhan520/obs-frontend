@@ -62,7 +62,7 @@ export interface LogHistogramResponse {
 export interface LogListParams {
   dataSourceId?: string
   indexName: string
-  searchTimeType: string
+  searchTimeType?: string
   startTimestamp?: string
   endTimestamp?: string
   minutesPast?: number
@@ -76,7 +76,7 @@ export interface LogListParams {
 // 分页检索列表响应
 export interface LogListResponse {
   data: {
-    total: number
+    total?: number
     list: []
   }
 }

@@ -20,6 +20,7 @@ import {
   createLogStream,
   editQueryConds,
   deleteQueryConds,
+  getIndexLogList,
 } from '@/api/logsPanel/discover'
 import { hasPermission } from '~/utils/auth'
 import { getDatasourceUseList } from '@/api/configManagement/dataSource'
@@ -788,6 +789,52 @@ export default defineComponent({
         startLogStream()
       }
     }
+    const handleChangeIndex = (val: string) => {
+      const it = indexList.value.find((x) => x.indexName === val)
+      searchConditions.indexId = it?.indexId || val || ''
+      searchConditions.indexName = it?.indexName || val || ''
+      const params = {
+        dataSourceId: searchConditions.dataSourceId,
+        indexName: val,
+      }
+      getIndexLogListData(params)
+    }
+    const getIndexLogListData = async (params) => {
+      try {
+        loading.value = true
+        fieldsLoading.value = true
+        const res = await getIndexLogList(params)
+        const logList = res.data.list as LogDocument[]
+        logDocuments.value = transformLogData(logList)
+        total.value = res.data.total
+        getAvailableFields(logList)
+        // 清空查询与时间范围但保留索引选择
+        searchConditions.queryCondition = ''
+        searchConditions.filterConditions = []
+        if (logList.length > 0) {
+          const startTime = new Date(logList[logList.length - 1].timestamp).getTime()
+          const endTime = new Date(logList[0].timestamp).getTime()
+          params.startTimestamp = startTime
+          params.endTimestamp = endTime
+          params.searchTimeType = 1
+          params.minutesPast = undefined
+          params.sortOrder = 'desc'
+          getChartData(params)
+          searchConditions.startTimestamp = startTime
+          searchConditions.endTimestamp = endTime
+        } else {
+          logChartDatas.value = []
+          searchConditions.startTimestamp = fifteenMinutesAgo.getTime()
+          searchConditions.endTimestamp = now.getTime()
+        }
+        searchConditions.searchTimeType = 1
+        searchConditions.minutesPast = undefined
+        searchConditions.sortOrder = 'desc'
+      } finally {
+        loading.value = false
+        fieldsLoading.value = false
+      }
+    }
     onMounted(() => {
       getDataSourceListData()
     })
@@ -869,11 +916,7 @@ export default defineComponent({
                   placeholder='选择索引'
                   loading={indexListLoading.value}
                   disabled={indexListLoading.value}
-                  onChange={(val: string) => {
-                    const it = indexList.value.find((x) => x.indexName === val)
-                    searchConditions.indexId = it?.indexId || val || ''
-                    searchConditions.indexName = it?.indexName || val || ''
-                  }}
+                  onChange={handleChangeIndex}
                   clearable
                   filterable
                 >
