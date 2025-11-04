@@ -446,25 +446,31 @@ export default defineComponent({
         ElMessage.warning('请选择索引')
         return
       }
-      if (!searchConditions.startTimestamp || !searchConditions.endTimestamp) {
+      if (
+        searchConditions.searchTimeType === 1 &&
+        (!searchConditions.startTimestamp || !searchConditions.endTimestamp)
+      ) {
         ElMessage.warning('请选择时间范围')
         return
       }
+      if (searchConditions.searchTimeType === 2) {
+        searchConditions.minutesPast = 15
+      }
       // 同步查询数据到统一状态
-      if (queryData) {
-        if (typeof queryData.queryCondition !== 'undefined') {
+      if (Object.keys(queryData).length !== 0) {
+        if (queryData.queryCondition) {
           searchConditions.queryCondition = queryData.queryCondition
         }
-        if (typeof queryData.searchTimeType !== 'undefined') {
+        if (queryData.searchTimeType) {
           searchConditions.searchTimeType = queryData.searchTimeType
         }
-        if (typeof queryData.startTimestamp !== 'undefined') {
+        if (queryData.startTimestamp) {
           searchConditions.startTimestamp = queryData.startTimestamp
         }
-        if (typeof queryData.endTimestamp !== 'undefined') {
+        if (queryData.endTimestamp) {
           searchConditions.endTimestamp = queryData.endTimestamp
         }
-        if (typeof queryData.minutesPast !== 'undefined') {
+        if (queryData.minutesPast) {
           searchConditions.minutesPast = queryData.minutesPast
         }
       }
@@ -490,7 +496,6 @@ export default defineComponent({
       ) {
         params.levels = searchConditions.levels
       }
-
       if (normalizedSearchTimeType === 'SEARCH_TIME_TYPE_RELATIVE') {
         if (typeof searchConditions.minutesPast !== 'undefined') {
           params.minutesPast = searchConditions.minutesPast
@@ -774,6 +779,7 @@ export default defineComponent({
         searchConditions.searchTimeType = 1
         await executeSearch({})
       } else {
+        console.log(searchConditions)
         // 开启前先执行一次正常查询（若未选索引则内部会提示并中断）
         if (!searchConditions.dataSourceId) {
           ElMessage.warning('请选择数据源')
@@ -781,10 +787,6 @@ export default defineComponent({
         }
         if (!searchConditions.indexId) {
           ElMessage.warning('请选择索引')
-          return
-        }
-        if (!searchConditions.startTimestamp || !searchConditions.endTimestamp) {
-          ElMessage.warning('请选择时间范围')
           return
         }
         // 只清空 queryCondition、filterConditions、levels 三个字段
@@ -798,6 +800,7 @@ export default defineComponent({
         searchKey.value = ''
 
         searchConditions.searchTimeType = 2
+        searchConditions.minutesPast = 15
         await executeSearch({})
         startLogStream()
       }
