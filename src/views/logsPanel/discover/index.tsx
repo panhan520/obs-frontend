@@ -100,6 +100,7 @@ export default defineComponent({
     const deleteTargetId = ref<number | null>(null)
     const deleteLoading = ref(false)
 
+    const isHasIndexList = ref<any>(false)
     const loadViews = async () => {
       try {
         openViewListLoading.value = true
@@ -812,7 +813,7 @@ export default defineComponent({
         searchConditions.queryCondition = ''
         searchConditions.filterConditions = []
         if (logList.length > 0) {
-          const startTime = new Date(logList[logList.length - 1].timestamp).getTime()
+          const startTime = new Date(logList[logList.length - 1].timestamp).getTime() - 1000
           const endTime = new Date(logList[0].timestamp).getTime()
           params.startTimestamp = startTime
           params.endTimestamp = endTime
@@ -822,10 +823,12 @@ export default defineComponent({
           getChartData(params)
           searchConditions.startTimestamp = startTime
           searchConditions.endTimestamp = endTime
+          isHasIndexList.value = false
         } else {
           logChartDatas.value = []
-          searchConditions.startTimestamp = fifteenMinutesAgo.getTime()
-          searchConditions.endTimestamp = now.getTime()
+          searchConditions.startTimestamp = null
+          searchConditions.endTimestamp = null
+          isHasIndexList.value = true
         }
         searchConditions.searchTimeType = 1
         searchConditions.minutesPast = undefined
@@ -1023,7 +1026,11 @@ export default defineComponent({
             />
             {/* 动态柱状图 */}
             <div v-loading={chartLoading.value}>
-              <LogChart logChartData={logChartDatas.value} selectedStatuses={statusChecked.value} />
+              <LogChart
+                logChartData={logChartDatas.value}
+                selectedStatuses={statusChecked.value}
+                isHasIndexList={isHasIndexList.value}
+              />
             </div>
             {/* 搜索结果 */}
             {logDocuments.value.length > 0 && (

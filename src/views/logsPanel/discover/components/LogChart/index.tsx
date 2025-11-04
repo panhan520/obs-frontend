@@ -31,6 +31,10 @@ export default defineComponent({
       required: true,
       default: () => ['Info', 'Error', 'Warn', 'Fatal', 'Debug'],
     },
+    isHasIndexList: {
+      type: Boolean,
+      default: false,
+    },
   },
   setup(props) {
     const chartRef = ref<HTMLDivElement>()
@@ -87,7 +91,7 @@ export default defineComponent({
       if (data.length === 0) {
         return {
           title: {
-            text: '暂无数据',
+            text: props.isHasIndexList ? '该索引下暂无数据' : '暂无数据',
             left: 'center',
             top: 'center',
             textStyle: {
@@ -238,14 +242,12 @@ export default defineComponent({
 
     // 监听数据变化
     watch(
-      () => [...props.logChartData, ...props.selectedStatuses],
+      () => [props.logChartData, props.selectedStatuses, props.isHasIndexList],
       () => {
-        console.log('LogChart - 检测到数据变化')
         updateChart()
       },
       { deep: true },
     )
-
     onMounted(() => {
       initChart()
       window.addEventListener('resize', handleResize)

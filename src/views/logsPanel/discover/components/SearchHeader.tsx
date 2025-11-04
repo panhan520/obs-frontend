@@ -185,8 +185,8 @@ export default defineComponent({
 
     // 格式化时间显示，如果是"现在"时间则显示"现在"
     const formatTimeDisplay = (date: Date | null, isNow: boolean) => {
-      if (!date) return '现在'
-      if (isNow) return '现在'
+      if (!date) return ''
+      if (isNow) return ''
       return formatDate(date)
     }
 

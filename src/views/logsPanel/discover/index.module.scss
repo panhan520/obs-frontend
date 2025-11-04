@@ -410,7 +410,9 @@
       }
 
       .timePart {
-        padding: 2px 4px;
+        min-width: 130px;
+        height: 25px;
+        line-height: 25px;
         border-radius: 2px;
         cursor: pointer;
         transition: all 0.3s;
