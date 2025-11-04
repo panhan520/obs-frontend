@@ -791,6 +791,11 @@ export default defineComponent({
       }
     }
     const handleChangeIndex = (val: string) => {
+      if (!val) return
+      if (!searchConditions.dataSourceId) {
+        ElMessage.warning('请先选择数据源')
+        return
+      }
       const it = indexList.value.find((x) => x.indexName === val)
       searchConditions.indexId = it?.indexId || val || ''
       searchConditions.indexName = it?.indexName || val || ''
