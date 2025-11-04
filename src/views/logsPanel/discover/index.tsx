@@ -446,6 +446,10 @@ export default defineComponent({
         ElMessage.warning('请选择索引')
         return
       }
+      if (!searchConditions.startTimestamp || !searchConditions.endTimestamp) {
+        ElMessage.warning('请选择时间范围')
+        return
+      }
       // 同步查询数据到统一状态
       if (queryData) {
         if (typeof queryData.queryCondition !== 'undefined') {
@@ -771,8 +775,16 @@ export default defineComponent({
         await executeSearch({})
       } else {
         // 开启前先执行一次正常查询（若未选索引则内部会提示并中断）
+        if (!searchConditions.dataSourceId) {
+          ElMessage.warning('请选择数据源')
+          return
+        }
         if (!searchConditions.indexId) {
           ElMessage.warning('请选择索引')
+          return
+        }
+        if (!searchConditions.startTimestamp || !searchConditions.endTimestamp) {
+          ElMessage.warning('请选择时间范围')
           return
         }
         // 只清空 queryCondition、filterConditions、levels 三个字段
