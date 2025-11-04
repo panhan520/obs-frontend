@@ -131,7 +131,7 @@ export const getFields = ({ commonModalRef }): IField[] => ([
     isColumn: true,
     columnConfig: { 
       width: 100,
-      render: ({ rowData }) => h(ElTag, { type: rowData.blocked ? 'danger' : 'success' }, rowData.blocked ? '是' : '否'),
+      render: ({ rowData }) => h(ElTag, { type: rowData.pollution ? 'danger' : 'success' }, rowData.pollution ? '是' : '否'),
     },
   },
   {
@@ -140,7 +140,7 @@ export const getFields = ({ commonModalRef }): IField[] => ([
     isColumn: true,
     columnConfig: {
       width: 100,
-      render: ({ rowData }) => h(ElTag, { type: rowData.blocked ? 'danger' : 'success' }, rowData.blocked ? '是' : '否'),
+      render: ({ rowData }) => h(ElTag, { type: rowData.isWall ? 'danger' : 'success' }, rowData.isWall ? '是' : '否'),
     },
     isFilter: true,
     filterConfig: {
@@ -155,6 +155,15 @@ export const getFields = ({ commonModalRef }): IField[] => ([
         { label: '是', value: true },
         { label: '否', value: false },
       ],
+    },
+  },
+  {
+    prop: 'isHijack',
+    label: '被劫持',
+    isColumn: true,
+    columnConfig: { 
+      width: 100,
+      render: ({ rowData }) => h(ElTag, { type: rowData.isHijack ? 'danger' : 'success' }, rowData.isHijack ? '是' : '否'),
     },
   },
   // {
@@ -172,7 +181,7 @@ export const getFields = ({ commonModalRef }): IField[] => ([
     isColumn: true,
     columnConfig: { 
       minWidth: 150,
-      render: ({ rowData }) => h(CommonJsonPretty, { data: rowData.pageInfo }),
+      render: ({ rowData }) => h(CommonJsonPretty, { data: rowData.dnsInfo }),
     },
   },
   {
@@ -181,7 +190,7 @@ export const getFields = ({ commonModalRef }): IField[] => ([
     isColumn: true,
     columnConfig: { 
       minWidth: 150,
-      render: ({ rowData }) => h(CommonJsonPretty, { data: rowData.pageInfo }),
+      render: ({ rowData }) => h(CommonJsonPretty, { data: rowData.icpInfo }),
     },
   },
   // {

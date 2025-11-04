@@ -1,13 +1,13 @@
 import { defineComponent, ref } from 'vue'
 import { CommonPage, CommonModal, CommonTable } from '~/businessComponents'
 import { getListApi, editApi, getRecordApi } from '~/api/domainManagement/checkResults'
+import { hasPermission } from '~/utils/auth'
 import { getFields } from './fields'
 import { columns } from './constants'
 
 import type { ICommonObj } from '~/interfaces/common'
 import type { IExpose } from '~/businessComponents/commonPage'
 import type { ICommonModalExpose } from '~/businessComponents/commonModal'
-import { hasPermission } from '~/utils/auth'
 
 export default defineComponent({
   name: 'CheckResults',
